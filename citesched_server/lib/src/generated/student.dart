@@ -21,6 +21,7 @@ abstract class Student
     required this.studentNumber,
     required this.course,
     required this.yearLevel,
+    this.section,
     required this.userInfoId,
     required this.createdAt,
     required this.updatedAt,
@@ -33,6 +34,7 @@ abstract class Student
     required String studentNumber,
     required String course,
     required int yearLevel,
+    String? section,
     required int userInfoId,
     required DateTime createdAt,
     required DateTime updatedAt,
@@ -46,6 +48,7 @@ abstract class Student
       studentNumber: jsonSerialization['studentNumber'] as String,
       course: jsonSerialization['course'] as String,
       yearLevel: jsonSerialization['yearLevel'] as int,
+      section: jsonSerialization['section'] as String?,
       userInfoId: jsonSerialization['userInfoId'] as int,
       createdAt: _i1.DateTimeJsonExtension.fromJson(
         jsonSerialization['createdAt'],
@@ -73,6 +76,8 @@ abstract class Student
 
   int yearLevel;
 
+  String? section;
+
   int userInfoId;
 
   DateTime createdAt;
@@ -92,6 +97,7 @@ abstract class Student
     String? studentNumber,
     String? course,
     int? yearLevel,
+    String? section,
     int? userInfoId,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -106,6 +112,7 @@ abstract class Student
       'studentNumber': studentNumber,
       'course': course,
       'yearLevel': yearLevel,
+      if (section != null) 'section': section,
       'userInfoId': userInfoId,
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
@@ -122,6 +129,7 @@ abstract class Student
       'studentNumber': studentNumber,
       'course': course,
       'yearLevel': yearLevel,
+      if (section != null) 'section': section,
       'userInfoId': userInfoId,
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
@@ -168,6 +176,7 @@ class _StudentImpl extends Student {
     required String studentNumber,
     required String course,
     required int yearLevel,
+    String? section,
     required int userInfoId,
     required DateTime createdAt,
     required DateTime updatedAt,
@@ -178,6 +187,7 @@ class _StudentImpl extends Student {
          studentNumber: studentNumber,
          course: course,
          yearLevel: yearLevel,
+         section: section,
          userInfoId: userInfoId,
          createdAt: createdAt,
          updatedAt: updatedAt,
@@ -194,6 +204,7 @@ class _StudentImpl extends Student {
     String? studentNumber,
     String? course,
     int? yearLevel,
+    Object? section = _Undefined,
     int? userInfoId,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -205,6 +216,7 @@ class _StudentImpl extends Student {
       studentNumber: studentNumber ?? this.studentNumber,
       course: course ?? this.course,
       yearLevel: yearLevel ?? this.yearLevel,
+      section: section is String? ? section : this.section,
       userInfoId: userInfoId ?? this.userInfoId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -238,6 +250,11 @@ class StudentUpdateTable extends _i1.UpdateTable<StudentTable> {
 
   _i1.ColumnValue<int, int> yearLevel(int value) => _i1.ColumnValue(
     table.yearLevel,
+    value,
+  );
+
+  _i1.ColumnValue<String, String> section(String? value) => _i1.ColumnValue(
+    table.section,
     value,
   );
 
@@ -282,6 +299,10 @@ class StudentTable extends _i1.Table<int?> {
       'yearLevel',
       this,
     );
+    section = _i1.ColumnString(
+      'section',
+      this,
+    );
     userInfoId = _i1.ColumnInt(
       'userInfoId',
       this,
@@ -308,6 +329,8 @@ class StudentTable extends _i1.Table<int?> {
 
   late final _i1.ColumnInt yearLevel;
 
+  late final _i1.ColumnString section;
+
   late final _i1.ColumnInt userInfoId;
 
   late final _i1.ColumnDateTime createdAt;
@@ -322,6 +345,7 @@ class StudentTable extends _i1.Table<int?> {
     studentNumber,
     course,
     yearLevel,
+    section,
     userInfoId,
     createdAt,
     updatedAt,

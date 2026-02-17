@@ -1,0 +1,8 @@
+class: RoomUtilizationReport
+fields:
+  roomId: int
+  roomName: String
+  utilizationPercentage: double
+  totalBookings: int
+  isActive: bool
+  program: String?

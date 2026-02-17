@@ -20,6 +20,7 @@ abstract class Student implements _i1.SerializableModel {
     required this.studentNumber,
     required this.course,
     required this.yearLevel,
+    this.section,
     required this.userInfoId,
     required this.createdAt,
     required this.updatedAt,
@@ -32,6 +33,7 @@ abstract class Student implements _i1.SerializableModel {
     required String studentNumber,
     required String course,
     required int yearLevel,
+    String? section,
     required int userInfoId,
     required DateTime createdAt,
     required DateTime updatedAt,
@@ -45,6 +47,7 @@ abstract class Student implements _i1.SerializableModel {
       studentNumber: jsonSerialization['studentNumber'] as String,
       course: jsonSerialization['course'] as String,
       yearLevel: jsonSerialization['yearLevel'] as int,
+      section: jsonSerialization['section'] as String?,
       userInfoId: jsonSerialization['userInfoId'] as int,
       createdAt: _i1.DateTimeJsonExtension.fromJson(
         jsonSerialization['createdAt'],
@@ -70,6 +73,8 @@ abstract class Student implements _i1.SerializableModel {
 
   int yearLevel;
 
+  String? section;
+
   int userInfoId;
 
   DateTime createdAt;
@@ -86,6 +91,7 @@ abstract class Student implements _i1.SerializableModel {
     String? studentNumber,
     String? course,
     int? yearLevel,
+    String? section,
     int? userInfoId,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -100,6 +106,7 @@ abstract class Student implements _i1.SerializableModel {
       'studentNumber': studentNumber,
       'course': course,
       'yearLevel': yearLevel,
+      if (section != null) 'section': section,
       'userInfoId': userInfoId,
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
@@ -122,6 +129,7 @@ class _StudentImpl extends Student {
     required String studentNumber,
     required String course,
     required int yearLevel,
+    String? section,
     required int userInfoId,
     required DateTime createdAt,
     required DateTime updatedAt,
@@ -132,6 +140,7 @@ class _StudentImpl extends Student {
          studentNumber: studentNumber,
          course: course,
          yearLevel: yearLevel,
+         section: section,
          userInfoId: userInfoId,
          createdAt: createdAt,
          updatedAt: updatedAt,
@@ -148,6 +157,7 @@ class _StudentImpl extends Student {
     String? studentNumber,
     String? course,
     int? yearLevel,
+    Object? section = _Undefined,
     int? userInfoId,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -159,6 +169,7 @@ class _StudentImpl extends Student {
       studentNumber: studentNumber ?? this.studentNumber,
       course: course ?? this.course,
       yearLevel: yearLevel ?? this.yearLevel,
+      section: section is String? ? section : this.section,
       userInfoId: userInfoId ?? this.userInfoId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,

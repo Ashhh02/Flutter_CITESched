@@ -1,0 +1,6 @@
+class: ConflictSummaryReport
+fields:
+  totalConflicts: int
+  conflictsByType: Map<String, int>
+  resolvedConflicts: int
+  mostFrequentConflictType: String?

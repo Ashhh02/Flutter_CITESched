@@ -747,6 +747,75 @@ class Endpoints extends _i1.EndpointDispatch {
               ) async => (endpoints['admin'] as _i4.AdminEndpoint)
                   .getDashboardStats(session),
         ),
+        'validateSchedule': _i1.MethodConnector(
+          name: 'validateSchedule',
+          params: {
+            'schedule': _i1.ParameterDescription(
+              name: 'schedule',
+              type: _i1.getType<_i15.Schedule>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['admin'] as _i4.AdminEndpoint).validateSchedule(
+                    session,
+                    params['schedule'],
+                  ),
+        ),
+        'getAllConflicts': _i1.MethodConnector(
+          name: 'getAllConflicts',
+          params: {},
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['admin'] as _i4.AdminEndpoint)
+                  .getAllConflicts(session),
+        ),
+        'getFacultyLoadReport': _i1.MethodConnector(
+          name: 'getFacultyLoadReport',
+          params: {},
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['admin'] as _i4.AdminEndpoint)
+                  .getFacultyLoadReport(session),
+        ),
+        'getRoomUtilizationReport': _i1.MethodConnector(
+          name: 'getRoomUtilizationReport',
+          params: {},
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['admin'] as _i4.AdminEndpoint)
+                  .getRoomUtilizationReport(session),
+        ),
+        'getConflictSummaryReport': _i1.MethodConnector(
+          name: 'getConflictSummaryReport',
+          params: {},
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['admin'] as _i4.AdminEndpoint)
+                  .getConflictSummaryReport(session),
+        ),
+        'getScheduleOverviewReport': _i1.MethodConnector(
+          name: 'getScheduleOverviewReport',
+          params: {},
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['admin'] as _i4.AdminEndpoint)
+                  .getScheduleOverviewReport(session),
+        ),
       },
     );
     connectors['customAuth'] = _i1.EndpointConnector(

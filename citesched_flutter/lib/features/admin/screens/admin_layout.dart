@@ -5,6 +5,8 @@ import 'package:citesched_flutter/features/admin/screens/faculty_loading_screen.
 import 'package:citesched_flutter/features/admin/screens/subject_management_screen.dart';
 import 'package:citesched_flutter/features/admin/screens/room_management_screen.dart';
 import 'package:citesched_flutter/features/admin/screens/timetable_screen.dart';
+import 'package:citesched_flutter/features/admin/screens/conflict_screen.dart';
+import 'package:citesched_flutter/features/admin/screens/report_screen.dart';
 import 'package:citesched_flutter/features/admin/widgets/admin_sidebar.dart';
 
 import 'package:flutter/material.dart';
@@ -26,18 +28,8 @@ class _AdminLayoutState extends State<AdminLayout> {
     const SubjectManagementScreen(),
     const RoomManagementScreen(),
     const TimetableScreen(),
-    const Center(
-      child: Text(
-        'Conflicts - Coming Soon',
-        style: TextStyle(color: Colors.black),
-      ),
-    ),
-    const Center(
-      child: Text(
-        'Reports - Coming Soon',
-        style: TextStyle(color: Colors.black),
-      ),
-    ),
+    const ConflictScreen(),
+    const ReportScreen(),
   ];
 
   @override
@@ -49,10 +41,9 @@ class _AdminLayoutState extends State<AdminLayout> {
           AdminSidebar(
             selectedIndex: _selectedIndex,
             onDestinationSelected: (index) {
-              if (index == 9) {
+              if (index == 8) {
                 // Logout case - handled in Sidebar usually, or here if we pass a callback.
-                // For now, let's assume index 9 is logout and we'll handle it there or via a specific callback.
-                // Actually, let's keep the logic simple: update index if it's a valid screen.
+                // For now, let's assume index 8 is logout and we'll handle it there or via a specific callback.
                 return;
               }
               setState(() {

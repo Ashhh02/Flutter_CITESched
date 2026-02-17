@@ -1,229 +1,11 @@
 import 'package:serverpod/serverpod.dart';
 import '../generated/protocol.dart';
+import 'conflict_service.dart';
 
-/// Service class for handling scheduling logic and conflict detection.
-/// This service validates schedule entries and generates schedules while
-/// respecting all constraints (room availability, faculty availability, max load).
+/// Service class for handling scheduling logic.
+/// Uses [ConflictService] to validate schedule entries and generates schedules.
 class SchedulingService {
-  // ─── Conflict Detection Methods ─────────────────────────────────────
-
-  /// Check if a room is available at a given timeslot.
-  /// Returns the conflicting schedule if room is already booked, null otherwise.
-  /// If [roomId] or [timeslotId] is null, returns null (no conflict possible).
-  Future<Schedule?> checkRoomAvailability(
-    Session session, {
-    required int? roomId,
-    required int? timeslotId,
-    int? excludeScheduleId, // For updates, exclude the current schedule
-  }) async {
-    if (roomId == null ||
-        roomId == -1 ||
-        timeslotId == null ||
-        timeslotId == -1)
-      return null;
-
-    var query = Schedule.db.find(
-      session,
-      where: (t) => t.roomId.equals(roomId) & t.timeslotId.equals(timeslotId),
-    );
-
-    var conflicts = await query;
-
-    // Filter out the schedule being updated
-    if (excludeScheduleId != null) {
-      conflicts = conflicts.where((s) => s.id != excludeScheduleId).toList();
-    }
-
-    return conflicts.isNotEmpty ? conflicts.first : null;
-  }
-
-  /// Check if a faculty member is available at a given timeslot.
-  /// Returns the conflicting schedule if faculty is already assigned, null otherwise.
-  /// If [timeslotId] is null, returns null.
-  Future<Schedule?> checkFacultyAvailability(
-    Session session, {
-    required int facultyId,
-    required int? timeslotId,
-    int? excludeScheduleId,
-  }) async {
-    if (timeslotId == null || timeslotId == -1) return null;
-
-    var query = Schedule.db.find(
-      session,
-      where: (t) =>
-          t.facultyId.equals(facultyId) & t.timeslotId.equals(timeslotId),
-    );
-
-    var conflicts = await query;
-
-    // Filter out the schedule being updated
-    if (excludeScheduleId != null) {
-      conflicts = conflicts.where((s) => s.id != excludeScheduleId).toList();
-    }
-
-    return conflicts.isNotEmpty ? conflicts.first : null;
-  }
-
-  /// Check if a faculty member has exceeded their maximum teaching load.
-  /// Returns true if faculty can take more classes, false otherwise.
-  Future<bool> checkFacultyMaxLoad(
-    Session session, {
-    required int facultyId,
-    int? excludeScheduleId,
-    double?
-    additionalUnits, // Check if adding these units fits (optional logic)
-  }) async {
-    // Get faculty details
-    var faculty = await Faculty.db.findById(session, facultyId);
-    if (faculty == null) {
-      throw Exception('Faculty not found with ID: $facultyId');
-    }
-
-    // Count current schedules for this faculty
-    var schedules = await Schedule.db.find(
-      session,
-      where: (t) => t.facultyId.equals(facultyId),
-    );
-
-    // Filter out the schedule being updated
-    if (excludeScheduleId != null) {
-      schedules = schedules.where((s) => s.id != excludeScheduleId).toList();
-    }
-
-    // Determine current load
-    // For now, assuming count is the load, or use units if available.
-    // If we want to use units, we need to fetch subjects or use cached units.
-    // Let's stick to simple count or simple unit sum if we can.
-    // But `Schedule` doesn't always have `units` (it's in Subject).
-    // For MVP, we'll just check if count < maxLoad (if maxLoad is count-based)
-    // or we can implement unit-based load check later.
-    // The current implementation is count based: `schedules.length < faculty.maxLoad`.
-
-    return schedules.length < faculty.maxLoad;
-  }
-
-  /// Validate a schedule entry against all conflict rules.
-  /// Throws an exception with details if any conflict is found.
-  Future<void> validateScheduleEntry(
-    Session session,
-    Schedule schedule, {
-    int? excludeScheduleId,
-  }) async {
-    var conflicts = <ScheduleConflict>[];
-
-    // Check room availability (only if room and time are set)
-    if (schedule.roomId != -1 && schedule.timeslotId != -1) {
-      var roomConflict = await checkRoomAvailability(
-        session,
-        roomId: schedule.roomId,
-        timeslotId: schedule.timeslotId,
-        excludeScheduleId: excludeScheduleId,
-      );
-
-      if (roomConflict != null) {
-        conflicts.add(
-          ScheduleConflict(
-            type: 'room_conflict',
-            message: 'Room is already booked for this timeslot',
-            conflictingScheduleId: roomConflict.id,
-            details:
-                'Room ID ${schedule.roomId} is already assigned to schedule ID ${roomConflict.id}',
-          ),
-        );
-      }
-
-      // ─── New Constraints ───────────────────────────────────────────
-
-      // Fetch Subject and Room for further validation
-      var subject = await Subject.db.findById(session, schedule.subjectId);
-      var room = await Room.db.findById(session, schedule.roomId);
-
-      if (subject != null && room != null) {
-        // 1. Program Match Check
-        if (subject.program != room.program) {
-          conflicts.add(
-            ScheduleConflict(
-              type: 'program_mismatch',
-              message: 'Subject program does not match Room program',
-              details:
-                  'Subject program is ${subject.program.name}, but Room program is ${room.program.name}',
-            ),
-          );
-        }
-
-        // 2. Capacity Check
-        if (room.capacity < subject.studentsCount) {
-          conflicts.add(
-            ScheduleConflict(
-              type: 'capacity_exceeded',
-              message: 'Room capacity is smaller than subject student count',
-              details:
-                  'Room capacity is ${room.capacity}, but Subject has ${subject.studentsCount} students',
-            ),
-          );
-        }
-
-        // 3. Room Active Check
-        if (!room.isActive) {
-          conflicts.add(
-            ScheduleConflict(
-              type: 'room_inactive',
-              message: 'The selected room is currently inactive',
-              details: 'Room ${room.name} must be active for assignment',
-            ),
-          );
-        }
-      }
-    }
-
-    // Check faculty availability (only if time is set)
-    if (schedule.timeslotId != -1) {
-      var facultyConflict = await checkFacultyAvailability(
-        session,
-        facultyId: schedule.facultyId,
-        timeslotId: schedule.timeslotId,
-        excludeScheduleId: excludeScheduleId,
-      );
-
-      if (facultyConflict != null) {
-        conflicts.add(
-          ScheduleConflict(
-            type: 'faculty_conflict',
-            message:
-                'Faculty is already assigned to another class at this timeslot',
-            conflictingScheduleId: facultyConflict.id,
-            details:
-                'Faculty ID ${schedule.facultyId} is already assigned to schedule ID ${facultyConflict.id}',
-          ),
-        );
-      }
-    }
-
-    // Check faculty max load
-    var canTakeMore = await checkFacultyMaxLoad(
-      session,
-      facultyId: schedule.facultyId,
-      excludeScheduleId: excludeScheduleId,
-    );
-
-    if (!canTakeMore) {
-      var faculty = await Faculty.db.findById(session, schedule.facultyId);
-      conflicts.add(
-        ScheduleConflict(
-          type: 'max_load_exceeded',
-          message: 'Faculty has reached maximum teaching load',
-          details:
-              'Faculty ID ${schedule.facultyId} has reached max load of ${faculty?.maxLoad ?? 0} classes',
-        ),
-      );
-    }
-
-    // If any conflicts found, throw exception
-    if (conflicts.isNotEmpty) {
-      var messages = conflicts.map((c) => c.message).join('; ');
-      throw Exception('Schedule validation failed: $messages');
-    }
-  }
+  final ConflictService _conflictService = ConflictService();
 
   // ─── Schedule Generation ────────────────────────────────────────────
 
@@ -286,7 +68,8 @@ class SchedulingService {
         for (var faculty in validFaculties) {
           if (assigned) break;
 
-          // Check if faculty can take more classes
+          // Check if faculty can take more classes (Basic maxLoad check)
+          // Detailed check happens inside ConflictService
           var currentLoad = facultyAssignments[faculty.id!] ?? 0;
           if (currentLoad >= faculty.maxLoad) continue;
 
@@ -309,17 +92,18 @@ class SchedulingService {
                 updatedAt: DateTime.now(),
               );
 
-              // Check if this assignment is valid
-              try {
-                await validateScheduleEntry(session, candidate);
+              // Check if this assignment is valid using ConflictService
+              var validationConflicts = await _conflictService.validateSchedule(session, candidate);
 
+              if (validationConflicts.isEmpty) {
                 // Valid assignment - add to generated schedules
                 generatedSchedules.add(candidate);
                 facultyAssignments[faculty.id!] =
                     (facultyAssignments[faculty.id!] ?? 0) + 1;
                 assigned = true;
-              } catch (e) {
+              } else {
                 // Conflict found, try next combination
+                // Optionally log debug info here if needed
                 continue;
               }
             }
@@ -355,7 +139,7 @@ class SchedulingService {
         schedules: generatedSchedules,
         conflicts: conflicts,
         message:
-            'Partial generation: ${generatedSchedules.length} schedules created, ${conflicts.length} failed',
+            'Partial generation: ${generatedSchedules.length} schedules generated, ${conflicts.length} failed',
       );
     }
   }

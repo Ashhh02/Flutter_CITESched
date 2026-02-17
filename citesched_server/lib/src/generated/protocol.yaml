@@ -37,6 +37,12 @@ admin:
   - deleteSchedule:
   - generateSchedule:
   - getDashboardStats:
+  - validateSchedule:
+  - getAllConflicts:
+  - getFacultyLoadReport:
+  - getRoomUtilizationReport:
+  - getConflictSummaryReport:
+  - getScheduleOverviewReport:
 customAuth:
   - loginWithId:
 debug:

@@ -6,6 +6,7 @@ fields:
   studentNumber: String
   course: String
   yearLevel: int
+  section: String?
   userInfoId: int
   createdAt: DateTime
   updatedAt: DateTime

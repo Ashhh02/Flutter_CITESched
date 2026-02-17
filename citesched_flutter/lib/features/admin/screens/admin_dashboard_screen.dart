@@ -1,6 +1,7 @@
 import 'package:citesched_client/citesched_client.dart';
 import 'package:citesched_flutter/features/admin/widgets/conflict_list_modal.dart';
 import 'package:citesched_flutter/features/admin/widgets/faculty_load_chart.dart';
+import 'package:citesched_flutter/features/admin/widgets/report_modal.dart';
 import 'package:citesched_flutter/features/admin/widgets/stat_card.dart';
 import 'package:citesched_flutter/features/admin/widgets/user_list_modal.dart';
 import 'package:citesched_flutter/features/auth/providers/auth_provider.dart';
@@ -168,6 +169,23 @@ class AdminDashboardScreen extends ConsumerWidget {
                         textAlign: TextAlign.center,
                       ),
                     ],
+                  ),
+                ),
+                Center(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => const ReportModal(),
+                      );
+                    },
+                    icon: const Icon(Icons.analytics_outlined),
+                    label: const Text('View Detailed Reports'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryPurple,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    ),
                   ),
                 ),
 

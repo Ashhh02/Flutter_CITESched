@@ -1,0 +1,8 @@
+class: FacultyLoadReport
+fields:
+  facultyId: int
+  facultyName: String
+  totalUnits: double
+  totalSubjects: int
+  loadStatus: String # Underloaded, Balanced, Overloaded
+  department: String?

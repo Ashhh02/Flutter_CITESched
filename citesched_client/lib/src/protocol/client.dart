@@ -28,9 +28,18 @@ import 'package:citesched_client/src/protocol/generate_schedule_response.dart'
 import 'package:citesched_client/src/protocol/generate_schedule_request.dart'
     as _i13;
 import 'package:citesched_client/src/protocol/dashboard_stats.dart' as _i14;
-import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i15;
-import 'package:citesched_client/src/protocol/greetings/greeting.dart' as _i16;
-import 'protocol.dart' as _i17;
+import 'package:citesched_client/src/protocol/schedule_conflict.dart' as _i15;
+import 'package:citesched_client/src/protocol/reports/faculty_load_report.dart'
+    as _i16;
+import 'package:citesched_client/src/protocol/reports/room_utilization_report.dart'
+    as _i17;
+import 'package:citesched_client/src/protocol/reports/conflict_summary_report.dart'
+    as _i18;
+import 'package:citesched_client/src/protocol/reports/schedule_overview_report.dart'
+    as _i19;
+import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i20;
+import 'package:citesched_client/src/protocol/greetings/greeting.dart' as _i21;
+import 'protocol.dart' as _i22;
 
 /// By extending [EmailIdpBaseEndpoint], the email identity provider endpoints
 /// are made available on the server and enable the corresponding sign-in widget
@@ -483,6 +492,54 @@ class EndpointAdmin extends _i2.EndpointRef {
         'getDashboardStats',
         {},
       );
+
+  _i3.Future<List<_i15.ScheduleConflict>> validateSchedule(
+    _i11.Schedule schedule,
+  ) => caller.callServerEndpoint<List<_i15.ScheduleConflict>>(
+    'admin',
+    'validateSchedule',
+    {'schedule': schedule},
+  );
+
+  /// Retrieves all detected conflicts in the current schedule.
+  _i3.Future<List<_i15.ScheduleConflict>> getAllConflicts() =>
+      caller.callServerEndpoint<List<_i15.ScheduleConflict>>(
+        'admin',
+        'getAllConflicts',
+        {},
+      );
+
+  /// Generates the Faculty Load Report.
+  _i3.Future<List<_i16.FacultyLoadReport>> getFacultyLoadReport() =>
+      caller.callServerEndpoint<List<_i16.FacultyLoadReport>>(
+        'admin',
+        'getFacultyLoadReport',
+        {},
+      );
+
+  /// Generates the Room Utilization Report.
+  _i3.Future<List<_i17.RoomUtilizationReport>> getRoomUtilizationReport() =>
+      caller.callServerEndpoint<List<_i17.RoomUtilizationReport>>(
+        'admin',
+        'getRoomUtilizationReport',
+        {},
+      );
+
+  /// Generates the Conflict Summary Report.
+  _i3.Future<_i18.ConflictSummaryReport> getConflictSummaryReport() =>
+      caller.callServerEndpoint<_i18.ConflictSummaryReport>(
+        'admin',
+        'getConflictSummaryReport',
+        {},
+      );
+
+  /// Generates the Schedule Overview Report.
+  _i3.Future<_i19.ScheduleOverviewReport> getScheduleOverviewReport() =>
+      caller.callServerEndpoint<_i19.ScheduleOverviewReport>(
+        'admin',
+        'getScheduleOverviewReport',
+        {},
+      );
 }
 
 /// {@category Endpoint}
@@ -493,11 +550,11 @@ class EndpointCustomAuth extends _i2.EndpointRef {
   String get name => 'customAuth';
 
   /// Logs in a user using their ID (Student ID or Faculty ID) and password.
-  _i3.Future<_i15.AuthenticationResponse> loginWithId({
+  _i3.Future<_i20.AuthenticationResponse> loginWithId({
     required String id,
     required String password,
     required String role,
-  }) => caller.callServerEndpoint<_i15.AuthenticationResponse>(
+  }) => caller.callServerEndpoint<_i20.AuthenticationResponse>(
     'customAuth',
     'loginWithId',
     {
@@ -634,8 +691,8 @@ class EndpointGreeting extends _i2.EndpointRef {
   String get name => 'greeting';
 
   /// Returns a personalized greeting message: "Hello {name}".
-  _i3.Future<_i16.Greeting> hello(String name) =>
-      caller.callServerEndpoint<_i16.Greeting>(
+  _i3.Future<_i21.Greeting> hello(String name) =>
+      caller.callServerEndpoint<_i21.Greeting>(
         'greeting',
         'hello',
         {'name': name},
@@ -645,13 +702,13 @@ class EndpointGreeting extends _i2.EndpointRef {
 class Modules {
   Modules(Client client) {
     serverpod_auth_idp = _i1.Caller(client);
-    auth = _i15.Caller(client);
+    auth = _i20.Caller(client);
     serverpod_auth_core = _i4.Caller(client);
   }
 
   late final _i1.Caller serverpod_auth_idp;
 
-  late final _i15.Caller auth;
+  late final _i20.Caller auth;
 
   late final _i4.Caller serverpod_auth_core;
 }
@@ -676,7 +733,7 @@ class Client extends _i2.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
          host,
-         _i17.Protocol(),
+         _i22.Protocol(),
          securityContext: securityContext,
          streamingConnectionTimeout: streamingConnectionTimeout,
          connectionTimeout: connectionTimeout,

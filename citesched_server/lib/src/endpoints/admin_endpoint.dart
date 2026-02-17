@@ -3,6 +3,8 @@ import 'package:serverpod/serverpod.dart';
 import '../auth/scopes.dart';
 import '../generated/protocol.dart';
 import '../services/scheduling_service.dart';
+import '../services/conflict_service.dart';
+import '../services/report_service.dart';
 
 /// Admin-only endpoint for managing scheduling data and user roles.
 /// Only users with the 'admin' scope can access these methods.
@@ -492,10 +494,13 @@ class AdminEndpoint extends Endpoint {
 
   /// Create a new schedule entry with conflict detection.
   Future<Schedule> createSchedule(Session session, Schedule schedule) async {
-    var schedulingService = SchedulingService();
-
     // Validate schedule entry against all conflicts
-    await schedulingService.validateScheduleEntry(session, schedule);
+    var conflicts = await ConflictService().validateSchedule(session, schedule);
+    
+    if (conflicts.isNotEmpty) {
+      var messages = conflicts.map((c) => c.message).join('; ');
+      throw Exception('Schedule validation failed: $messages');
+    }
 
     // Set timestamps
     schedule.createdAt = DateTime.now();
@@ -517,14 +522,17 @@ class AdminEndpoint extends Endpoint {
       throw Exception('Schedule not found with ID: ${schedule.id}');
     }
 
-    var schedulingService = SchedulingService();
-
     // Validate schedule entry (excluding current schedule from conflict checks)
-    await schedulingService.validateScheduleEntry(
+    var conflicts = await ConflictService().validateSchedule(
       session,
       schedule,
       excludeScheduleId: schedule.id,
     );
+
+    if (conflicts.isNotEmpty) {
+      var messages = conflicts.map((c) => c.message).join('; ');
+      throw Exception('Schedule validation failed: $messages');
+    }
 
     // Update timestamp
     schedule.updatedAt = DateTime.now();
@@ -630,49 +638,8 @@ class AdminEndpoint extends Endpoint {
 
       // 3. Integrity Check (Conflicts)
       print('[DEBUG] getDashboardStats: Step 3 - Calculating conflicts');
-      List<ScheduleConflict> conflicts = [];
-
-      var schedulesByTime = <int, List<Schedule>>{};
-      for (var s in allSchedules) {
-        schedulesByTime.putIfAbsent(s.timeslotId, () => []).add(s);
-      }
-
-      for (var timeslotId in schedulesByTime.keys) {
-        var concurrent = schedulesByTime[timeslotId]!;
-
-        var schedulesByRoom = <int, List<Schedule>>{};
-        for (var s in concurrent) {
-          schedulesByRoom.putIfAbsent(s.roomId, () => []).add(s);
-        }
-
-        schedulesByRoom.forEach((roomId, roomSchedules) {
-          if (roomSchedules.length > 1) {
-            conflicts.add(
-              ScheduleConflict(
-                type: 'Room Conflict',
-                message: 'Multiple classes in Room $roomId at Timeslot $timeslotId',
-                details: 'Schedules: ${roomSchedules.map((s) => s.id).join(', ')}',
-              ),
-            );
-          }
-        });
-
-        var schedulesByFaculty = <int, List<Schedule>>{};
-        for (var s in concurrent) {
-          schedulesByFaculty.putIfAbsent(s.facultyId, () => []).add(s);
-        }
-        schedulesByFaculty.forEach((facultyId, facSchedules) {
-          if (facSchedules.length > 1) {
-            conflicts.add(
-              ScheduleConflict(
-                type: 'Faculty Conflict',
-                message: 'Faculty $facultyId has multiple classes at Timeslot $timeslotId',
-                details: 'Schedules: ${facSchedules.map((s) => s.id).join(', ')}',
-              ),
-            );
-          }
-        });
-      }
+      List<ScheduleConflict> conflicts = await ConflictService().getAllConflicts(session);
+      
       print('[DEBUG] getDashboardStats: Step 3 complete. Found ${conflicts.length} conflicts.');
 
       return DashboardStats(
@@ -688,6 +655,36 @@ class AdminEndpoint extends Endpoint {
       print('[ERROR] Stack trace: \n$stack');
       rethrow;
     }
+  }
+  // ─── Conflict & Reports ──────────────────────────────────────────────
+
+  Future<List<ScheduleConflict>> validateSchedule(Session session, Schedule schedule) async {
+    return await ConflictService().validateSchedule(session, schedule);
+  }
+
+  /// Retrieves all detected conflicts in the current schedule.
+  Future<List<ScheduleConflict>> getAllConflicts(Session session) async {
+    return await ConflictService().getAllConflicts(session);
+  }
+
+  /// Generates the Faculty Load Report.
+  Future<List<FacultyLoadReport>> getFacultyLoadReport(Session session) async {
+    return await ReportService().generateFacultyLoadReport(session);
+  }
+
+  /// Generates the Room Utilization Report.
+  Future<List<RoomUtilizationReport>> getRoomUtilizationReport(Session session) async {
+    return await ReportService().generateRoomUtilizationReport(session);
+  }
+
+  /// Generates the Conflict Summary Report.
+  Future<ConflictSummaryReport> getConflictSummaryReport(Session session) async {
+    return await ReportService().generateConflictSummary(session);
+  }
+
+  /// Generates the Schedule Overview Report.
+  Future<ScheduleOverviewReport> getScheduleOverviewReport(Session session) async {
+    return await ReportService().generateScheduleOverview(session);
   }
 }
 

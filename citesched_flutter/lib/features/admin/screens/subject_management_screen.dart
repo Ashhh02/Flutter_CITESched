@@ -60,31 +60,123 @@ class _SubjectManagementScreenState
   void _deleteSubject(Subject subject) async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(
-          'Delete Subject',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
-        ),
-        content: Text(
-          'Are you sure you want to delete ${subject.name}? This action cannot be undone.',
-          style: GoogleFonts.poppins(),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text('Cancel', style: GoogleFonts.poppins()),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+        final textPrimary = isDark ? Colors.white : const Color(0xFF333333);
+        final textMuted = isDark ? Colors.grey[400] : Colors.grey[600];
+
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            width: 400,
+            decoration: BoxDecoration(
+              color: cardBg,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
             ),
-            child: Text('Delete', style: GoogleFonts.poppins()),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.red[700]!, Colors.red[500]!],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.delete_forever_rounded, color: Colors.white),
+                      ),
+                      const SizedBox(width: 16),
+                      Text(
+                        'Delete Subject',
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Are you sure you want to delete ${subject.name}?',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'This action cannot be undone.',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          color: textMuted,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            side: BorderSide(color: Colors.grey[300]!),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          child: Text('Cancel', style: GoogleFonts.poppins(color: textMuted)),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            elevation: 0,
+                          ),
+                          child: Text('Delete', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-        ],
-      ),
+        );
+      },
     );
 
     if (confirm == true && mounted) {
@@ -606,106 +698,265 @@ class _AddSubjectModalState extends State<_AddSubjectModal> {
   final _unitsController = TextEditingController(text: '3');
   final _studentsCountController = TextEditingController(text: '40');
 
-  int _yearLevel = 1;
-  int _term = 1;
+  int? _yearLevel;
+  int? _term;
   SubjectType _type = SubjectType.lecture;
   Program _program = Program.it;
   bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Add Subject'),
-      content: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: _codeController,
-                decoration: const InputDecoration(labelText: 'Code'),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final textPrimary = isDark ? Colors.white : const Color(0xFF333333);
+    final textMuted = isDark ? Colors.grey[400]! : Colors.grey[600]!;
+    final borderColor = isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1);
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        width: 650,
+        constraints: const BoxConstraints(maxHeight: 800),
+        decoration: BoxDecoration(
+          color: cardBg,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: widget.maroonColor.withOpacity(0.2),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [widget.maroonColor, const Color(0xFFb5179e)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
               ),
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Title'),
+              child: Row(
+                children: [
+                   Container(
+                     padding: const EdgeInsets.all(10),
+                     decoration: BoxDecoration(
+                       color: Colors.white.withOpacity(0.2),
+                       borderRadius: BorderRadius.circular(12),
+                     ),
+                     child: const Icon(Icons.library_add_rounded, color: Colors.white, size: 24),
+                   ),
+                   const SizedBox(width: 16),
+                   Column(
+                     crossAxisAlignment: CrossAxisAlignment.start,
+                     children: [
+                       Text(
+                         'Add New Subject',
+                         style: GoogleFonts.poppins(
+                           fontSize: 20,
+                           fontWeight: FontWeight.bold,
+                           color: Colors.white,
+                         ),
+                       ),
+                       Text(
+                         'Enter subject details below',
+                         style: GoogleFonts.poppins(
+                           fontSize: 13,
+                           color: Colors.white.withOpacity(0.8),
+                         ),
+                       ),
+                     ],
+                   ),
+                   const Spacer(),
+                   IconButton(
+                     onPressed: () => Navigator.pop(context),
+                     icon: const Icon(Icons.close, color: Colors.white),
+                     style: IconButton.styleFrom(backgroundColor: Colors.white.withOpacity(0.1)),
+                   ),
+                ],
               ),
-              TextFormField(
-                controller: _unitsController,
-                decoration: const InputDecoration(labelText: 'Units'),
-                keyboardType: TextInputType.number,
-              ),
-              TextFormField(
-                controller: _studentsCountController,
-                decoration: const InputDecoration(labelText: 'Student Count'),
-                keyboardType: TextInputType.number,
-              ),
-              DropdownButtonFormField<Program>(
-                value: _program,
-                decoration: const InputDecoration(labelText: 'Program'),
-                items: Program.values
-                    .map(
-                      (p) => DropdownMenuItem(
-                        value: p,
-                        child: Text(p.name.toUpperCase()),
+            ),
+
+            // Form Content
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(32),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildSectionTitle('Subject Information', Icons.info_outline, textPrimary),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(child: _buildTextField('Subject Code', _codeController, isDark, hint: 'e.g., ITEC 101')),
+                          const SizedBox(width: 16),
+                          Expanded(child: _buildTextField('Units', _unitsController, isDark, isNumber: true)),
+                        ],
                       ),
-                    )
-                    .toList(),
-                onChanged: (v) => setState(() => _program = v!),
-              ),
-              DropdownButtonFormField<int>(
-                value: _yearLevel,
-                decoration: const InputDecoration(labelText: 'Year Level'),
-                items: List.generate(
-                  4,
-                  (i) => DropdownMenuItem(
-                    value: i + 1,
-                    child: Text('Year ${i + 1}'),
+                      const SizedBox(height: 16),
+                      _buildTextField('Subject Title', _nameController, isDark, hint: 'e.g., Introduction to Computing'),
+                      
+                      const SizedBox(height: 24),
+                      _buildSectionTitle('Classification', Icons.category_outlined, textPrimary),
+                      const SizedBox(height: 16),
+                      
+                      DropdownButtonFormField<Program>(
+                        value: _program,
+                        decoration: _inputDecoration('Program', isDark),
+                        dropdownColor: cardBg,
+                        items: Program.values.map((p) => DropdownMenuItem(
+                          value: p,
+                          child: Text(p.name.toUpperCase(), style: GoogleFonts.poppins(color: textPrimary)),
+                        )).toList(),
+                        onChanged: (v) => setState(() => _program = v!),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: DropdownButtonFormField<SubjectType>(
+                              value: _type,
+                              decoration: _inputDecoration('Type', isDark),
+                              dropdownColor: cardBg,
+                              items: SubjectType.values.map((t) => DropdownMenuItem(
+                                value: t,
+                                child: Text(t.name.toUpperCase(), style: GoogleFonts.poppins(color: textPrimary)),
+                              )).toList(),
+                              onChanged: (v) => setState(() => _type = v!),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(child: _buildTextField('Student Count', _studentsCountController, isDark, isNumber: true)),
+                        ],
+                      ),
+                      
+                      const SizedBox(height: 24),
+                      _buildSectionTitle('Schedule Placement', Icons.calendar_month_outlined, textPrimary),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: DropdownButtonFormField<int>(
+                            value: _yearLevel,
+                            decoration: _inputDecoration('Year Level', isDark),
+                            dropdownColor: cardBg,
+                            items: List.generate(4, (i) => DropdownMenuItem(
+                              value: i + 1,
+                              child: Text('Year ${i + 1}', style: GoogleFonts.poppins(color: textPrimary)),
+                            )),
+                            onChanged: (v) => setState(() => _yearLevel = v!),
+                          )),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: DropdownButtonFormField<int>(
+                            value: _term,
+                            decoration: _inputDecoration('Semester', isDark),
+                            dropdownColor: cardBg,
+                            items: [1, 2].map((i) => DropdownMenuItem(
+                              value: i,
+                              child: Text(i == 1 ? '1st Semester' : '2nd Semester', style: GoogleFonts.poppins(color: textPrimary)),
+                            )).toList(),
+                            onChanged: (v) => setState(() => _term = v!),
+                          )),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-                onChanged: (v) => setState(() => _yearLevel = v!),
               ),
-              DropdownButtonFormField<int>(
-                value: _term,
-                decoration: const InputDecoration(labelText: 'Semester'),
-                items: [1, 2]
-                    .map(
-                      (i) => DropdownMenuItem(
-                        value: i,
-                        child: Text('Semester $i'),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (v) => setState(() => _term = v!),
+            ),
+
+            // Footer
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                border: Border(top: BorderSide(color: borderColor)),
               ),
-              DropdownButtonFormField<SubjectType>(
-                value: _type,
-                decoration: const InputDecoration(labelText: 'Type'),
-                items: SubjectType.values
-                    .map(
-                      (t) => DropdownMenuItem(
-                        value: t,
-                        child: Text(t.name.toUpperCase()),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (v) => setState(() => _type = v!),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    ),
+                    child: Text('Cancel', style: GoogleFonts.poppins(color: textMuted)),
+                  ),
+                  const SizedBox(width: 16),
+                  ElevatedButton.icon(
+                    onPressed: _isLoading ? null : _submit,
+                    icon: _isLoading 
+                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        : const Icon(Icons.check_rounded, size: 20),
+                    label: Text(_isLoading ? 'Saving...' : 'Create Subject', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: widget.maroonColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 0,
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
-        ),
-        ElevatedButton(
-          onPressed: _isLoading ? null : _submit,
-          style: ElevatedButton.styleFrom(backgroundColor: widget.maroonColor),
-          child: const Text('Save'),
+    );
+  }
+
+  Widget _buildSectionTitle(String title, IconData icon, Color color) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: widget.maroonColor),
+        const SizedBox(width: 8),
+        Text(title, style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: color)),
+      ],
+    );
+  }
+
+  Widget _buildTextField(String label, TextEditingController controller, bool isDark, {bool isNumber = false, String? hint}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w500, color: isDark ? Colors.grey[300] : Colors.grey[700])),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+          style: GoogleFonts.poppins(color: isDark ? Colors.white : Colors.black87),
+          decoration: _inputDecoration(null, isDark, hint: hint),
+          validator: (value) => value == null || value.isEmpty ? 'Required' : null,
         ),
       ],
+    );
+  }
+
+  InputDecoration _inputDecoration(String? label, bool isDark, {String? hint}) {
+    final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9);
+    final borderColor = isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05);
+
+    return InputDecoration(
+      labelText: label,
+      hintText: hint,
+      hintStyle: GoogleFonts.poppins(color: Colors.grey[500], fontSize: 13),
+      labelStyle: GoogleFonts.poppins(color: Colors.grey[600]),
+      filled: true,
+      fillColor: bgColor,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: borderColor)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: borderColor)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: widget.maroonColor, width: 2)),
     );
   }
 
@@ -729,11 +980,9 @@ class _AddSubjectModalState extends State<_AddSubjectModal> {
       widget.onSuccess();
       if (mounted) Navigator.pop(context);
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 }
@@ -785,98 +1034,257 @@ class _EditSubjectModalState extends State<_EditSubjectModal> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Edit Subject'),
-      content: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: _codeController,
-                decoration: const InputDecoration(labelText: 'Code'),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final textPrimary = isDark ? Colors.white : const Color(0xFF333333);
+    final textMuted = isDark ? Colors.grey[400]! : Colors.grey[600]!;
+    final borderColor = isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1);
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        width: 650,
+        constraints: const BoxConstraints(maxHeight: 800),
+        decoration: BoxDecoration(
+          color: cardBg,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: widget.maroonColor.withOpacity(0.2),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [widget.maroonColor, const Color(0xFFb5179e)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
               ),
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Title'),
+              child: Row(
+                children: [
+                   Container(
+                     padding: const EdgeInsets.all(10),
+                     decoration: BoxDecoration(
+                       color: Colors.white.withOpacity(0.2),
+                       borderRadius: BorderRadius.circular(12),
+                     ),
+                     child: const Icon(Icons.edit_note_rounded, color: Colors.white, size: 24),
+                   ),
+                   const SizedBox(width: 16),
+                   Column(
+                     crossAxisAlignment: CrossAxisAlignment.start,
+                     children: [
+                       Text(
+                         'Edit Subject',
+                         style: GoogleFonts.poppins(
+                           fontSize: 20,
+                           fontWeight: FontWeight.bold,
+                           color: Colors.white,
+                         ),
+                       ),
+                       Text(
+                         'Update subject details below',
+                         style: GoogleFonts.poppins(
+                           fontSize: 13,
+                           color: Colors.white.withOpacity(0.8),
+                         ),
+                       ),
+                     ],
+                   ),
+                   const Spacer(),
+                   IconButton(
+                     onPressed: () => Navigator.pop(context),
+                     icon: const Icon(Icons.close, color: Colors.white),
+                     style: IconButton.styleFrom(backgroundColor: Colors.white.withOpacity(0.1)),
+                   ),
+                ],
               ),
-              TextFormField(
-                controller: _unitsController,
-                decoration: const InputDecoration(labelText: 'Units'),
-                keyboardType: TextInputType.number,
-              ),
-              TextFormField(
-                controller: _studentsCountController,
-                decoration: const InputDecoration(labelText: 'Student Count'),
-                keyboardType: TextInputType.number,
-              ),
-              DropdownButtonFormField<Program>(
-                value: _program,
-                decoration: const InputDecoration(labelText: 'Program'),
-                items: Program.values
-                    .map(
-                      (p) => DropdownMenuItem(
-                        value: p,
-                        child: Text(p.name.toUpperCase()),
+            ),
+
+            // Form Content
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(32),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildSectionTitle('Subject Information', Icons.info_outline, textPrimary),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(child: _buildTextField('Subject Code', _codeController, isDark, hint: 'e.g., ITEC 101')),
+                          const SizedBox(width: 16),
+                          Expanded(child: _buildTextField('Units', _unitsController, isDark, isNumber: true)),
+                        ],
                       ),
-                    )
-                    .toList(),
-                onChanged: (v) => setState(() => _program = v!),
-              ),
-              DropdownButtonFormField<int>(
-                value: _yearLevel,
-                decoration: const InputDecoration(labelText: 'Year Level'),
-                items: List.generate(
-                  4,
-                  (i) => DropdownMenuItem(
-                    value: i + 1,
-                    child: Text('Year ${i + 1}'),
+                      const SizedBox(height: 16),
+                      _buildTextField('Subject Title', _nameController, isDark, hint: 'e.g., Introduction to Computing'),
+                      
+                      const SizedBox(height: 24),
+                      _buildSectionTitle('Classification', Icons.category_outlined, textPrimary),
+                      const SizedBox(height: 16),
+                      
+                      DropdownButtonFormField<Program>(
+                        value: _program,
+                        decoration: _inputDecoration('Program', isDark),
+                        dropdownColor: cardBg,
+                        items: Program.values.map((p) => DropdownMenuItem(
+                          value: p,
+                          child: Text(p.name.toUpperCase(), style: GoogleFonts.poppins(color: textPrimary)),
+                        )).toList(),
+                        onChanged: (v) => setState(() => _program = v!),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: DropdownButtonFormField<SubjectType>(
+                              value: _type,
+                              decoration: _inputDecoration('Type', isDark),
+                              dropdownColor: cardBg,
+                              items: SubjectType.values.map((t) => DropdownMenuItem(
+                                value: t,
+                                child: Text(t.name.toUpperCase(), style: GoogleFonts.poppins(color: textPrimary)),
+                              )).toList(),
+                              onChanged: (v) => setState(() => _type = v!),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(child: _buildTextField('Student Count', _studentsCountController, isDark, isNumber: true)),
+                        ],
+                      ),
+                      
+                      const SizedBox(height: 24),
+                      _buildSectionTitle('Schedule Placement', Icons.calendar_month_outlined, textPrimary),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: DropdownButtonFormField<int>(
+                            value: _yearLevel,
+                            decoration: _inputDecoration('Year Level', isDark),
+                            dropdownColor: cardBg,
+                            items: List.generate(4, (i) => DropdownMenuItem(
+                              value: i + 1,
+                              child: Text('Year ${i + 1}', style: GoogleFonts.poppins(color: textPrimary)),
+                            )),
+                            onChanged: (v) => setState(() => _yearLevel = v!),
+                          )),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: DropdownButtonFormField<int>(
+                            value: _term,
+                            decoration: _inputDecoration('Semester', isDark),
+                            dropdownColor: cardBg,
+                            items: [1, 2].map((i) => DropdownMenuItem(
+                              value: i,
+                              child: Text(i == 1 ? '1st Semester' : '2nd Semester', style: GoogleFonts.poppins(color: textPrimary)),
+                            )).toList(),
+                            onChanged: (v) => setState(() => _term = v!),
+                          )),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-                onChanged: (v) => setState(() => _yearLevel = v!),
               ),
-              DropdownButtonFormField<int>(
-                value: _term,
-                decoration: const InputDecoration(labelText: 'Semester'),
-                items: [1, 2]
-                    .map(
-                      (i) => DropdownMenuItem(
-                        value: i,
-                        child: Text('Semester $i'),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (v) => setState(() => _term = v!),
+            ),
+
+            // Footer
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                border: Border(top: BorderSide(color: borderColor)),
               ),
-              DropdownButtonFormField<SubjectType>(
-                value: _type,
-                decoration: const InputDecoration(labelText: 'Type'),
-                items: SubjectType.values
-                    .map(
-                      (t) => DropdownMenuItem(
-                        value: t,
-                        child: Text(t.name.toUpperCase()),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (v) => setState(() => _type = v!),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    ),
+                    child: Text('Cancel', style: GoogleFonts.poppins(color: textMuted)),
+                  ),
+                  const SizedBox(width: 16),
+                  ElevatedButton.icon(
+                    onPressed: _isLoading ? null : _submit,
+                    icon: _isLoading 
+                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        : const Icon(Icons.check_rounded, size: 20),
+                    label: Text(_isLoading ? 'Saving...' : 'Save Changes', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: widget.maroonColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 0,
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
-        ),
-        ElevatedButton(
-          onPressed: _isLoading ? null : _submit,
-          style: ElevatedButton.styleFrom(backgroundColor: widget.maroonColor),
-          child: const Text('Save'),
+    );
+  }
+
+  Widget _buildSectionTitle(String title, IconData icon, Color color) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: widget.maroonColor),
+        const SizedBox(width: 8),
+        Text(title, style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: color)),
+      ],
+    );
+  }
+
+  Widget _buildTextField(String label, TextEditingController controller, bool isDark, {bool isNumber = false, String? hint}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w500, color: isDark ? Colors.grey[300] : Colors.grey[700])),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+          style: GoogleFonts.poppins(color: isDark ? Colors.white : Colors.black87),
+          decoration: _inputDecoration(null, isDark, hint: hint),
+          validator: (value) => value == null || value.isEmpty ? 'Required' : null,
         ),
       ],
+    );
+  }
+
+  InputDecoration _inputDecoration(String? label, bool isDark, {String? hint}) {
+    final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9);
+    final borderColor = isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05);
+
+    return InputDecoration(
+      labelText: label,
+      hintText: hint,
+      hintStyle: GoogleFonts.poppins(color: Colors.grey[500], fontSize: 13),
+      labelStyle: GoogleFonts.poppins(color: Colors.grey[600]),
+      filled: true,
+      fillColor: bgColor,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: borderColor)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: borderColor)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: widget.maroonColor, width: 2)),
     );
   }
 
@@ -884,7 +1292,7 @@ class _EditSubjectModalState extends State<_EditSubjectModal> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
     try {
-      final updated = widget.subject.copyWith(
+      final subject = widget.subject.copyWith(
         code: _codeController.text,
         name: _nameController.text,
         units: int.parse(_unitsController.text),
@@ -895,15 +1303,13 @@ class _EditSubjectModalState extends State<_EditSubjectModal> {
         program: _program,
         updatedAt: DateTime.now(),
       );
-      await client.admin.updateSubject(updated);
+      await client.admin.updateSubject(subject);
       widget.onSuccess();
       if (mounted) Navigator.pop(context);
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 }

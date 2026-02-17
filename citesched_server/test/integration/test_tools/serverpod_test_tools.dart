@@ -28,8 +28,17 @@ import 'package:citesched_server/src/generated/generate_schedule_response.dart'
 import 'package:citesched_server/src/generated/generate_schedule_request.dart'
     as _i13;
 import 'package:citesched_server/src/generated/dashboard_stats.dart' as _i14;
-import 'package:serverpod_auth_server/serverpod_auth_server.dart' as _i15;
-import 'package:citesched_server/src/generated/greetings/greeting.dart' as _i16;
+import 'package:citesched_server/src/generated/schedule_conflict.dart' as _i15;
+import 'package:citesched_server/src/generated/reports/faculty_load_report.dart'
+    as _i16;
+import 'package:citesched_server/src/generated/reports/room_utilization_report.dart'
+    as _i17;
+import 'package:citesched_server/src/generated/reports/conflict_summary_report.dart'
+    as _i18;
+import 'package:citesched_server/src/generated/reports/schedule_overview_report.dart'
+    as _i19;
+import 'package:serverpod_auth_server/serverpod_auth_server.dart' as _i20;
+import 'package:citesched_server/src/generated/greetings/greeting.dart' as _i21;
 import 'package:citesched_server/src/generated/protocol.dart';
 import 'package:citesched_server/src/generated/endpoints.dart';
 export 'package:serverpod_test/serverpod_test_public_exports.dart';
@@ -1359,6 +1368,187 @@ class _AdminEndpoint {
       }
     });
   }
+
+  _i3.Future<List<_i15.ScheduleConflict>> validateSchedule(
+    _i1.TestSessionBuilder sessionBuilder,
+    _i11.Schedule schedule,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'admin',
+            method: 'validateSchedule',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'admin',
+          methodName: 'validateSchedule',
+          parameters: _i1.testObjectToJson({'schedule': schedule}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<List<_i15.ScheduleConflict>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<List<_i15.ScheduleConflict>> getAllConflicts(
+    _i1.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'admin',
+            method: 'getAllConflicts',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'admin',
+          methodName: 'getAllConflicts',
+          parameters: _i1.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<List<_i15.ScheduleConflict>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<List<_i16.FacultyLoadReport>> getFacultyLoadReport(
+    _i1.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'admin',
+            method: 'getFacultyLoadReport',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'admin',
+          methodName: 'getFacultyLoadReport',
+          parameters: _i1.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<List<_i16.FacultyLoadReport>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<List<_i17.RoomUtilizationReport>> getRoomUtilizationReport(
+    _i1.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'admin',
+            method: 'getRoomUtilizationReport',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'admin',
+          methodName: 'getRoomUtilizationReport',
+          parameters: _i1.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<List<_i17.RoomUtilizationReport>>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<_i18.ConflictSummaryReport> getConflictSummaryReport(
+    _i1.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'admin',
+            method: 'getConflictSummaryReport',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'admin',
+          methodName: 'getConflictSummaryReport',
+          parameters: _i1.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<_i18.ConflictSummaryReport>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+
+  _i3.Future<_i19.ScheduleOverviewReport> getScheduleOverviewReport(
+    _i1.TestSessionBuilder sessionBuilder,
+  ) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'admin',
+            method: 'getScheduleOverviewReport',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'admin',
+          methodName: 'getScheduleOverviewReport',
+          parameters: _i1.testObjectToJson({}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<_i19.ScheduleOverviewReport>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
 }
 
 class _CustomAuthEndpoint {
@@ -1371,7 +1561,7 @@ class _CustomAuthEndpoint {
 
   final _i2.SerializationManager _serializationManager;
 
-  _i3.Future<_i15.AuthenticationResponse> loginWithId(
+  _i3.Future<_i20.AuthenticationResponse> loginWithId(
     _i1.TestSessionBuilder sessionBuilder, {
     required String id,
     required String password,
@@ -1400,7 +1590,7 @@ class _CustomAuthEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i15.AuthenticationResponse>);
+                as _i3.Future<_i20.AuthenticationResponse>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1767,7 +1957,7 @@ class _GreetingEndpoint {
 
   final _i2.SerializationManager _serializationManager;
 
-  _i3.Future<_i16.Greeting> hello(
+  _i3.Future<_i21.Greeting> hello(
     _i1.TestSessionBuilder sessionBuilder,
     String name,
   ) async {
@@ -1790,7 +1980,7 @@ class _GreetingEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i16.Greeting>);
+                as _i3.Future<_i21.Greeting>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
