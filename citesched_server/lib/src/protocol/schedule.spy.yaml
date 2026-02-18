@@ -1,12 +1,17 @@
 class: Schedule
 table: schedule
 fields:
-  subjectId: int, relation(parent=subject)
-  facultyId: int, relation(parent=faculty)
-  roomId: int, relation(parent=room)
-  timeslotId: int, relation(parent=timeslot)
+  subjectId: int
+  subject: Subject?, relation(field=subjectId)
+  facultyId: int
+  faculty: Faculty?, relation(field=facultyId)
+  roomId: int?
+  room: Room?, relation(field=roomId)
+  timeslotId: int?
+  timeslot: Timeslot?, relation(field=timeslotId)
   section: String
-  loadType: SubjectType?
+  loadTypes: List<SubjectType>?
   units: double?
+  hours: double?
   createdAt: DateTime
   updatedAt: DateTime

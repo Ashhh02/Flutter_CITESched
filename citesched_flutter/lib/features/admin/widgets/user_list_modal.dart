@@ -527,7 +527,7 @@ class _UserListModalState extends State<UserListModal>
               border: Border.all(color: primaryColor.withOpacity(0.3)),
             ),
             child: Text(
-              f.department,
+              f.program.name.toUpperCase(),
               style: GoogleFonts.poppins(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,

@@ -19,7 +19,7 @@ abstract class FacultyLoadReport implements _i1.SerializableModel {
     required this.totalUnits,
     required this.totalSubjects,
     required this.loadStatus,
-    this.department,
+    this.program,
   });
 
   factory FacultyLoadReport({
@@ -28,7 +28,7 @@ abstract class FacultyLoadReport implements _i1.SerializableModel {
     required double totalUnits,
     required int totalSubjects,
     required String loadStatus,
-    String? department,
+    String? program,
   }) = _FacultyLoadReportImpl;
 
   factory FacultyLoadReport.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -38,7 +38,7 @@ abstract class FacultyLoadReport implements _i1.SerializableModel {
       totalUnits: (jsonSerialization['totalUnits'] as num).toDouble(),
       totalSubjects: jsonSerialization['totalSubjects'] as int,
       loadStatus: jsonSerialization['loadStatus'] as String,
-      department: jsonSerialization['department'] as String?,
+      program: jsonSerialization['program'] as String?,
     );
   }
 
@@ -52,7 +52,7 @@ abstract class FacultyLoadReport implements _i1.SerializableModel {
 
   String loadStatus;
 
-  String? department;
+  String? program;
 
   /// Returns a shallow copy of this [FacultyLoadReport]
   /// with some or all fields replaced by the given arguments.
@@ -63,7 +63,7 @@ abstract class FacultyLoadReport implements _i1.SerializableModel {
     double? totalUnits,
     int? totalSubjects,
     String? loadStatus,
-    String? department,
+    String? program,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -74,7 +74,7 @@ abstract class FacultyLoadReport implements _i1.SerializableModel {
       'totalUnits': totalUnits,
       'totalSubjects': totalSubjects,
       'loadStatus': loadStatus,
-      if (department != null) 'department': department,
+      if (program != null) 'program': program,
     };
   }
 
@@ -93,14 +93,14 @@ class _FacultyLoadReportImpl extends FacultyLoadReport {
     required double totalUnits,
     required int totalSubjects,
     required String loadStatus,
-    String? department,
+    String? program,
   }) : super._(
          facultyId: facultyId,
          facultyName: facultyName,
          totalUnits: totalUnits,
          totalSubjects: totalSubjects,
          loadStatus: loadStatus,
-         department: department,
+         program: program,
        );
 
   /// Returns a shallow copy of this [FacultyLoadReport]
@@ -113,7 +113,7 @@ class _FacultyLoadReportImpl extends FacultyLoadReport {
     double? totalUnits,
     int? totalSubjects,
     String? loadStatus,
-    Object? department = _Undefined,
+    Object? program = _Undefined,
   }) {
     return FacultyLoadReport(
       facultyId: facultyId ?? this.facultyId,
@@ -121,7 +121,7 @@ class _FacultyLoadReportImpl extends FacultyLoadReport {
       totalUnits: totalUnits ?? this.totalUnits,
       totalSubjects: totalSubjects ?? this.totalSubjects,
       loadStatus: loadStatus ?? this.loadStatus,
-      department: department is String? ? department : this.department,
+      program: program is String? ? program : this.program,
     );
   }
 }

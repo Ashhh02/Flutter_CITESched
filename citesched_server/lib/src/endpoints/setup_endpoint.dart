@@ -42,12 +42,12 @@ class SetupEndpoint extends Endpoint {
       if (userInfo.scopeNames == null) {
         userInfo.scopeNames = [];
       }
-      
+
       // Fix: Only add the role if it doesn't already exist (and clear duplicates)
       var currentScopes = userInfo.scopeNames!.toSet();
       currentScopes.add(role);
       userInfo.scopeNames = currentScopes.toList();
-      
+
       await UserInfo.db.updateRow(session, userInfo);
 
       // Create linked profile based on role
@@ -82,12 +82,13 @@ class SetupEndpoint extends Endpoint {
             Faculty(
               name: userName,
               email: email,
-              department: 'CITE', // Default
               maxLoad: 18,
               employmentStatus: EmploymentStatus.fullTime,
               shiftPreference: FacultyShiftPreference.any,
               facultyId: facultyId,
               userInfoId: userInfo!.id!,
+              program: Program.it, // Default
+              isActive: true,
               createdAt: DateTime.now(),
               updatedAt: DateTime.now(),
             ),

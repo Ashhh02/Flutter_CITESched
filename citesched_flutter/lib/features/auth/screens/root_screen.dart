@@ -1,6 +1,9 @@
 import 'package:citesched_flutter/features/admin/screens/admin_layout.dart';
 import 'package:citesched_flutter/features/auth/providers/auth_provider.dart';
 import 'package:citesched_flutter/features/auth/screens/login_screen.dart';
+import 'package:citesched_flutter/features/student/screens/student_schedule_screen.dart';
+import 'package:citesched_flutter/features/faculty/screens/faculty_dashboard_screen.dart';
+import 'package:citesched_flutter/features/common/layout/app_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -22,16 +25,18 @@ class RootScreen extends ConsumerWidget {
       return const AdminLayout();
     }
 
-    // Placeholder for other roles
+    // specific role screens
     if (authNotifier.isStudent) {
-      return const Scaffold(
-        body: Center(child: Text("Student Dashboard - Coming Soon")),
+      return const AppLayout(
+        title: 'Student Schedule',
+        child: StudentScheduleScreen(),
       );
     }
 
     if (authNotifier.isFaculty) {
-      return const Scaffold(
-        body: Center(child: Text("Faculty Dashboard - Coming Soon")),
+      return const AppLayout(
+        title: 'Faculty Dashboard',
+        child: FacultyDashboardScreen(),
       );
     }
 

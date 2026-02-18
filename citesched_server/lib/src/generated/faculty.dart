@@ -13,6 +13,7 @@
 import 'package:serverpod/serverpod.dart' as _i1;
 import 'employment_status.dart' as _i2;
 import 'faculty_shift_preference.dart' as _i3;
+import 'program.dart' as _i4;
 
 abstract class Faculty
     implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
@@ -20,13 +21,15 @@ abstract class Faculty
     this.id,
     required this.name,
     required this.email,
-    required this.department,
     required this.maxLoad,
     required this.employmentStatus,
     this.shiftPreference,
     this.preferredHours,
     required this.facultyId,
     required this.userInfoId,
+    required this.program,
+    required this.isActive,
+    this.currentLoad,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -35,13 +38,15 @@ abstract class Faculty
     int? id,
     required String name,
     required String email,
-    required String department,
     required int maxLoad,
     required _i2.EmploymentStatus employmentStatus,
     _i3.FacultyShiftPreference? shiftPreference,
     String? preferredHours,
     required String facultyId,
     required int userInfoId,
+    required _i4.Program program,
+    required bool isActive,
+    double? currentLoad,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _FacultyImpl;
@@ -51,7 +56,6 @@ abstract class Faculty
       id: jsonSerialization['id'] as int?,
       name: jsonSerialization['name'] as String,
       email: jsonSerialization['email'] as String,
-      department: jsonSerialization['department'] as String,
       maxLoad: jsonSerialization['maxLoad'] as int,
       employmentStatus: _i2.EmploymentStatus.fromJson(
         (jsonSerialization['employmentStatus'] as String),
@@ -64,6 +68,9 @@ abstract class Faculty
       preferredHours: jsonSerialization['preferredHours'] as String?,
       facultyId: jsonSerialization['facultyId'] as String,
       userInfoId: jsonSerialization['userInfoId'] as int,
+      program: _i4.Program.fromJson((jsonSerialization['program'] as String)),
+      isActive: jsonSerialization['isActive'] as bool,
+      currentLoad: (jsonSerialization['currentLoad'] as num?)?.toDouble(),
       createdAt: _i1.DateTimeJsonExtension.fromJson(
         jsonSerialization['createdAt'],
       ),
@@ -84,8 +91,6 @@ abstract class Faculty
 
   String email;
 
-  String department;
-
   int maxLoad;
 
   _i2.EmploymentStatus employmentStatus;
@@ -97,6 +102,12 @@ abstract class Faculty
   String facultyId;
 
   int userInfoId;
+
+  _i4.Program program;
+
+  bool isActive;
+
+  double? currentLoad;
 
   DateTime createdAt;
 
@@ -112,13 +123,15 @@ abstract class Faculty
     int? id,
     String? name,
     String? email,
-    String? department,
     int? maxLoad,
     _i2.EmploymentStatus? employmentStatus,
     _i3.FacultyShiftPreference? shiftPreference,
     String? preferredHours,
     String? facultyId,
     int? userInfoId,
+    _i4.Program? program,
+    bool? isActive,
+    double? currentLoad,
     DateTime? createdAt,
     DateTime? updatedAt,
   });
@@ -129,13 +142,15 @@ abstract class Faculty
       if (id != null) 'id': id,
       'name': name,
       'email': email,
-      'department': department,
       'maxLoad': maxLoad,
       'employmentStatus': employmentStatus.toJson(),
       if (shiftPreference != null) 'shiftPreference': shiftPreference?.toJson(),
       if (preferredHours != null) 'preferredHours': preferredHours,
       'facultyId': facultyId,
       'userInfoId': userInfoId,
+      'program': program.toJson(),
+      'isActive': isActive,
+      if (currentLoad != null) 'currentLoad': currentLoad,
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
     };
@@ -148,13 +163,15 @@ abstract class Faculty
       if (id != null) 'id': id,
       'name': name,
       'email': email,
-      'department': department,
       'maxLoad': maxLoad,
       'employmentStatus': employmentStatus.toJson(),
       if (shiftPreference != null) 'shiftPreference': shiftPreference?.toJson(),
       if (preferredHours != null) 'preferredHours': preferredHours,
       'facultyId': facultyId,
       'userInfoId': userInfoId,
+      'program': program.toJson(),
+      'isActive': isActive,
+      if (currentLoad != null) 'currentLoad': currentLoad,
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
     };
@@ -197,26 +214,30 @@ class _FacultyImpl extends Faculty {
     int? id,
     required String name,
     required String email,
-    required String department,
     required int maxLoad,
     required _i2.EmploymentStatus employmentStatus,
     _i3.FacultyShiftPreference? shiftPreference,
     String? preferredHours,
     required String facultyId,
     required int userInfoId,
+    required _i4.Program program,
+    required bool isActive,
+    double? currentLoad,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) : super._(
          id: id,
          name: name,
          email: email,
-         department: department,
          maxLoad: maxLoad,
          employmentStatus: employmentStatus,
          shiftPreference: shiftPreference,
          preferredHours: preferredHours,
          facultyId: facultyId,
          userInfoId: userInfoId,
+         program: program,
+         isActive: isActive,
+         currentLoad: currentLoad,
          createdAt: createdAt,
          updatedAt: updatedAt,
        );
@@ -229,13 +250,15 @@ class _FacultyImpl extends Faculty {
     Object? id = _Undefined,
     String? name,
     String? email,
-    String? department,
     int? maxLoad,
     _i2.EmploymentStatus? employmentStatus,
     Object? shiftPreference = _Undefined,
     Object? preferredHours = _Undefined,
     String? facultyId,
     int? userInfoId,
+    _i4.Program? program,
+    bool? isActive,
+    Object? currentLoad = _Undefined,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -243,7 +266,6 @@ class _FacultyImpl extends Faculty {
       id: id is int? ? id : this.id,
       name: name ?? this.name,
       email: email ?? this.email,
-      department: department ?? this.department,
       maxLoad: maxLoad ?? this.maxLoad,
       employmentStatus: employmentStatus ?? this.employmentStatus,
       shiftPreference: shiftPreference is _i3.FacultyShiftPreference?
@@ -254,6 +276,9 @@ class _FacultyImpl extends Faculty {
           : this.preferredHours,
       facultyId: facultyId ?? this.facultyId,
       userInfoId: userInfoId ?? this.userInfoId,
+      program: program ?? this.program,
+      isActive: isActive ?? this.isActive,
+      currentLoad: currentLoad is double? ? currentLoad : this.currentLoad,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -270,11 +295,6 @@ class FacultyUpdateTable extends _i1.UpdateTable<FacultyTable> {
 
   _i1.ColumnValue<String, String> email(String value) => _i1.ColumnValue(
     table.email,
-    value,
-  );
-
-  _i1.ColumnValue<String, String> department(String value) => _i1.ColumnValue(
-    table.department,
     value,
   );
 
@@ -312,6 +332,22 @@ class FacultyUpdateTable extends _i1.UpdateTable<FacultyTable> {
     value,
   );
 
+  _i1.ColumnValue<_i4.Program, _i4.Program> program(_i4.Program value) =>
+      _i1.ColumnValue(
+        table.program,
+        value,
+      );
+
+  _i1.ColumnValue<bool, bool> isActive(bool value) => _i1.ColumnValue(
+    table.isActive,
+    value,
+  );
+
+  _i1.ColumnValue<double, double> currentLoad(double? value) => _i1.ColumnValue(
+    table.currentLoad,
+    value,
+  );
+
   _i1.ColumnValue<DateTime, DateTime> createdAt(DateTime value) =>
       _i1.ColumnValue(
         table.createdAt,
@@ -334,10 +370,6 @@ class FacultyTable extends _i1.Table<int?> {
     );
     email = _i1.ColumnString(
       'email',
-      this,
-    );
-    department = _i1.ColumnString(
-      'department',
       this,
     );
     maxLoad = _i1.ColumnInt(
@@ -366,6 +398,19 @@ class FacultyTable extends _i1.Table<int?> {
       'userInfoId',
       this,
     );
+    program = _i1.ColumnEnum(
+      'program',
+      this,
+      _i1.EnumSerialization.byName,
+    );
+    isActive = _i1.ColumnBool(
+      'isActive',
+      this,
+    );
+    currentLoad = _i1.ColumnDouble(
+      'currentLoad',
+      this,
+    );
     createdAt = _i1.ColumnDateTime(
       'createdAt',
       this,
@@ -382,8 +427,6 @@ class FacultyTable extends _i1.Table<int?> {
 
   late final _i1.ColumnString email;
 
-  late final _i1.ColumnString department;
-
   late final _i1.ColumnInt maxLoad;
 
   late final _i1.ColumnEnum<_i2.EmploymentStatus> employmentStatus;
@@ -396,6 +439,12 @@ class FacultyTable extends _i1.Table<int?> {
 
   late final _i1.ColumnInt userInfoId;
 
+  late final _i1.ColumnEnum<_i4.Program> program;
+
+  late final _i1.ColumnBool isActive;
+
+  late final _i1.ColumnDouble currentLoad;
+
   late final _i1.ColumnDateTime createdAt;
 
   late final _i1.ColumnDateTime updatedAt;
@@ -405,13 +454,15 @@ class FacultyTable extends _i1.Table<int?> {
     id,
     name,
     email,
-    department,
     maxLoad,
     employmentStatus,
     shiftPreference,
     preferredHours,
     facultyId,
     userInfoId,
+    program,
+    isActive,
+    currentLoad,
     createdAt,
     updatedAt,
   ];

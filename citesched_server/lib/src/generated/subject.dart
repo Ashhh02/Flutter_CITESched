@@ -13,6 +13,7 @@
 import 'package:serverpod/serverpod.dart' as _i1;
 import 'subject_type.dart' as _i2;
 import 'program.dart' as _i3;
+import 'package:citesched_server/src/generated/protocol.dart' as _i4;
 
 abstract class Subject
     implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
@@ -21,9 +22,10 @@ abstract class Subject
     required this.code,
     required this.name,
     required this.units,
+    this.hours,
     this.yearLevel,
     this.term,
-    required this.type,
+    required this.types,
     required this.program,
     required this.studentsCount,
     required this.createdAt,
@@ -35,9 +37,10 @@ abstract class Subject
     required String code,
     required String name,
     required int units,
+    double? hours,
     int? yearLevel,
     int? term,
-    required _i2.SubjectType type,
+    required List<_i2.SubjectType> types,
     required _i3.Program program,
     required int studentsCount,
     required DateTime createdAt,
@@ -50,9 +53,12 @@ abstract class Subject
       code: jsonSerialization['code'] as String,
       name: jsonSerialization['name'] as String,
       units: jsonSerialization['units'] as int,
+      hours: (jsonSerialization['hours'] as num?)?.toDouble(),
       yearLevel: jsonSerialization['yearLevel'] as int?,
       term: jsonSerialization['term'] as int?,
-      type: _i2.SubjectType.fromJson((jsonSerialization['type'] as String)),
+      types: _i4.Protocol().deserialize<List<_i2.SubjectType>>(
+        jsonSerialization['types'],
+      ),
       program: _i3.Program.fromJson((jsonSerialization['program'] as String)),
       studentsCount: jsonSerialization['studentsCount'] as int,
       createdAt: _i1.DateTimeJsonExtension.fromJson(
@@ -77,11 +83,13 @@ abstract class Subject
 
   int units;
 
+  double? hours;
+
   int? yearLevel;
 
   int? term;
 
-  _i2.SubjectType type;
+  List<_i2.SubjectType> types;
 
   _i3.Program program;
 
@@ -102,9 +110,10 @@ abstract class Subject
     String? code,
     String? name,
     int? units,
+    double? hours,
     int? yearLevel,
     int? term,
-    _i2.SubjectType? type,
+    List<_i2.SubjectType>? types,
     _i3.Program? program,
     int? studentsCount,
     DateTime? createdAt,
@@ -118,9 +127,10 @@ abstract class Subject
       'code': code,
       'name': name,
       'units': units,
+      if (hours != null) 'hours': hours,
       if (yearLevel != null) 'yearLevel': yearLevel,
       if (term != null) 'term': term,
-      'type': type.toJson(),
+      'types': types.toJson(valueToJson: (v) => v.toJson()),
       'program': program.toJson(),
       'studentsCount': studentsCount,
       'createdAt': createdAt.toJson(),
@@ -136,9 +146,10 @@ abstract class Subject
       'code': code,
       'name': name,
       'units': units,
+      if (hours != null) 'hours': hours,
       if (yearLevel != null) 'yearLevel': yearLevel,
       if (term != null) 'term': term,
-      'type': type.toJson(),
+      'types': types.toJson(valueToJson: (v) => v.toJson()),
       'program': program.toJson(),
       'studentsCount': studentsCount,
       'createdAt': createdAt.toJson(),
@@ -184,9 +195,10 @@ class _SubjectImpl extends Subject {
     required String code,
     required String name,
     required int units,
+    double? hours,
     int? yearLevel,
     int? term,
-    required _i2.SubjectType type,
+    required List<_i2.SubjectType> types,
     required _i3.Program program,
     required int studentsCount,
     required DateTime createdAt,
@@ -196,9 +208,10 @@ class _SubjectImpl extends Subject {
          code: code,
          name: name,
          units: units,
+         hours: hours,
          yearLevel: yearLevel,
          term: term,
-         type: type,
+         types: types,
          program: program,
          studentsCount: studentsCount,
          createdAt: createdAt,
@@ -214,9 +227,10 @@ class _SubjectImpl extends Subject {
     String? code,
     String? name,
     int? units,
+    Object? hours = _Undefined,
     Object? yearLevel = _Undefined,
     Object? term = _Undefined,
-    _i2.SubjectType? type,
+    List<_i2.SubjectType>? types,
     _i3.Program? program,
     int? studentsCount,
     DateTime? createdAt,
@@ -227,9 +241,10 @@ class _SubjectImpl extends Subject {
       code: code ?? this.code,
       name: name ?? this.name,
       units: units ?? this.units,
+      hours: hours is double? ? hours : this.hours,
       yearLevel: yearLevel is int? ? yearLevel : this.yearLevel,
       term: term is int? ? term : this.term,
-      type: type ?? this.type,
+      types: types ?? this.types.map((e0) => e0).toList(),
       program: program ?? this.program,
       studentsCount: studentsCount ?? this.studentsCount,
       createdAt: createdAt ?? this.createdAt,
@@ -256,6 +271,11 @@ class SubjectUpdateTable extends _i1.UpdateTable<SubjectTable> {
     value,
   );
 
+  _i1.ColumnValue<double, double> hours(double? value) => _i1.ColumnValue(
+    table.hours,
+    value,
+  );
+
   _i1.ColumnValue<int, int> yearLevel(int? value) => _i1.ColumnValue(
     table.yearLevel,
     value,
@@ -266,10 +286,10 @@ class SubjectUpdateTable extends _i1.UpdateTable<SubjectTable> {
     value,
   );
 
-  _i1.ColumnValue<_i2.SubjectType, _i2.SubjectType> type(
-    _i2.SubjectType value,
+  _i1.ColumnValue<List<_i2.SubjectType>, List<_i2.SubjectType>> types(
+    List<_i2.SubjectType> value,
   ) => _i1.ColumnValue(
-    table.type,
+    table.types,
     value,
   );
 
@@ -312,6 +332,10 @@ class SubjectTable extends _i1.Table<int?> {
       'units',
       this,
     );
+    hours = _i1.ColumnDouble(
+      'hours',
+      this,
+    );
     yearLevel = _i1.ColumnInt(
       'yearLevel',
       this,
@@ -320,10 +344,9 @@ class SubjectTable extends _i1.Table<int?> {
       'term',
       this,
     );
-    type = _i1.ColumnEnum(
-      'type',
+    types = _i1.ColumnSerializable<List<_i2.SubjectType>>(
+      'types',
       this,
-      _i1.EnumSerialization.byName,
     );
     program = _i1.ColumnEnum(
       'program',
@@ -352,11 +375,13 @@ class SubjectTable extends _i1.Table<int?> {
 
   late final _i1.ColumnInt units;
 
+  late final _i1.ColumnDouble hours;
+
   late final _i1.ColumnInt yearLevel;
 
   late final _i1.ColumnInt term;
 
-  late final _i1.ColumnEnum<_i2.SubjectType> type;
+  late final _i1.ColumnSerializable<List<_i2.SubjectType>> types;
 
   late final _i1.ColumnEnum<_i3.Program> program;
 
@@ -372,9 +397,10 @@ class SubjectTable extends _i1.Table<int?> {
     code,
     name,
     units,
+    hours,
     yearLevel,
     term,
-    type,
+    types,
     program,
     studentsCount,
     createdAt,

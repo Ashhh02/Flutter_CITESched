@@ -3,6 +3,10 @@ fields:
   totalSchedules: int
   totalFaculty: int
   totalStudents: int
+  totalSubjects: int
+  totalRooms: int
   totalConflicts: int
   facultyLoad: List<FacultyLoadData>
   recentConflicts: List<ScheduleConflict>
+  sectionDistribution: List<DistributionData>
+  yearLevelDistribution: List<DistributionData>

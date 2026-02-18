@@ -13,19 +13,22 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import 'employment_status.dart' as _i2;
 import 'faculty_shift_preference.dart' as _i3;
+import 'program.dart' as _i4;
 
 abstract class Faculty implements _i1.SerializableModel {
   Faculty._({
     this.id,
     required this.name,
     required this.email,
-    required this.department,
     required this.maxLoad,
     required this.employmentStatus,
     this.shiftPreference,
     this.preferredHours,
     required this.facultyId,
     required this.userInfoId,
+    required this.program,
+    required this.isActive,
+    this.currentLoad,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -34,13 +37,15 @@ abstract class Faculty implements _i1.SerializableModel {
     int? id,
     required String name,
     required String email,
-    required String department,
     required int maxLoad,
     required _i2.EmploymentStatus employmentStatus,
     _i3.FacultyShiftPreference? shiftPreference,
     String? preferredHours,
     required String facultyId,
     required int userInfoId,
+    required _i4.Program program,
+    required bool isActive,
+    double? currentLoad,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _FacultyImpl;
@@ -50,7 +55,6 @@ abstract class Faculty implements _i1.SerializableModel {
       id: jsonSerialization['id'] as int?,
       name: jsonSerialization['name'] as String,
       email: jsonSerialization['email'] as String,
-      department: jsonSerialization['department'] as String,
       maxLoad: jsonSerialization['maxLoad'] as int,
       employmentStatus: _i2.EmploymentStatus.fromJson(
         (jsonSerialization['employmentStatus'] as String),
@@ -63,6 +67,9 @@ abstract class Faculty implements _i1.SerializableModel {
       preferredHours: jsonSerialization['preferredHours'] as String?,
       facultyId: jsonSerialization['facultyId'] as String,
       userInfoId: jsonSerialization['userInfoId'] as int,
+      program: _i4.Program.fromJson((jsonSerialization['program'] as String)),
+      isActive: jsonSerialization['isActive'] as bool,
+      currentLoad: (jsonSerialization['currentLoad'] as num?)?.toDouble(),
       createdAt: _i1.DateTimeJsonExtension.fromJson(
         jsonSerialization['createdAt'],
       ),
@@ -81,8 +88,6 @@ abstract class Faculty implements _i1.SerializableModel {
 
   String email;
 
-  String department;
-
   int maxLoad;
 
   _i2.EmploymentStatus employmentStatus;
@@ -95,6 +100,12 @@ abstract class Faculty implements _i1.SerializableModel {
 
   int userInfoId;
 
+  _i4.Program program;
+
+  bool isActive;
+
+  double? currentLoad;
+
   DateTime createdAt;
 
   DateTime updatedAt;
@@ -106,13 +117,15 @@ abstract class Faculty implements _i1.SerializableModel {
     int? id,
     String? name,
     String? email,
-    String? department,
     int? maxLoad,
     _i2.EmploymentStatus? employmentStatus,
     _i3.FacultyShiftPreference? shiftPreference,
     String? preferredHours,
     String? facultyId,
     int? userInfoId,
+    _i4.Program? program,
+    bool? isActive,
+    double? currentLoad,
     DateTime? createdAt,
     DateTime? updatedAt,
   });
@@ -123,13 +136,15 @@ abstract class Faculty implements _i1.SerializableModel {
       if (id != null) 'id': id,
       'name': name,
       'email': email,
-      'department': department,
       'maxLoad': maxLoad,
       'employmentStatus': employmentStatus.toJson(),
       if (shiftPreference != null) 'shiftPreference': shiftPreference?.toJson(),
       if (preferredHours != null) 'preferredHours': preferredHours,
       'facultyId': facultyId,
       'userInfoId': userInfoId,
+      'program': program.toJson(),
+      'isActive': isActive,
+      if (currentLoad != null) 'currentLoad': currentLoad,
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
     };
@@ -148,26 +163,30 @@ class _FacultyImpl extends Faculty {
     int? id,
     required String name,
     required String email,
-    required String department,
     required int maxLoad,
     required _i2.EmploymentStatus employmentStatus,
     _i3.FacultyShiftPreference? shiftPreference,
     String? preferredHours,
     required String facultyId,
     required int userInfoId,
+    required _i4.Program program,
+    required bool isActive,
+    double? currentLoad,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) : super._(
          id: id,
          name: name,
          email: email,
-         department: department,
          maxLoad: maxLoad,
          employmentStatus: employmentStatus,
          shiftPreference: shiftPreference,
          preferredHours: preferredHours,
          facultyId: facultyId,
          userInfoId: userInfoId,
+         program: program,
+         isActive: isActive,
+         currentLoad: currentLoad,
          createdAt: createdAt,
          updatedAt: updatedAt,
        );
@@ -180,13 +199,15 @@ class _FacultyImpl extends Faculty {
     Object? id = _Undefined,
     String? name,
     String? email,
-    String? department,
     int? maxLoad,
     _i2.EmploymentStatus? employmentStatus,
     Object? shiftPreference = _Undefined,
     Object? preferredHours = _Undefined,
     String? facultyId,
     int? userInfoId,
+    _i4.Program? program,
+    bool? isActive,
+    Object? currentLoad = _Undefined,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -194,7 +215,6 @@ class _FacultyImpl extends Faculty {
       id: id is int? ? id : this.id,
       name: name ?? this.name,
       email: email ?? this.email,
-      department: department ?? this.department,
       maxLoad: maxLoad ?? this.maxLoad,
       employmentStatus: employmentStatus ?? this.employmentStatus,
       shiftPreference: shiftPreference is _i3.FacultyShiftPreference?
@@ -205,6 +225,9 @@ class _FacultyImpl extends Faculty {
           : this.preferredHours,
       facultyId: facultyId ?? this.facultyId,
       userInfoId: userInfoId ?? this.userInfoId,
+      program: program ?? this.program,
+      isActive: isActive ?? this.isActive,
+      currentLoad: currentLoad is double? ? currentLoad : this.currentLoad,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

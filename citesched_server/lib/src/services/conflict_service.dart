@@ -14,10 +14,7 @@ class ConflictService {
     required int? timeslotId,
     int? excludeScheduleId, // For updates, exclude the current schedule
   }) async {
-    if (roomId == null ||
-        roomId == -1 ||
-        timeslotId == null ||
-        timeslotId == -1) {
+    if (roomId == null || timeslotId == null) {
       return null;
     }
 
@@ -44,7 +41,7 @@ class ConflictService {
     required int? timeslotId,
     int? excludeScheduleId,
   }) async {
-    if (timeslotId == null || timeslotId == -1) return null;
+    if (timeslotId == null) return null;
 
     var query = Schedule.db.find(
       session,
@@ -62,11 +59,36 @@ class ConflictService {
     return conflicts.isNotEmpty ? conflicts.first : null;
   }
 
+  /// Check if a section is available at a given timeslot.
+  /// Returns the conflicting schedule if section is already in class, null otherwise.
+  Future<Schedule?> checkSectionAvailability(
+    Session session, {
+    required String section,
+    required int? timeslotId,
+    int? excludeScheduleId,
+  }) async {
+    if (timeslotId == null || section.isEmpty) return null;
+
+    var query = Schedule.db.find(
+      session,
+      where: (t) => t.section.equals(section) & t.timeslotId.equals(timeslotId),
+    );
+
+    var conflicts = await query;
+
+    if (excludeScheduleId != null) {
+      conflicts = conflicts.where((s) => s.id != excludeScheduleId).toList();
+    }
+
+    return conflicts.isNotEmpty ? conflicts.first : null;
+  }
+
   /// Check if a faculty member has exceeded their maximum teaching load.
   /// Returns true if faculty can take more classes, false otherwise.
   Future<bool> checkFacultyMaxLoad(
     Session session, {
     required int facultyId,
+    double newUnits = 0,
     int? excludeScheduleId,
   }) async {
     // Get faculty details
@@ -74,11 +96,14 @@ class ConflictService {
     if (faculty == null) {
       // If faculty not found, we can't enforce load, so assume safe or throw?
       // Let's return true to not block, but log warning.
-      session.log('Warning: Faculty not found for ID $facultyId during max load check.', level: LogLevel.warning);
+      session.log(
+        'Warning: Faculty not found for ID $facultyId during max load check.',
+        level: LogLevel.warning,
+      );
       return true;
     }
 
-    // Count current schedules for this faculty
+    // Sum units of current schedules for this faculty
     var schedules = await Schedule.db.find(
       session,
       where: (t) => t.facultyId.equals(facultyId),
@@ -89,7 +114,12 @@ class ConflictService {
       schedules = schedules.where((s) => s.id != excludeScheduleId).toList();
     }
 
-    return schedules.length < faculty.maxLoad;
+    double currentLoad = 0;
+    for (var s in schedules) {
+      currentLoad += s.units ?? 0;
+    }
+
+    return (currentLoad + newUnits) <= faculty.maxLoad;
   }
 
   /// Validate a schedule entry against all conflict rules.
@@ -103,11 +133,14 @@ class ConflictService {
     var conflicts = <ScheduleConflict>[];
 
     // 1. Check Room Availability
-    if (schedule.roomId != -1 && schedule.timeslotId != -1) {
+    var roomId = schedule.roomId;
+    var timeslotId = schedule.timeslotId;
+
+    if (roomId != null && timeslotId != null) {
       var roomConflict = await checkRoomAvailability(
         session,
-        roomId: schedule.roomId,
-        timeslotId: schedule.timeslotId,
+        roomId: roomId,
+        timeslotId: timeslotId,
         excludeScheduleId: excludeScheduleId,
       );
 
@@ -117,6 +150,9 @@ class ConflictService {
             type: 'room_conflict',
             message: 'Room is already booked for this timeslot',
             conflictingScheduleId: roomConflict.id,
+            facultyId: schedule.facultyId,
+            roomId: roomId,
+            subjectId: schedule.subjectId,
             details:
                 'Room ID ${schedule.roomId} is already assigned to schedule ID ${roomConflict.id}',
           ),
@@ -125,23 +161,23 @@ class ConflictService {
 
       // Fetch Room and Subject for property checks
       var subject = await Subject.db.findById(session, schedule.subjectId);
-      var room = await Room.db.findById(session, schedule.roomId);
+      var room = await Room.db.findById(session, roomId);
 
       if (subject != null && room != null) {
         // 2. Program Match Check
-        // Only check if subject has a specific program and room has a specific program
-        // 1. Program Match Check
-          // Only check if room has a specific program assigned (not 'any' if that were an option, but here we compare names)
-          if (subject.program != room.program) {
-            conflicts.add(
-              ScheduleConflict(
-                type: 'program_mismatch',
-                message: 'Subject program does not match Room program',
-                details:
-                    'Subject program is ${subject.program.name}, but Room program is ${room.program.name}',
-              ),
-            );
-          }
+        if (subject.program != room.program) {
+          conflicts.add(
+            ScheduleConflict(
+              type: 'program_mismatch',
+              message: 'Subject program does not match Room program',
+              facultyId: schedule.facultyId,
+              roomId: roomId,
+              subjectId: schedule.subjectId,
+              details:
+                  'Subject program is ${subject.program.name}, but Room program is ${room.program.name}',
+            ),
+          );
+        }
 
         // 3. Capacity Check
         if (room.capacity < subject.studentsCount) {
@@ -149,6 +185,9 @@ class ConflictService {
             ScheduleConflict(
               type: 'capacity_exceeded',
               message: 'Room capacity is smaller than subject student count',
+              facultyId: schedule.facultyId,
+              roomId: roomId,
+              subjectId: schedule.subjectId,
               details:
                   'Room capacity is ${room.capacity}, but Subject has ${subject.studentsCount} students',
             ),
@@ -161,6 +200,9 @@ class ConflictService {
             ScheduleConflict(
               type: 'room_inactive',
               message: 'The selected room is currently inactive',
+              facultyId: schedule.facultyId,
+              roomId: roomId,
+              subjectId: schedule.subjectId,
               details: 'Room ${room.name} must be active for assignment',
             ),
           );
@@ -169,7 +211,7 @@ class ConflictService {
     }
 
     // 5. Check Faculty Availability
-    if (schedule.timeslotId != -1) {
+    if (schedule.timeslotId != null) {
       var facultyConflict = await checkFacultyAvailability(
         session,
         facultyId: schedule.facultyId,
@@ -184,6 +226,9 @@ class ConflictService {
             message:
                 'Faculty is already assigned to another class at this timeslot',
             conflictingScheduleId: facultyConflict.id,
+            facultyId: schedule.facultyId,
+            roomId: schedule.roomId,
+            subjectId: schedule.subjectId,
             details:
                 'Faculty ID ${schedule.facultyId} is already assigned to schedule ID ${facultyConflict.id}',
           ),
@@ -191,10 +236,36 @@ class ConflictService {
       }
     }
 
-    // 6. Check Faculty Max Load
+    // 6. Check Section Availability
+    if (schedule.timeslotId != null && schedule.section.isNotEmpty) {
+      var sectionConflict = await checkSectionAvailability(
+        session,
+        section: schedule.section,
+        timeslotId: schedule.timeslotId,
+        excludeScheduleId: excludeScheduleId,
+      );
+
+      if (sectionConflict != null) {
+        conflicts.add(
+          ScheduleConflict(
+            type: 'section_conflict',
+            message: 'Section is already in another class at this timeslot',
+            conflictingScheduleId: sectionConflict.id,
+            facultyId: schedule.facultyId,
+            roomId: schedule.roomId,
+            subjectId: schedule.subjectId,
+            details:
+                'Section ${schedule.section} is already assigned to schedule ID ${sectionConflict.id}',
+          ),
+        );
+      }
+    }
+
+    // 7. Check Faculty Max Load
     var canTakeMore = await checkFacultyMaxLoad(
       session,
       facultyId: schedule.facultyId,
+      newUnits: schedule.units ?? 0,
       excludeScheduleId: excludeScheduleId,
     );
 
@@ -204,8 +275,10 @@ class ConflictService {
         ScheduleConflict(
           type: 'max_load_exceeded',
           message: 'Faculty has reached maximum teaching load',
+          facultyId: schedule.facultyId,
+          subjectId: schedule.subjectId,
           details:
-              'Faculty ID ${schedule.facultyId} has reached max load of ${faculty?.maxLoad ?? 0} classes',
+              'Faculty ${faculty?.name ?? 'ID ${schedule.facultyId}'} has reached max load of ${faculty?.maxLoad ?? 0} units',
         ),
       );
     }
@@ -220,7 +293,10 @@ class ConflictService {
 
     var schedulesByTime = <int, List<Schedule>>{};
     for (var s in allSchedules) {
-      schedulesByTime.putIfAbsent(s.timeslotId, () => []).add(s);
+      var tid = s.timeslotId;
+      if (tid != null) {
+        schedulesByTime.putIfAbsent(tid, () => []).add(s);
+      }
     }
 
     for (var timeslotId in schedulesByTime.keys) {
@@ -229,7 +305,10 @@ class ConflictService {
       // Check Room Conflicts
       var schedulesByRoom = <int, List<Schedule>>{};
       for (var s in concurrent) {
-        schedulesByRoom.putIfAbsent(s.roomId, () => []).add(s);
+        var rid = s.roomId;
+        if (rid != null) {
+          schedulesByRoom.putIfAbsent(rid, () => []).add(s);
+        }
       }
 
       schedulesByRoom.forEach((roomId, roomSchedules) {
@@ -237,8 +316,11 @@ class ConflictService {
           conflicts.add(
             ScheduleConflict(
               type: 'Room Conflict',
-              message: 'Multiple classes in Room $roomId at Timeslot $timeslotId',
-              details: 'Schedules: ${roomSchedules.map((s) => s.id).join(', ')}',
+              message:
+                  'Multiple classes in Room $roomId at Timeslot $timeslotId',
+              roomId: roomId,
+              details:
+                  'Schedules: ${roomSchedules.map((s) => s.id).join(', ')}',
             ),
           );
         }
@@ -254,7 +336,9 @@ class ConflictService {
           conflicts.add(
             ScheduleConflict(
               type: 'Faculty Conflict',
-              message: 'Faculty $facultyId has multiple classes at Timeslot $timeslotId',
+              message:
+                  'Faculty $facultyId has multiple classes at Timeslot $timeslotId',
+              facultyId: facultyId,
               details: 'Schedules: ${facSchedules.map((s) => s.id).join(', ')}',
             ),
           );

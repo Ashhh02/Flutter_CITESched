@@ -1,0 +1,6 @@
+class: NLPResponse
+fields:
+  text: String
+  intent: NLPIntent
+  schedules: List<Schedule>?
+  dataJson: String?

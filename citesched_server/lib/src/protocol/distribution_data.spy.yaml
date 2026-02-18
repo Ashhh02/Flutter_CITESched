@@ -1,0 +1,4 @@
+class: DistributionData
+fields:
+  label: String
+  count: int

@@ -1,5 +1,6 @@
 import 'package:serverpod/serverpod.dart';
 import '../generated/protocol.dart';
+import 'conflict_service.dart';
 
 /// Service class responsible for generating administrative reports.
 class ReportService {
@@ -7,42 +8,38 @@ class ReportService {
 
   /// Generates a report on faculty teaching loads.
   Future<List<FacultyLoadReport>> generateFacultyLoadReport(
-      Session session) async {
+    Session session,
+  ) async {
     var facultyList = await Faculty.db.find(session);
+    var allSchedules = await Schedule.db.find(session);
+    var allSubjects = await Subject.db.find(session);
+
+    // Map subject ID to units
+    var subjectMap = {for (var s in allSubjects) s.id!: s};
+
     var reports = <FacultyLoadReport>[];
 
     for (var faculty in facultyList) {
-      // Get schedules for this faculty
-      var schedules = await Schedule.db.find(
-        session,
-        where: (t) => t.facultyId.equals(faculty.id!),
+      var facultySchedules = allSchedules.where(
+        (s) => s.facultyId == faculty.id,
       );
 
-      // Calculate total units
-      // Note: Schedule doesn't currently store units directly in all cases,
-      // it relates to Subject. We need to fetch subjects to get precise units.
-      // For MVP optimization, we can fetch all subjects once or use a join if available.
-      // Here we'll fetch subjects individually or rely on a helper if performance allows.
-      // Optimization: Fetch all subjects involved.
       double totalUnits = 0;
-      int totalSubjects = schedules.length;
+      int totalSubjects = facultySchedules.length;
 
-      // To avoid N+1, let's just count subjects for now as a proxy, 
-      // or fetch subject if needed. 
-      // Given MVP, let's fetch subject details for accurate unit count.
-      for (var schedule in schedules) {
-         var subject = await Subject.db.findById(session, schedule.subjectId);
-         if (subject != null) {
-           totalUnits += subject.units; 
-         }
+      for (var schedule in facultySchedules) {
+        var subject = subjectMap[schedule.subjectId];
+        if (subject != null) {
+          totalUnits += subject.units;
+        }
       }
 
       String status = 'Balanced';
       if (totalSubjects == 0) {
         status = 'No Load';
-      } else if (totalSubjects < faculty.maxLoad * 0.5) { // Arbitrary threshold for example
+      } else if (totalUnits < (faculty.maxLoad * 0.7)) {
         status = 'Underloaded';
-      } else if (totalSubjects >= faculty.maxLoad) {
+      } else if (totalUnits >= faculty.maxLoad) {
         status = 'Max Load';
       }
 
@@ -53,7 +50,7 @@ class ReportService {
           totalUnits: totalUnits,
           totalSubjects: totalSubjects,
           loadStatus: status,
-          department: faculty.department,
+          program: faculty.program.name,
         ),
       );
     }
@@ -64,24 +61,19 @@ class ReportService {
 
   /// Generates a report on room usage.
   Future<List<RoomUtilizationReport>> generateRoomUtilizationReport(
-      Session session) async {
+    Session session,
+  ) async {
     var rooms = await Room.db.find(session);
+    var allSchedules = await Schedule.db.find(session);
+
+    var totalTimeslotsCount = await Timeslot.db.count(session);
+    if (totalTimeslotsCount == 0) totalTimeslotsCount = 1;
+
     var reports = <RoomUtilizationReport>[];
 
-    // Total possible slots per week (e.g., 5 days * 10 slots = 50)
-    // This should ideally be dynamic based on TimeSlot definitions.
-    // For MVP, let's assume a standard denominator or just count bookings.
-    // Let's count total timeslots available in DB as the denominator?
-    var totalTimeslotsCount = await Timeslot.db.count(session);
-    if (totalTimeslotsCount == 0) totalTimeslotsCount = 1; // Avoid division by zero
-
     for (var room in rooms) {
-      var schedules = await Schedule.db.find(
-        session,
-        where: (t) => t.roomId.equals(room.id!),
-      );
-
-      var totalBookings = schedules.length;
+      var roomSchedules = allSchedules.where((s) => s.roomId == room.id);
+      var totalBookings = roomSchedules.length;
       var utilization = (totalBookings / totalTimeslotsCount) * 100;
 
       reports.add(
@@ -100,65 +92,72 @@ class ReportService {
 
   // ─── Conflict Summary Report ──────────────────────────────────────────
 
-  /// Generates a summary of detected conflicts (if tracked in DB or just logical check).
-  /// Note: Current system generates schedules cleanly or fails. 
-  /// If we want to report on *potential* conflicts or *unresolved* ones, 
-  /// we might need a table for 'UnresolvedConflicts' or scan existing constraints.
-  /// For this MVP, let's assume we report on *recent generation failures* if we logged them,
-  /// Or mostly return a placeholder structure if we don't persist conflicts.
-  /// 
-  /// Alternative: this report could scan the *current* schedule for any anomalies 
-  /// (e.g. manual overrides that caused conflicts).
+  /// Generates a summary of detected conflicts.
   Future<ConflictSummaryReport> generateConflictSummary(Session session) async {
-    // Check for any actual database-level inconsistencies
-    // 1. Room double booking
-    // 2. Faculty double booking
-    // This is expensive to scan full DB, so maybe just return counts of schedules
-    // and a '0' for conflicts if we enforce validity on write.
-    
-    // For now, let's return a basic summary.
+    List<ScheduleConflict> conflicts = await ConflictService().getAllConflicts(
+      session,
+    );
+
+    var counts = <String, int>{};
+    for (var c in conflicts) {
+      counts[c.type] = (counts[c.type] ?? 0) + 1;
+    }
+
+    String mostFrequent = 'None';
+    int maxCount = 0;
+    counts.forEach((type, count) {
+      if (count > maxCount) {
+        maxCount = count;
+        mostFrequent = type;
+      }
+    });
+
     return ConflictSummaryReport(
-      totalConflicts: 0, // Assuming system enforces clean schedule
-      conflictsByType: {'Room': 0, 'Faculty': 0},
+      totalConflicts: conflicts.length,
+      conflictsByType: counts,
       resolvedConflicts: 0,
-      mostFrequentConflictType: 'None',
+      mostFrequentConflictType: mostFrequent,
     );
   }
 
   // ─── Schedule Overview Report ─────────────────────────────────────────
 
   /// Generates high-level schedule statistics.
-  Future<ScheduleOverviewReport> generateScheduleOverview(Session session) async {
-    var totalSchedules = await Schedule.db.count(session);
-    
+  Future<ScheduleOverviewReport> generateScheduleOverview(
+    Session session,
+  ) async {
+    var allSchedules = await Schedule.db.find(session);
+    var allSubjects = await Subject.db.find(session);
+
+    var subjectMap = {for (var s in allSubjects) s.id!: s};
+
     var itSchedules = 0;
     var emcSchedules = 0;
-    
-    // Fetch all schedules
-    var allSchedules = await Schedule.db.find(session);
-    
-    // Manual join to check programs
+    var termCounts = <String, int>{};
+
     for (var s in allSchedules) {
-      if (s.subjectId != 0) { // Safety check
-         var subject = await Subject.db.findById(session, s.subjectId);
-         if (subject != null) {
-           if (subject.program.name.toLowerCase() == 'it') {
-             itSchedules++;
-           } else if (subject.program.name.toLowerCase() == 'emc') {
-             emcSchedules++;
-           }
-         }
+      var subject = subjectMap[s.subjectId];
+      if (subject != null) {
+        if (subject.program == Program.it) {
+          itSchedules++;
+        } else if (subject.program == Program.emc) {
+          emcSchedules++;
+        }
+
+        String termKey = subject.term.toString();
+        termCounts[termKey] = (termCounts[termKey] ?? 0) + 1;
       }
     }
 
     return ScheduleOverviewReport(
-      totalSchedules: totalSchedules,
+      totalSchedules: allSchedules.length,
       schedulesByProgram: {
         'IT': itSchedules,
         'EMC': emcSchedules,
       },
-      activeTerm: 1, // Placeholder
-      academicYear: '2025-2026', // Placeholder
+      schedulesByTerm: termCounts,
+      activeTerm: 1,
+      academicYear: '2025-2026',
     );
   }
 }

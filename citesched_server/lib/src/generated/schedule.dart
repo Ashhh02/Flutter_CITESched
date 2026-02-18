@@ -8,22 +8,33 @@
 // ignore_for_file: type_literal_in_constant_pattern
 // ignore_for_file: use_super_parameters
 // ignore_for_file: invalid_use_of_internal_member
+// ignore_for_file: unnecessary_null_comparison
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod/serverpod.dart' as _i1;
-import 'subject_type.dart' as _i2;
+import 'subject.dart' as _i2;
+import 'faculty.dart' as _i3;
+import 'room.dart' as _i4;
+import 'timeslot.dart' as _i5;
+import 'subject_type.dart' as _i6;
+import 'package:citesched_server/src/generated/protocol.dart' as _i7;
 
 abstract class Schedule
     implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
   Schedule._({
     this.id,
     required this.subjectId,
+    this.subject,
     required this.facultyId,
-    required this.roomId,
-    required this.timeslotId,
+    this.faculty,
+    this.roomId,
+    this.room,
+    this.timeslotId,
+    this.timeslot,
     required this.section,
-    this.loadType,
+    this.loadTypes,
     this.units,
+    this.hours,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -31,12 +42,17 @@ abstract class Schedule
   factory Schedule({
     int? id,
     required int subjectId,
+    _i2.Subject? subject,
     required int facultyId,
-    required int roomId,
-    required int timeslotId,
+    _i3.Faculty? faculty,
+    int? roomId,
+    _i4.Room? room,
+    int? timeslotId,
+    _i5.Timeslot? timeslot,
     required String section,
-    _i2.SubjectType? loadType,
+    List<_i6.SubjectType>? loadTypes,
     double? units,
+    double? hours,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _ScheduleImpl;
@@ -45,14 +61,35 @@ abstract class Schedule
     return Schedule(
       id: jsonSerialization['id'] as int?,
       subjectId: jsonSerialization['subjectId'] as int,
-      facultyId: jsonSerialization['facultyId'] as int,
-      roomId: jsonSerialization['roomId'] as int,
-      timeslotId: jsonSerialization['timeslotId'] as int,
-      section: jsonSerialization['section'] as String,
-      loadType: jsonSerialization['loadType'] == null
+      subject: jsonSerialization['subject'] == null
           ? null
-          : _i2.SubjectType.fromJson((jsonSerialization['loadType'] as String)),
+          : _i7.Protocol().deserialize<_i2.Subject>(
+              jsonSerialization['subject'],
+            ),
+      facultyId: jsonSerialization['facultyId'] as int,
+      faculty: jsonSerialization['faculty'] == null
+          ? null
+          : _i7.Protocol().deserialize<_i3.Faculty>(
+              jsonSerialization['faculty'],
+            ),
+      roomId: jsonSerialization['roomId'] as int?,
+      room: jsonSerialization['room'] == null
+          ? null
+          : _i7.Protocol().deserialize<_i4.Room>(jsonSerialization['room']),
+      timeslotId: jsonSerialization['timeslotId'] as int?,
+      timeslot: jsonSerialization['timeslot'] == null
+          ? null
+          : _i7.Protocol().deserialize<_i5.Timeslot>(
+              jsonSerialization['timeslot'],
+            ),
+      section: jsonSerialization['section'] as String,
+      loadTypes: jsonSerialization['loadTypes'] == null
+          ? null
+          : _i7.Protocol().deserialize<List<_i6.SubjectType>>(
+              jsonSerialization['loadTypes'],
+            ),
       units: (jsonSerialization['units'] as num?)?.toDouble(),
+      hours: (jsonSerialization['hours'] as num?)?.toDouble(),
       createdAt: _i1.DateTimeJsonExtension.fromJson(
         jsonSerialization['createdAt'],
       ),
@@ -71,17 +108,27 @@ abstract class Schedule
 
   int subjectId;
 
+  _i2.Subject? subject;
+
   int facultyId;
 
-  int roomId;
+  _i3.Faculty? faculty;
 
-  int timeslotId;
+  int? roomId;
+
+  _i4.Room? room;
+
+  int? timeslotId;
+
+  _i5.Timeslot? timeslot;
 
   String section;
 
-  _i2.SubjectType? loadType;
+  List<_i6.SubjectType>? loadTypes;
 
   double? units;
+
+  double? hours;
 
   DateTime createdAt;
 
@@ -96,12 +143,17 @@ abstract class Schedule
   Schedule copyWith({
     int? id,
     int? subjectId,
+    _i2.Subject? subject,
     int? facultyId,
+    _i3.Faculty? faculty,
     int? roomId,
+    _i4.Room? room,
     int? timeslotId,
+    _i5.Timeslot? timeslot,
     String? section,
-    _i2.SubjectType? loadType,
+    List<_i6.SubjectType>? loadTypes,
     double? units,
+    double? hours,
     DateTime? createdAt,
     DateTime? updatedAt,
   });
@@ -111,12 +163,18 @@ abstract class Schedule
       '__className__': 'Schedule',
       if (id != null) 'id': id,
       'subjectId': subjectId,
+      if (subject != null) 'subject': subject?.toJson(),
       'facultyId': facultyId,
-      'roomId': roomId,
-      'timeslotId': timeslotId,
+      if (faculty != null) 'faculty': faculty?.toJson(),
+      if (roomId != null) 'roomId': roomId,
+      if (room != null) 'room': room?.toJson(),
+      if (timeslotId != null) 'timeslotId': timeslotId,
+      if (timeslot != null) 'timeslot': timeslot?.toJson(),
       'section': section,
-      if (loadType != null) 'loadType': loadType?.toJson(),
+      if (loadTypes != null)
+        'loadTypes': loadTypes?.toJson(valueToJson: (v) => v.toJson()),
       if (units != null) 'units': units,
+      if (hours != null) 'hours': hours,
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
     };
@@ -128,19 +186,35 @@ abstract class Schedule
       '__className__': 'Schedule',
       if (id != null) 'id': id,
       'subjectId': subjectId,
+      if (subject != null) 'subject': subject?.toJsonForProtocol(),
       'facultyId': facultyId,
-      'roomId': roomId,
-      'timeslotId': timeslotId,
+      if (faculty != null) 'faculty': faculty?.toJsonForProtocol(),
+      if (roomId != null) 'roomId': roomId,
+      if (room != null) 'room': room?.toJsonForProtocol(),
+      if (timeslotId != null) 'timeslotId': timeslotId,
+      if (timeslot != null) 'timeslot': timeslot?.toJsonForProtocol(),
       'section': section,
-      if (loadType != null) 'loadType': loadType?.toJson(),
+      if (loadTypes != null)
+        'loadTypes': loadTypes?.toJson(valueToJson: (v) => v.toJson()),
       if (units != null) 'units': units,
+      if (hours != null) 'hours': hours,
       'createdAt': createdAt.toJson(),
       'updatedAt': updatedAt.toJson(),
     };
   }
 
-  static ScheduleInclude include() {
-    return ScheduleInclude._();
+  static ScheduleInclude include({
+    _i2.SubjectInclude? subject,
+    _i3.FacultyInclude? faculty,
+    _i4.RoomInclude? room,
+    _i5.TimeslotInclude? timeslot,
+  }) {
+    return ScheduleInclude._(
+      subject: subject,
+      faculty: faculty,
+      room: room,
+      timeslot: timeslot,
+    );
   }
 
   static ScheduleIncludeList includeList({
@@ -175,23 +249,33 @@ class _ScheduleImpl extends Schedule {
   _ScheduleImpl({
     int? id,
     required int subjectId,
+    _i2.Subject? subject,
     required int facultyId,
-    required int roomId,
-    required int timeslotId,
+    _i3.Faculty? faculty,
+    int? roomId,
+    _i4.Room? room,
+    int? timeslotId,
+    _i5.Timeslot? timeslot,
     required String section,
-    _i2.SubjectType? loadType,
+    List<_i6.SubjectType>? loadTypes,
     double? units,
+    double? hours,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) : super._(
          id: id,
          subjectId: subjectId,
+         subject: subject,
          facultyId: facultyId,
+         faculty: faculty,
          roomId: roomId,
+         room: room,
          timeslotId: timeslotId,
+         timeslot: timeslot,
          section: section,
-         loadType: loadType,
+         loadTypes: loadTypes,
          units: units,
+         hours: hours,
          createdAt: createdAt,
          updatedAt: updatedAt,
        );
@@ -203,24 +287,38 @@ class _ScheduleImpl extends Schedule {
   Schedule copyWith({
     Object? id = _Undefined,
     int? subjectId,
+    Object? subject = _Undefined,
     int? facultyId,
-    int? roomId,
-    int? timeslotId,
+    Object? faculty = _Undefined,
+    Object? roomId = _Undefined,
+    Object? room = _Undefined,
+    Object? timeslotId = _Undefined,
+    Object? timeslot = _Undefined,
     String? section,
-    Object? loadType = _Undefined,
+    Object? loadTypes = _Undefined,
     Object? units = _Undefined,
+    Object? hours = _Undefined,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
     return Schedule(
       id: id is int? ? id : this.id,
       subjectId: subjectId ?? this.subjectId,
+      subject: subject is _i2.Subject? ? subject : this.subject?.copyWith(),
       facultyId: facultyId ?? this.facultyId,
-      roomId: roomId ?? this.roomId,
-      timeslotId: timeslotId ?? this.timeslotId,
+      faculty: faculty is _i3.Faculty? ? faculty : this.faculty?.copyWith(),
+      roomId: roomId is int? ? roomId : this.roomId,
+      room: room is _i4.Room? ? room : this.room?.copyWith(),
+      timeslotId: timeslotId is int? ? timeslotId : this.timeslotId,
+      timeslot: timeslot is _i5.Timeslot?
+          ? timeslot
+          : this.timeslot?.copyWith(),
       section: section ?? this.section,
-      loadType: loadType is _i2.SubjectType? ? loadType : this.loadType,
+      loadTypes: loadTypes is List<_i6.SubjectType>?
+          ? loadTypes
+          : this.loadTypes?.map((e0) => e0).toList(),
       units: units is double? ? units : this.units,
+      hours: hours is double? ? hours : this.hours,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -240,12 +338,12 @@ class ScheduleUpdateTable extends _i1.UpdateTable<ScheduleTable> {
     value,
   );
 
-  _i1.ColumnValue<int, int> roomId(int value) => _i1.ColumnValue(
+  _i1.ColumnValue<int, int> roomId(int? value) => _i1.ColumnValue(
     table.roomId,
     value,
   );
 
-  _i1.ColumnValue<int, int> timeslotId(int value) => _i1.ColumnValue(
+  _i1.ColumnValue<int, int> timeslotId(int? value) => _i1.ColumnValue(
     table.timeslotId,
     value,
   );
@@ -255,15 +353,20 @@ class ScheduleUpdateTable extends _i1.UpdateTable<ScheduleTable> {
     value,
   );
 
-  _i1.ColumnValue<_i2.SubjectType, _i2.SubjectType> loadType(
-    _i2.SubjectType? value,
+  _i1.ColumnValue<List<_i6.SubjectType>, List<_i6.SubjectType>> loadTypes(
+    List<_i6.SubjectType>? value,
   ) => _i1.ColumnValue(
-    table.loadType,
+    table.loadTypes,
     value,
   );
 
   _i1.ColumnValue<double, double> units(double? value) => _i1.ColumnValue(
     table.units,
+    value,
+  );
+
+  _i1.ColumnValue<double, double> hours(double? value) => _i1.ColumnValue(
+    table.hours,
     value,
   );
 
@@ -303,13 +406,16 @@ class ScheduleTable extends _i1.Table<int?> {
       'section',
       this,
     );
-    loadType = _i1.ColumnEnum(
-      'loadType',
+    loadTypes = _i1.ColumnSerializable<List<_i6.SubjectType>>(
+      'loadTypes',
       this,
-      _i1.EnumSerialization.byName,
     );
     units = _i1.ColumnDouble(
       'units',
+      this,
+    );
+    hours = _i1.ColumnDouble(
+      'hours',
       this,
     );
     createdAt = _i1.ColumnDateTime(
@@ -326,21 +432,83 @@ class ScheduleTable extends _i1.Table<int?> {
 
   late final _i1.ColumnInt subjectId;
 
+  _i2.SubjectTable? _subject;
+
   late final _i1.ColumnInt facultyId;
+
+  _i3.FacultyTable? _faculty;
 
   late final _i1.ColumnInt roomId;
 
+  _i4.RoomTable? _room;
+
   late final _i1.ColumnInt timeslotId;
+
+  _i5.TimeslotTable? _timeslot;
 
   late final _i1.ColumnString section;
 
-  late final _i1.ColumnEnum<_i2.SubjectType> loadType;
+  late final _i1.ColumnSerializable<List<_i6.SubjectType>> loadTypes;
 
   late final _i1.ColumnDouble units;
+
+  late final _i1.ColumnDouble hours;
 
   late final _i1.ColumnDateTime createdAt;
 
   late final _i1.ColumnDateTime updatedAt;
+
+  _i2.SubjectTable get subject {
+    if (_subject != null) return _subject!;
+    _subject = _i1.createRelationTable(
+      relationFieldName: 'subject',
+      field: Schedule.t.subjectId,
+      foreignField: _i2.Subject.t.id,
+      tableRelation: tableRelation,
+      createTable: (foreignTableRelation) =>
+          _i2.SubjectTable(tableRelation: foreignTableRelation),
+    );
+    return _subject!;
+  }
+
+  _i3.FacultyTable get faculty {
+    if (_faculty != null) return _faculty!;
+    _faculty = _i1.createRelationTable(
+      relationFieldName: 'faculty',
+      field: Schedule.t.facultyId,
+      foreignField: _i3.Faculty.t.id,
+      tableRelation: tableRelation,
+      createTable: (foreignTableRelation) =>
+          _i3.FacultyTable(tableRelation: foreignTableRelation),
+    );
+    return _faculty!;
+  }
+
+  _i4.RoomTable get room {
+    if (_room != null) return _room!;
+    _room = _i1.createRelationTable(
+      relationFieldName: 'room',
+      field: Schedule.t.roomId,
+      foreignField: _i4.Room.t.id,
+      tableRelation: tableRelation,
+      createTable: (foreignTableRelation) =>
+          _i4.RoomTable(tableRelation: foreignTableRelation),
+    );
+    return _room!;
+  }
+
+  _i5.TimeslotTable get timeslot {
+    if (_timeslot != null) return _timeslot!;
+    _timeslot = _i1.createRelationTable(
+      relationFieldName: 'timeslot',
+      field: Schedule.t.timeslotId,
+      foreignField: _i5.Timeslot.t.id,
+      tableRelation: tableRelation,
+      createTable: (foreignTableRelation) =>
+          _i5.TimeslotTable(tableRelation: foreignTableRelation),
+    );
+    return _timeslot!;
+  }
 
   @override
   List<_i1.Column> get columns => [
@@ -350,18 +518,59 @@ class ScheduleTable extends _i1.Table<int?> {
     roomId,
     timeslotId,
     section,
-    loadType,
+    loadTypes,
     units,
+    hours,
     createdAt,
     updatedAt,
   ];
+
+  @override
+  _i1.Table? getRelationTable(String relationField) {
+    if (relationField == 'subject') {
+      return subject;
+    }
+    if (relationField == 'faculty') {
+      return faculty;
+    }
+    if (relationField == 'room') {
+      return room;
+    }
+    if (relationField == 'timeslot') {
+      return timeslot;
+    }
+    return null;
+  }
 }
 
 class ScheduleInclude extends _i1.IncludeObject {
-  ScheduleInclude._();
+  ScheduleInclude._({
+    _i2.SubjectInclude? subject,
+    _i3.FacultyInclude? faculty,
+    _i4.RoomInclude? room,
+    _i5.TimeslotInclude? timeslot,
+  }) {
+    _subject = subject;
+    _faculty = faculty;
+    _room = room;
+    _timeslot = timeslot;
+  }
+
+  _i2.SubjectInclude? _subject;
+
+  _i3.FacultyInclude? _faculty;
+
+  _i4.RoomInclude? _room;
+
+  _i5.TimeslotInclude? _timeslot;
 
   @override
-  Map<String, _i1.Include?> get includes => {};
+  Map<String, _i1.Include?> get includes => {
+    'subject': _subject,
+    'faculty': _faculty,
+    'room': _room,
+    'timeslot': _timeslot,
+  };
 
   @override
   _i1.Table<int?> get table => Schedule.t;
@@ -389,6 +598,10 @@ class ScheduleIncludeList extends _i1.IncludeList {
 
 class ScheduleRepository {
   const ScheduleRepository._();
+
+  final attachRow = const ScheduleAttachRowRepository._();
+
+  final detachRow = const ScheduleDetachRowRepository._();
 
   /// Returns a list of [Schedule]s matching the given query parameters.
   ///
@@ -421,6 +634,7 @@ class ScheduleRepository {
     bool orderDescending = false,
     _i1.OrderByListBuilder<ScheduleTable>? orderByList,
     _i1.Transaction? transaction,
+    ScheduleInclude? include,
   }) async {
     return session.db.find<Schedule>(
       where: where?.call(Schedule.t),
@@ -430,6 +644,7 @@ class ScheduleRepository {
       limit: limit,
       offset: offset,
       transaction: transaction,
+      include: include,
     );
   }
 
@@ -458,6 +673,7 @@ class ScheduleRepository {
     bool orderDescending = false,
     _i1.OrderByListBuilder<ScheduleTable>? orderByList,
     _i1.Transaction? transaction,
+    ScheduleInclude? include,
   }) async {
     return session.db.findFirstRow<Schedule>(
       where: where?.call(Schedule.t),
@@ -466,6 +682,7 @@ class ScheduleRepository {
       orderDescending: orderDescending,
       offset: offset,
       transaction: transaction,
+      include: include,
     );
   }
 
@@ -474,10 +691,12 @@ class ScheduleRepository {
     _i1.Session session,
     int id, {
     _i1.Transaction? transaction,
+    ScheduleInclude? include,
   }) async {
     return session.db.findById<Schedule>(
       id,
       transaction: transaction,
+      include: include,
     );
   }
 
@@ -635,6 +854,150 @@ class ScheduleRepository {
     return session.db.count<Schedule>(
       where: where?.call(Schedule.t),
       limit: limit,
+      transaction: transaction,
+    );
+  }
+}
+
+class ScheduleAttachRowRepository {
+  const ScheduleAttachRowRepository._();
+
+  /// Creates a relation between the given [Schedule] and [Subject]
+  /// by setting the [Schedule]'s foreign key `subjectId` to refer to the [Subject].
+  Future<void> subject(
+    _i1.Session session,
+    Schedule schedule,
+    _i2.Subject subject, {
+    _i1.Transaction? transaction,
+  }) async {
+    if (schedule.id == null) {
+      throw ArgumentError.notNull('schedule.id');
+    }
+    if (subject.id == null) {
+      throw ArgumentError.notNull('subject.id');
+    }
+
+    var $schedule = schedule.copyWith(subjectId: subject.id);
+    await session.db.updateRow<Schedule>(
+      $schedule,
+      columns: [Schedule.t.subjectId],
+      transaction: transaction,
+    );
+  }
+
+  /// Creates a relation between the given [Schedule] and [Faculty]
+  /// by setting the [Schedule]'s foreign key `facultyId` to refer to the [Faculty].
+  Future<void> faculty(
+    _i1.Session session,
+    Schedule schedule,
+    _i3.Faculty faculty, {
+    _i1.Transaction? transaction,
+  }) async {
+    if (schedule.id == null) {
+      throw ArgumentError.notNull('schedule.id');
+    }
+    if (faculty.id == null) {
+      throw ArgumentError.notNull('faculty.id');
+    }
+
+    var $schedule = schedule.copyWith(facultyId: faculty.id);
+    await session.db.updateRow<Schedule>(
+      $schedule,
+      columns: [Schedule.t.facultyId],
+      transaction: transaction,
+    );
+  }
+
+  /// Creates a relation between the given [Schedule] and [Room]
+  /// by setting the [Schedule]'s foreign key `roomId` to refer to the [Room].
+  Future<void> room(
+    _i1.Session session,
+    Schedule schedule,
+    _i4.Room room, {
+    _i1.Transaction? transaction,
+  }) async {
+    if (schedule.id == null) {
+      throw ArgumentError.notNull('schedule.id');
+    }
+    if (room.id == null) {
+      throw ArgumentError.notNull('room.id');
+    }
+
+    var $schedule = schedule.copyWith(roomId: room.id);
+    await session.db.updateRow<Schedule>(
+      $schedule,
+      columns: [Schedule.t.roomId],
+      transaction: transaction,
+    );
+  }
+
+  /// Creates a relation between the given [Schedule] and [Timeslot]
+  /// by setting the [Schedule]'s foreign key `timeslotId` to refer to the [Timeslot].
+  Future<void> timeslot(
+    _i1.Session session,
+    Schedule schedule,
+    _i5.Timeslot timeslot, {
+    _i1.Transaction? transaction,
+  }) async {
+    if (schedule.id == null) {
+      throw ArgumentError.notNull('schedule.id');
+    }
+    if (timeslot.id == null) {
+      throw ArgumentError.notNull('timeslot.id');
+    }
+
+    var $schedule = schedule.copyWith(timeslotId: timeslot.id);
+    await session.db.updateRow<Schedule>(
+      $schedule,
+      columns: [Schedule.t.timeslotId],
+      transaction: transaction,
+    );
+  }
+}
+
+class ScheduleDetachRowRepository {
+  const ScheduleDetachRowRepository._();
+
+  /// Detaches the relation between this [Schedule] and the [Room] set in `room`
+  /// by setting the [Schedule]'s foreign key `roomId` to `null`.
+  ///
+  /// This removes the association between the two models without deleting
+  /// the related record.
+  Future<void> room(
+    _i1.Session session,
+    Schedule schedule, {
+    _i1.Transaction? transaction,
+  }) async {
+    if (schedule.id == null) {
+      throw ArgumentError.notNull('schedule.id');
+    }
+
+    var $schedule = schedule.copyWith(roomId: null);
+    await session.db.updateRow<Schedule>(
+      $schedule,
+      columns: [Schedule.t.roomId],
+      transaction: transaction,
+    );
+  }
+
+  /// Detaches the relation between this [Schedule] and the [Timeslot] set in `timeslot`
+  /// by setting the [Schedule]'s foreign key `timeslotId` to `null`.
+  ///
+  /// This removes the association between the two models without deleting
+  /// the related record.
+  Future<void> timeslot(
+    _i1.Session session,
+    Schedule schedule, {
+    _i1.Transaction? transaction,
+  }) async {
+    if (schedule.id == null) {
+      throw ArgumentError.notNull('schedule.id');
+    }
+
+    var $schedule = schedule.copyWith(timeslotId: null);
+    await session.db.updateRow<Schedule>(
+      $schedule,
+      columns: [Schedule.t.timeslotId],
       transaction: transaction,
     );
   }

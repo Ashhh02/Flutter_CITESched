@@ -1,0 +1,10 @@
+class: TimetableFilterRequest
+fields:
+  program: Program?
+  schoolYear: String?
+  yearLevel: int?
+  section: String?
+  facultyId: int?
+  roomId: int?
+  loadType: SubjectType?
+  hasConflicts: bool?

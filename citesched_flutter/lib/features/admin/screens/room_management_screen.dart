@@ -3,6 +3,8 @@ import 'package:citesched_flutter/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'room_details_screen.dart';
+import 'package:citesched_flutter/core/providers/conflict_provider.dart';
 
 // Provider for room list
 final roomListProvider = FutureProvider<List<Room>>((ref) async {
@@ -91,7 +93,9 @@ class _RoomManagementScreenState extends ConsumerState<RoomManagementScreen> {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(20),
+                    ),
                   ),
                   child: Row(
                     children: [
@@ -101,7 +105,10 @@ class _RoomManagementScreenState extends ConsumerState<RoomManagementScreen> {
                           color: Colors.white.withOpacity(0.2),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.delete_forever_rounded, color: Colors.white),
+                        child: const Icon(
+                          Icons.delete_forever_rounded,
+                          color: Colors.white,
+                        ),
                       ),
                       const SizedBox(width: 16),
                       Text(
@@ -141,7 +148,7 @@ class _RoomManagementScreenState extends ConsumerState<RoomManagementScreen> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                  padding: const EdgeInsets.all(24),
                   child: Row(
                     children: [
                       Expanded(
@@ -150,9 +157,14 @@ class _RoomManagementScreenState extends ConsumerState<RoomManagementScreen> {
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             side: BorderSide(color: Colors.grey[300]!),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
-                          child: Text('Cancel', style: GoogleFonts.poppins(color: textMuted)),
+                          child: Text(
+                            'Cancel',
+                            style: GoogleFonts.poppins(color: textMuted),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -162,10 +174,18 @@ class _RoomManagementScreenState extends ConsumerState<RoomManagementScreen> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.red,
                             padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                             elevation: 0,
                           ),
-                          child: Text('Delete', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+                          child: Text(
+                            'Delete',
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -206,6 +226,7 @@ class _RoomManagementScreenState extends ConsumerState<RoomManagementScreen> {
   @override
   Widget build(BuildContext context) {
     final roomsAsync = ref.watch(roomListProvider);
+    final conflictsAsync = ref.watch(allConflictsProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8F9FA);
 
@@ -280,10 +301,12 @@ class _RoomManagementScreenState extends ConsumerState<RoomManagementScreen> {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color.fromRGBO(30, 41, 59, 1)
-                              .withOpacity(
-                                0.03,
-                              ),
+                          color: const Color.fromRGBO(
+                            30,
+                            41,
+                            59,
+                            1,
+                          ).withOpacity(0.03),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -449,127 +472,204 @@ class _RoomManagementScreenState extends ConsumerState<RoomManagementScreen> {
                           ),
                         ),
                         Expanded(
-                          child: SingleChildScrollView(
-                            child: DataTable(
-                              headingRowColor: WidgetStateProperty.all(
-                                maroonColor,
-                              ),
-                              headingTextStyle: GoogleFonts.poppins(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                                letterSpacing: 0.5,
-                              ),
-                              dataRowMinHeight: 65,
-                              dataRowMaxHeight: 85,
-                              columnSpacing: 32,
-                              horizontalMargin: 24,
-                              decoration: const BoxDecoration(
-                                color: Colors.transparent,
-                              ),
-                              columns: const [
-                                DataColumn(label: Text('ROOM')),
-                                DataColumn(label: Text('CAPACITY')),
-                                DataColumn(label: Text('TYPE')),
-                                DataColumn(label: Text('PROGRAM')),
-                                DataColumn(label: Text('BUILDING')),
-                                DataColumn(label: Text('STATUS')),
-                                DataColumn(label: Text('ACTIONS')),
-                              ],
-                              rows: filtered.asMap().entries.map((entry) {
-                                final room = entry.value;
-                                final index = entry.key;
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              return SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    minWidth: constraints.maxWidth,
+                                  ),
+                                  child: SingleChildScrollView(
+                                    scrollDirection: Axis.vertical,
+                                    child: DataTable(
+                                      headingRowColor: WidgetStateProperty.all(
+                                        maroonColor,
+                                      ),
+                                      headingTextStyle: GoogleFonts.poppins(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13,
+                                        letterSpacing: 0.5,
+                                      ),
+                                      dataRowMinHeight: 65,
+                                      dataRowMaxHeight: 85,
+                                      columnSpacing: 32,
+                                      horizontalMargin: 24,
+                                      decoration: const BoxDecoration(
+                                        color: Colors.transparent,
+                                      ),
+                                      columns: const [
+                                        DataColumn(label: Text('ROOM')),
+                                        DataColumn(label: Text('CAPACITY')),
+                                        DataColumn(label: Text('TYPE')),
+                                        DataColumn(label: Text('PROGRAM')),
+                                        DataColumn(label: Text('BUILDING')),
+                                        DataColumn(label: Text('STATUS')),
+                                        DataColumn(label: Text('ACTIONS')),
+                                      ],
+                                      rows: filtered.asMap().entries.map((
+                                        entry,
+                                      ) {
+                                        final room = entry.value;
+                                        final index = entry.key;
 
-                                return DataRow(
-                                  color:
-                                      WidgetStateProperty.resolveWith<Color?>(
-                                        (states) {
-                                          if (states.contains(
-                                            WidgetState.hovered,
-                                          )) {
-                                            return maroonColor.withOpacity(
-                                              0.05,
-                                            );
-                                          }
-                                          return index.isEven
-                                              ? (isDark
-                                                    ? Colors.white.withOpacity(
-                                                        0.02,
-                                                      )
-                                                    : Colors.grey.withOpacity(
-                                                        0.02,
-                                                      ))
-                                              : null;
-                                        },
-                                      ),
-                                  cells: [
-                                    DataCell(
-                                      Text(
-                                        room.name,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                    DataCell(Text(room.capacity.toString())),
-                                    DataCell(
-                                      Text(room.type.name.toUpperCase()),
-                                    ),
-                                    DataCell(
-                                      Text(room.program.name.toUpperCase()),
-                                    ),
-                                    DataCell(Text(room.building)),
-                                    DataCell(
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 4,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: room.isActive
-                                              ? Colors.green.withOpacity(0.1)
-                                              : Colors.red.withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          room.isActive ? 'ACTIVE' : 'INACTIVE',
-                                          style: TextStyle(
-                                            color: room.isActive
-                                                ? Colors.green
-                                                : Colors.red,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    DataCell(
-                                      Row(
-                                        children: [
-                                          IconButton(
-                                            icon: const Icon(
-                                              Icons.edit,
-                                              color: Colors.blue,
+                                        return DataRow(
+                                          onSelectChanged: (selected) {
+                                            if (selected == true) {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (_) =>
+                                                      RoomDetailsScreen(
+                                                        room: room,
+                                                      ),
+                                                ),
+                                              );
+                                            }
+                                          },
+                                          color:
+                                              WidgetStateProperty.resolveWith<
+                                                Color?
+                                              >(
+                                                (states) {
+                                                  if (states.contains(
+                                                    WidgetState.hovered,
+                                                  )) {
+                                                    return maroonColor
+                                                        .withOpacity(
+                                                          0.05,
+                                                        );
+                                                  }
+                                                  return index.isEven
+                                                      ? (isDark
+                                                            ? Colors.white
+                                                                  .withOpacity(
+                                                                    0.02,
+                                                                  )
+                                                            : Colors.grey
+                                                                  .withOpacity(
+                                                                    0.02,
+                                                                  ))
+                                                      : null;
+                                                },
+                                              ),
+                                          cells: [
+                                            DataCell(
+                                              Row(
+                                                children: [
+                                                  if (conflictsAsync.maybeWhen(
+                                                    data: (conflicts) =>
+                                                        conflicts
+                                                            .hasConflictForRoom(
+                                                              room.id!,
+                                                            ),
+                                                    orElse: () => false,
+                                                  ))
+                                                    const Tooltip(
+                                                      message:
+                                                          'Room has a schedule conflict',
+                                                      child: Padding(
+                                                        padding:
+                                                            EdgeInsets.only(
+                                                              right: 8,
+                                                            ),
+                                                        child: Icon(
+                                                          Icons.warning_rounded,
+                                                          color: Colors.orange,
+                                                          size: 20,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  Text(
+                                                    room.name,
+                                                    style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
                                             ),
-                                            onPressed: () =>
-                                                _showEditRoomModal(room),
-                                          ),
-                                          IconButton(
-                                            icon: const Icon(
-                                              Icons.delete,
-                                              color: Colors.red,
+                                            DataCell(
+                                              Text(room.capacity.toString()),
                                             ),
-                                            onPressed: () => _deleteRoom(room),
-                                          ),
-                                        ],
-                                      ),
+                                            DataCell(
+                                              Text(
+                                                room.type.name.toUpperCase(),
+                                              ),
+                                            ),
+                                            DataCell(
+                                              Text(
+                                                room.program.name.toUpperCase(),
+                                              ),
+                                            ),
+                                            DataCell(Text(room.building)),
+                                            DataCell(
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 4,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  color: room.isActive
+                                                      ? Colors.green
+                                                            .withOpacity(
+                                                              0.1,
+                                                            )
+                                                      : Colors.red.withOpacity(
+                                                          0.1,
+                                                        ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                                child: Text(
+                                                  room.isActive
+                                                      ? 'ACTIVE'
+                                                      : 'INACTIVE',
+                                                  style: TextStyle(
+                                                    color: room.isActive
+                                                        ? Colors.green
+                                                        : Colors.red,
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            DataCell(
+                                              Row(
+                                                children: [
+                                                  IconButton(
+                                                    icon: const Icon(
+                                                      Icons.edit,
+                                                      color: Colors.blue,
+                                                    ),
+                                                    onPressed: () =>
+                                                        _showEditRoomModal(
+                                                          room,
+                                                        ),
+                                                  ),
+                                                  IconButton(
+                                                    icon: const Icon(
+                                                      Icons.delete,
+                                                      color: Colors.red,
+                                                    ),
+                                                    onPressed: () =>
+                                                        _deleteRoom(room),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      }).toList(),
                                     ),
-                                  ],
-                                );
-                              }).toList(),
-                            ),
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ],
@@ -725,7 +825,9 @@ class _AddRoomModalState extends State<_AddRoomModal> {
     final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
     final textPrimary = isDark ? Colors.white : const Color(0xFF333333);
     final textMuted = isDark ? Colors.grey[400]! : Colors.grey[600]!;
-    final borderColor = isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1);
+    final borderColor = isDark
+        ? Colors.white.withOpacity(0.1)
+        : Colors.black.withOpacity(0.1);
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -756,45 +858,53 @@ class _AddRoomModalState extends State<_AddRoomModal> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(20),
+                ),
               ),
               child: Row(
                 children: [
-                   Container(
-                     padding: const EdgeInsets.all(10),
-                     decoration: BoxDecoration(
-                       color: Colors.white.withOpacity(0.2),
-                       borderRadius: BorderRadius.circular(12),
-                     ),
-                     child: const Icon(Icons.add_home_work_rounded, color: Colors.white, size: 24),
-                   ),
-                   const SizedBox(width: 16),
-                   Column(
-                     crossAxisAlignment: CrossAxisAlignment.start,
-                     children: [
-                       Text(
-                         'Add New Room',
-                         style: GoogleFonts.poppins(
-                           fontSize: 20,
-                           fontWeight: FontWeight.bold,
-                           color: Colors.white,
-                         ),
-                       ),
-                       Text(
-                         'Enter room details below',
-                         style: GoogleFonts.poppins(
-                           fontSize: 13,
-                           color: Colors.white.withOpacity(0.8),
-                         ),
-                       ),
-                     ],
-                   ),
-                   const Spacer(),
-                   IconButton(
-                     onPressed: () => Navigator.pop(context),
-                     icon: const Icon(Icons.close, color: Colors.white),
-                     style: IconButton.styleFrom(backgroundColor: Colors.white.withOpacity(0.1)),
-                   ),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.add_home_work_rounded,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Add New Room',
+                        style: GoogleFonts.poppins(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        'Enter room details below',
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          color: Colors.white.withOpacity(0.8),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close, color: Colors.white),
+                    style: IconButton.styleFrom(
+                      backgroundColor: Colors.white.withOpacity(0.1),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -812,26 +922,58 @@ class _AddRoomModalState extends State<_AddRoomModal> {
                       const SizedBox(height: 16),
                       Row(
                         children: [
-                          Expanded(child: _buildTextField('Room Name', _nameController, isDark, hint: 'e.g., CL1')),
+                          Expanded(
+                            child: _buildTextField(
+                              'Room Name',
+                              _nameController,
+                              isDark,
+                              hint: 'e.g., CL1',
+                            ),
+                          ),
                           const SizedBox(width: 16),
-                          Expanded(child: _buildTextField('Capacity', _capacityController, isDark, isNumber: true)),
+                          Expanded(
+                            child: _buildTextField(
+                              'Capacity',
+                              _capacityController,
+                              isDark,
+                              isNumber: true,
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 16),
-                      _buildTextField('Building', _buildingController, isDark, hint: 'e.g., CITE Building'),
+                      _buildTextField(
+                        'Building',
+                        _buildingController,
+                        isDark,
+                        hint: 'e.g., CITE Building',
+                      ),
 
                       const SizedBox(height: 24),
-                      _buildSectionTitle('Classification', Icons.category_outlined, textPrimary),
+                      _buildSectionTitle(
+                        'Classification',
+                        Icons.category_outlined,
+                        textPrimary,
+                      ),
                       const SizedBox(height: 16),
-                      
+
                       DropdownButtonFormField<Program>(
                         value: _program,
                         decoration: _inputDecoration('Program', isDark),
                         dropdownColor: cardBg,
-                        items: Program.values.map((p) => DropdownMenuItem(
-                          value: p,
-                          child: Text(p.name.toUpperCase(), style: GoogleFonts.poppins(color: textPrimary)),
-                        )).toList(),
+                        items: Program.values
+                            .map(
+                              (p) => DropdownMenuItem(
+                                value: p,
+                                child: Text(
+                                  p.name.toUpperCase(),
+                                  style: GoogleFonts.poppins(
+                                    color: textPrimary,
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
                         onChanged: (v) => setState(() => _program = v!),
                       ),
                       const SizedBox(height: 16),
@@ -839,26 +981,51 @@ class _AddRoomModalState extends State<_AddRoomModal> {
                         value: _type,
                         decoration: _inputDecoration('Room Type', isDark),
                         dropdownColor: cardBg,
-                        items: RoomType.values.map((t) => DropdownMenuItem(
-                          value: t,
-                          child: Text(t.name.toUpperCase(), style: GoogleFonts.poppins(color: textPrimary)),
-                        )).toList(),
+                        items: RoomType.values
+                            .map(
+                              (t) => DropdownMenuItem(
+                                value: t,
+                                child: Text(
+                                  t.name.toUpperCase(),
+                                  style: GoogleFonts.poppins(
+                                    color: textPrimary,
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
                         onChanged: (v) => setState(() => _type = v!),
                       ),
 
                       const SizedBox(height: 24),
                       Container(
                         decoration: BoxDecoration(
-                          color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey[100],
+                          color: isDark
+                              ? Colors.white.withOpacity(0.05)
+                              : Colors.grey[100],
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: borderColor),
                         ),
                         child: SwitchListTile(
-                          title: Text('Active Status', style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: textPrimary)),
-                          subtitle: Text('Enable or disable this room for scheduling', style: GoogleFonts.poppins(fontSize: 12, color: textMuted)),
+                          title: Text(
+                            'Active Status',
+                            style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w600,
+                              color: textPrimary,
+                            ),
+                          ),
+                          subtitle: Text(
+                            'Enable or disable this room for scheduling',
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: textMuted,
+                            ),
+                          ),
                           value: _isActive,
                           activeColor: widget.maroonColor,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                           onChanged: (v) => setState(() => _isActive = v),
                         ),
                       ),
@@ -880,22 +1047,43 @@ class _AddRoomModalState extends State<_AddRoomModal> {
                   TextButton(
                     onPressed: () => Navigator.pop(context),
                     style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 16,
+                      ),
                     ),
-                    child: Text('Cancel', style: GoogleFonts.poppins(color: textMuted)),
+                    child: Text(
+                      'Cancel',
+                      style: GoogleFonts.poppins(color: textMuted),
+                    ),
                   ),
                   const SizedBox(width: 16),
                   ElevatedButton.icon(
                     onPressed: _isLoading ? null : _submit,
-                    icon: _isLoading 
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    icon: _isLoading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
                         : const Icon(Icons.check_rounded, size: 20),
-                    label: Text(_isLoading ? 'Saving...' : 'Create Room', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                    label: Text(
+                      _isLoading ? 'Saving...' : 'Create Room',
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: widget.maroonColor,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 16,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       elevation: 0,
                     ),
                   ),
@@ -913,23 +1101,46 @@ class _AddRoomModalState extends State<_AddRoomModal> {
       children: [
         Icon(icon, size: 18, color: widget.maroonColor),
         const SizedBox(width: 8),
-        Text(title, style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: color)),
+        Text(
+          title,
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, bool isDark, {bool isNumber = false, String? hint}) {
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller,
+    bool isDark, {
+    bool isNumber = false,
+    String? hint,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w500, color: isDark ? Colors.grey[300] : Colors.grey[700])),
+        Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: isDark ? Colors.grey[300] : Colors.grey[700],
+          ),
+        ),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
           keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-          style: GoogleFonts.poppins(color: isDark ? Colors.white : Colors.black87),
+          style: GoogleFonts.poppins(
+            color: isDark ? Colors.white : Colors.black87,
+          ),
           decoration: _inputDecoration(null, isDark, hint: hint),
-          validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+          validator: (value) =>
+              value == null || value.isEmpty ? 'Required' : null,
         ),
       ],
     );
@@ -937,7 +1148,9 @@ class _AddRoomModalState extends State<_AddRoomModal> {
 
   InputDecoration _inputDecoration(String? label, bool isDark, {String? hint}) {
     final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9);
-    final borderColor = isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05);
+    final borderColor = isDark
+        ? Colors.white.withOpacity(0.1)
+        : Colors.black.withOpacity(0.05);
 
     return InputDecoration(
       labelText: label,
@@ -947,9 +1160,18 @@ class _AddRoomModalState extends State<_AddRoomModal> {
       filled: true,
       fillColor: bgColor,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: borderColor)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: borderColor)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: widget.maroonColor, width: 2)),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: borderColor),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: borderColor),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: widget.maroonColor, width: 2),
+      ),
     );
   }
 
@@ -971,7 +1193,10 @@ class _AddRoomModalState extends State<_AddRoomModal> {
       widget.onSuccess();
       if (mounted) Navigator.pop(context);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -1023,7 +1248,9 @@ class _EditRoomModalState extends State<_EditRoomModal> {
     final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
     final textPrimary = isDark ? Colors.white : const Color(0xFF333333);
     final textMuted = isDark ? Colors.grey[400]! : Colors.grey[600]!;
-    final borderColor = isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1);
+    final borderColor = isDark
+        ? Colors.white.withOpacity(0.1)
+        : Colors.black.withOpacity(0.1);
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -1054,45 +1281,53 @@ class _EditRoomModalState extends State<_EditRoomModal> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(20),
+                ),
               ),
               child: Row(
                 children: [
-                   Container(
-                     padding: const EdgeInsets.all(10),
-                     decoration: BoxDecoration(
-                       color: Colors.white.withOpacity(0.2),
-                       borderRadius: BorderRadius.circular(12),
-                     ),
-                     child: const Icon(Icons.edit_location_alt_rounded, color: Colors.white, size: 24),
-                   ),
-                   const SizedBox(width: 16),
-                   Column(
-                     crossAxisAlignment: CrossAxisAlignment.start,
-                     children: [
-                       Text(
-                         'Edit Room',
-                         style: GoogleFonts.poppins(
-                           fontSize: 20,
-                           fontWeight: FontWeight.bold,
-                           color: Colors.white,
-                         ),
-                       ),
-                       Text(
-                         'Update room details below',
-                         style: GoogleFonts.poppins(
-                           fontSize: 13,
-                           color: Colors.white.withOpacity(0.8),
-                         ),
-                       ),
-                     ],
-                   ),
-                   const Spacer(),
-                   IconButton(
-                     onPressed: () => Navigator.pop(context),
-                     icon: const Icon(Icons.close, color: Colors.white),
-                     style: IconButton.styleFrom(backgroundColor: Colors.white.withOpacity(0.1)),
-                   ),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.edit_location_alt_rounded,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Edit Room',
+                        style: GoogleFonts.poppins(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        'Update room details below',
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          color: Colors.white.withOpacity(0.8),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close, color: Colors.white),
+                    style: IconButton.styleFrom(
+                      backgroundColor: Colors.white.withOpacity(0.1),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -1110,26 +1345,58 @@ class _EditRoomModalState extends State<_EditRoomModal> {
                       const SizedBox(height: 16),
                       Row(
                         children: [
-                          Expanded(child: _buildTextField('Room Name', _nameController, isDark, hint: 'e.g., CL1')),
+                          Expanded(
+                            child: _buildTextField(
+                              'Room Name',
+                              _nameController,
+                              isDark,
+                              hint: 'e.g., CL1',
+                            ),
+                          ),
                           const SizedBox(width: 16),
-                          Expanded(child: _buildTextField('Capacity', _capacityController, isDark, isNumber: true)),
+                          Expanded(
+                            child: _buildTextField(
+                              'Capacity',
+                              _capacityController,
+                              isDark,
+                              isNumber: true,
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 16),
-                      _buildTextField('Building', _buildingController, isDark, hint: 'e.g., CITE Building'),
+                      _buildTextField(
+                        'Building',
+                        _buildingController,
+                        isDark,
+                        hint: 'e.g., CITE Building',
+                      ),
 
                       const SizedBox(height: 24),
-                      _buildSectionTitle('Classification', Icons.category_outlined, textPrimary),
+                      _buildSectionTitle(
+                        'Classification',
+                        Icons.category_outlined,
+                        textPrimary,
+                      ),
                       const SizedBox(height: 16),
-                      
+
                       DropdownButtonFormField<Program>(
                         value: _program,
                         decoration: _inputDecoration('Program', isDark),
                         dropdownColor: cardBg,
-                        items: Program.values.map((p) => DropdownMenuItem(
-                          value: p,
-                          child: Text(p.name.toUpperCase(), style: GoogleFonts.poppins(color: textPrimary)),
-                        )).toList(),
+                        items: Program.values
+                            .map(
+                              (p) => DropdownMenuItem(
+                                value: p,
+                                child: Text(
+                                  p.name.toUpperCase(),
+                                  style: GoogleFonts.poppins(
+                                    color: textPrimary,
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
                         onChanged: (v) => setState(() => _program = v!),
                       ),
                       const SizedBox(height: 16),
@@ -1137,26 +1404,51 @@ class _EditRoomModalState extends State<_EditRoomModal> {
                         value: _type,
                         decoration: _inputDecoration('Room Type', isDark),
                         dropdownColor: cardBg,
-                        items: RoomType.values.map((t) => DropdownMenuItem(
-                          value: t,
-                          child: Text(t.name.toUpperCase(), style: GoogleFonts.poppins(color: textPrimary)),
-                        )).toList(),
+                        items: RoomType.values
+                            .map(
+                              (t) => DropdownMenuItem(
+                                value: t,
+                                child: Text(
+                                  t.name.toUpperCase(),
+                                  style: GoogleFonts.poppins(
+                                    color: textPrimary,
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
                         onChanged: (v) => setState(() => _type = v!),
                       ),
 
                       const SizedBox(height: 24),
                       Container(
                         decoration: BoxDecoration(
-                          color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey[100],
+                          color: isDark
+                              ? Colors.white.withOpacity(0.05)
+                              : Colors.grey[100],
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: borderColor),
                         ),
                         child: SwitchListTile(
-                          title: Text('Active Status', style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: textPrimary)),
-                          subtitle: Text('Enable or disable this room for scheduling', style: GoogleFonts.poppins(fontSize: 12, color: textMuted)),
+                          title: Text(
+                            'Active Status',
+                            style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w600,
+                              color: textPrimary,
+                            ),
+                          ),
+                          subtitle: Text(
+                            'Enable or disable this room for scheduling',
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: textMuted,
+                            ),
+                          ),
                           value: _isActive,
                           activeColor: widget.maroonColor,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                           onChanged: (v) => setState(() => _isActive = v),
                         ),
                       ),
@@ -1178,22 +1470,43 @@ class _EditRoomModalState extends State<_EditRoomModal> {
                   TextButton(
                     onPressed: () => Navigator.pop(context),
                     style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 16,
+                      ),
                     ),
-                    child: Text('Cancel', style: GoogleFonts.poppins(color: textMuted)),
+                    child: Text(
+                      'Cancel',
+                      style: GoogleFonts.poppins(color: textMuted),
+                    ),
                   ),
                   const SizedBox(width: 16),
                   ElevatedButton.icon(
                     onPressed: _isLoading ? null : _submit,
-                    icon: _isLoading 
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    icon: _isLoading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
                         : const Icon(Icons.check_rounded, size: 20),
-                    label: Text(_isLoading ? 'Saving...' : 'Save Changes', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                    label: Text(
+                      _isLoading ? 'Saving...' : 'Save Changes',
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: widget.maroonColor,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 16,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       elevation: 0,
                     ),
                   ),
@@ -1211,23 +1524,46 @@ class _EditRoomModalState extends State<_EditRoomModal> {
       children: [
         Icon(icon, size: 18, color: widget.maroonColor),
         const SizedBox(width: 8),
-        Text(title, style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: color)),
+        Text(
+          title,
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, bool isDark, {bool isNumber = false, String? hint}) {
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller,
+    bool isDark, {
+    bool isNumber = false,
+    String? hint,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w500, color: isDark ? Colors.grey[300] : Colors.grey[700])),
+        Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: isDark ? Colors.grey[300] : Colors.grey[700],
+          ),
+        ),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
           keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-          style: GoogleFonts.poppins(color: isDark ? Colors.white : Colors.black87),
+          style: GoogleFonts.poppins(
+            color: isDark ? Colors.white : Colors.black87,
+          ),
           decoration: _inputDecoration(null, isDark, hint: hint),
-          validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+          validator: (value) =>
+              value == null || value.isEmpty ? 'Required' : null,
         ),
       ],
     );
@@ -1235,7 +1571,9 @@ class _EditRoomModalState extends State<_EditRoomModal> {
 
   InputDecoration _inputDecoration(String? label, bool isDark, {String? hint}) {
     final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9);
-    final borderColor = isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05);
+    final borderColor = isDark
+        ? Colors.white.withOpacity(0.1)
+        : Colors.black.withOpacity(0.05);
 
     return InputDecoration(
       labelText: label,
@@ -1245,9 +1583,18 @@ class _EditRoomModalState extends State<_EditRoomModal> {
       filled: true,
       fillColor: bgColor,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: borderColor)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: borderColor)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: widget.maroonColor, width: 2)),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: borderColor),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: borderColor),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: widget.maroonColor, width: 2),
+      ),
     );
   }
 
@@ -1268,10 +1615,12 @@ class _EditRoomModalState extends State<_EditRoomModal> {
       widget.onSuccess();
       if (mounted) Navigator.pop(context);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 }
-

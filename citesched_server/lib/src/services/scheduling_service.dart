@@ -93,7 +93,10 @@ class SchedulingService {
               );
 
               // Check if this assignment is valid using ConflictService
-              var validationConflicts = await _conflictService.validateSchedule(session, candidate);
+              var validationConflicts = await _conflictService.validateSchedule(
+                session,
+                candidate,
+              );
 
               if (validationConflicts.isEmpty) {
                 // Valid assignment - add to generated schedules
@@ -125,13 +128,20 @@ class SchedulingService {
       }
     }
 
+    // Save successfully generated schedules to the database
+    if (generatedSchedules.isNotEmpty) {
+      for (var s in generatedSchedules) {
+        await Schedule.db.insertRow(session, s);
+      }
+    }
+
     // Return results
     if (conflicts.isEmpty) {
       return GenerateScheduleResponse(
         success: true,
         schedules: generatedSchedules,
         message:
-            'Successfully generated ${generatedSchedules.length} schedule entries',
+            'Successfully generated and saved ${generatedSchedules.length} schedule entries',
       );
     } else {
       return GenerateScheduleResponse(
@@ -139,7 +149,7 @@ class SchedulingService {
         schedules: generatedSchedules,
         conflicts: conflicts,
         message:
-            'Partial generation: ${generatedSchedules.length} schedules generated, ${conflicts.length} failed',
+            'Partial generation: ${generatedSchedules.length} schedules saved, ${conflicts.length} failed',
       );
     }
   }

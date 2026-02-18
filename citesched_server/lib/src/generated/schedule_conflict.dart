@@ -17,14 +17,22 @@ abstract class ScheduleConflict
   ScheduleConflict._({
     required this.type,
     required this.message,
+    this.scheduleId,
     this.conflictingScheduleId,
+    this.facultyId,
+    this.roomId,
+    this.subjectId,
     this.details,
   });
 
   factory ScheduleConflict({
     required String type,
     required String message,
+    int? scheduleId,
     int? conflictingScheduleId,
+    int? facultyId,
+    int? roomId,
+    int? subjectId,
     String? details,
   }) = _ScheduleConflictImpl;
 
@@ -32,7 +40,11 @@ abstract class ScheduleConflict
     return ScheduleConflict(
       type: jsonSerialization['type'] as String,
       message: jsonSerialization['message'] as String,
+      scheduleId: jsonSerialization['scheduleId'] as int?,
       conflictingScheduleId: jsonSerialization['conflictingScheduleId'] as int?,
+      facultyId: jsonSerialization['facultyId'] as int?,
+      roomId: jsonSerialization['roomId'] as int?,
+      subjectId: jsonSerialization['subjectId'] as int?,
       details: jsonSerialization['details'] as String?,
     );
   }
@@ -41,7 +53,15 @@ abstract class ScheduleConflict
 
   String message;
 
+  int? scheduleId;
+
   int? conflictingScheduleId;
+
+  int? facultyId;
+
+  int? roomId;
+
+  int? subjectId;
 
   String? details;
 
@@ -51,7 +71,11 @@ abstract class ScheduleConflict
   ScheduleConflict copyWith({
     String? type,
     String? message,
+    int? scheduleId,
     int? conflictingScheduleId,
+    int? facultyId,
+    int? roomId,
+    int? subjectId,
     String? details,
   });
   @override
@@ -60,8 +84,12 @@ abstract class ScheduleConflict
       '__className__': 'ScheduleConflict',
       'type': type,
       'message': message,
+      if (scheduleId != null) 'scheduleId': scheduleId,
       if (conflictingScheduleId != null)
         'conflictingScheduleId': conflictingScheduleId,
+      if (facultyId != null) 'facultyId': facultyId,
+      if (roomId != null) 'roomId': roomId,
+      if (subjectId != null) 'subjectId': subjectId,
       if (details != null) 'details': details,
     };
   }
@@ -72,8 +100,12 @@ abstract class ScheduleConflict
       '__className__': 'ScheduleConflict',
       'type': type,
       'message': message,
+      if (scheduleId != null) 'scheduleId': scheduleId,
       if (conflictingScheduleId != null)
         'conflictingScheduleId': conflictingScheduleId,
+      if (facultyId != null) 'facultyId': facultyId,
+      if (roomId != null) 'roomId': roomId,
+      if (subjectId != null) 'subjectId': subjectId,
       if (details != null) 'details': details,
     };
   }
@@ -90,12 +122,20 @@ class _ScheduleConflictImpl extends ScheduleConflict {
   _ScheduleConflictImpl({
     required String type,
     required String message,
+    int? scheduleId,
     int? conflictingScheduleId,
+    int? facultyId,
+    int? roomId,
+    int? subjectId,
     String? details,
   }) : super._(
          type: type,
          message: message,
+         scheduleId: scheduleId,
          conflictingScheduleId: conflictingScheduleId,
+         facultyId: facultyId,
+         roomId: roomId,
+         subjectId: subjectId,
          details: details,
        );
 
@@ -106,15 +146,23 @@ class _ScheduleConflictImpl extends ScheduleConflict {
   ScheduleConflict copyWith({
     String? type,
     String? message,
+    Object? scheduleId = _Undefined,
     Object? conflictingScheduleId = _Undefined,
+    Object? facultyId = _Undefined,
+    Object? roomId = _Undefined,
+    Object? subjectId = _Undefined,
     Object? details = _Undefined,
   }) {
     return ScheduleConflict(
       type: type ?? this.type,
       message: message ?? this.message,
+      scheduleId: scheduleId is int? ? scheduleId : this.scheduleId,
       conflictingScheduleId: conflictingScheduleId is int?
           ? conflictingScheduleId
           : this.conflictingScheduleId,
+      facultyId: facultyId is int? ? facultyId : this.facultyId,
+      roomId: roomId is int? ? roomId : this.roomId,
+      subjectId: subjectId is int? ? subjectId : this.subjectId,
       details: details is String? ? details : this.details,
     );
   }

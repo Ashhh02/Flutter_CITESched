@@ -46,6 +46,7 @@ class _StatCardState extends State<StatCard> {
           curve: Curves.easeOut,
           transform: Matrix4.translationValues(0, _isHovered ? -5 : 0, 0),
           padding: const EdgeInsets.all(24),
+          constraints: const BoxConstraints(minHeight: 160),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -72,6 +73,7 @@ class _StatCardState extends State<StatCard> {
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,

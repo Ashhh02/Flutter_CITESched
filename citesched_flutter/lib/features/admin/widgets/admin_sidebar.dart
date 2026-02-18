@@ -1,4 +1,5 @@
 import 'package:citesched_flutter/features/auth/providers/auth_provider.dart';
+import 'package:citesched_flutter/features/auth/widgets/logout_confirmation_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -86,8 +87,14 @@ class AdminSidebar extends ConsumerWidget {
                     Icons.logout_rounded,
                     'Logout',
                     isLogout: true,
-                    onTap: () {
-                      ref.read(authProvider.notifier).signOut();
+                    onTap: () async {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => const LogoutConfirmationDialog(),
+                      );
+                      if (confirm == true) {
+                        ref.read(authProvider.notifier).signOut();
+                      }
                     },
                   ),
                 ],

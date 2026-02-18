@@ -1,0 +1,26 @@
+﻿Analyzing faculty_loading_screen.dart...                        
+
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\admin\screens\faculty_loading_screen.dart:570:64 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\admin\screens\faculty_loading_screen.dart:723:70 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\admin\screens\faculty_loading_screen.dart:730:88 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\admin\screens\faculty_loading_screen.dart:733:87 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\admin\screens\faculty_loading_screen.dart:750:87 - deprecated_member_use
+warning - The '!' will have no effect because the receiver can't be null - lib\features\admin\screens\faculty_loading_screen.dart:840:80 - unnecessary_non_null_assertion
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\admin\screens\faculty_loading_screen.dart:862:72 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\admin\screens\faculty_loading_screen.dart:904:73 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\admin\screens\faculty_loading_screen.dart:1091:91 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\admin\screens\faculty_loading_screen.dart:1097:90 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\admin\screens\faculty_loading_screen.dart:1112:80 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\admin\screens\faculty_loading_screen.dart:1182:94 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\admin\screens\faculty_loading_screen.dart:1222:93 - deprecated_member_use
+  error - Expected to find ')' - lib\features\admin\screens\faculty_loading_screen.dart:1252:44 - expected_token
+  error - Expected to find ']' - lib\features\admin\screens\faculty_loading_screen.dart:1252:44 - expected_token
+  error - Expected to find ';' - lib\features\admin\screens\faculty_loading_screen.dart:1260:29 - expected_token
+  error - Expected an identifier - lib\features\admin\screens\faculty_loading_screen.dart:1260:30 - missing_identifier
+  error - Unexpected text ';' - lib\features\admin\screens\faculty_loading_screen.dart:1260:30 - unexpected_token
+  error - Expected to find '}' - lib\features\admin\screens\faculty_loading_screen.dart:1261:9 - expected_token
+  error - Expected to find ')' - lib\features\admin\screens\faculty_loading_screen.dart:1262:7 - expected_token
+   info - Unnecessary use of string interpolation - lib\features\admin\screens\faculty_loading_screen.dart:1403:37 - unnecessary_string_interpolations
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\admin\screens\faculty_loading_screen.dart:1501:67 - deprecated_member_use
+   info - The private field _selectedLoadTypes could be 'final' - lib\features\admin\screens\faculty_loading_screen.dart:1677:21 - prefer_final_fields
+

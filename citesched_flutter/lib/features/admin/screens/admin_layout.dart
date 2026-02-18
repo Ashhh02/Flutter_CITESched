@@ -1,4 +1,5 @@
 import 'package:citesched_flutter/core/theme/app_theme.dart';
+import 'package:citesched_flutter/core/utils/responsive_helper.dart';
 import 'package:citesched_flutter/features/admin/screens/admin_dashboard_screen.dart';
 import 'package:citesched_flutter/features/admin/screens/faculty_management_screen.dart';
 import 'package:citesched_flutter/features/admin/screens/faculty_loading_screen.dart';
@@ -8,7 +9,9 @@ import 'package:citesched_flutter/features/admin/screens/timetable_screen.dart';
 import 'package:citesched_flutter/features/admin/screens/conflict_screen.dart';
 import 'package:citesched_flutter/features/admin/screens/report_screen.dart';
 import 'package:citesched_flutter/features/admin/widgets/admin_sidebar.dart';
+import 'package:citesched_flutter/core/widgets/nlp_query_dialog.dart';
 
+import 'package:citesched_flutter/core/widgets/draggable_fab.dart';
 import 'package:flutter/material.dart';
 
 class AdminLayout extends StatefulWidget {
@@ -32,30 +35,85 @@ class _AdminLayoutState extends State<AdminLayout> {
     const ReportScreen(),
   ];
 
+  final List<String> _titles = [
+    'Dashboard',
+    'Faculty Management',
+    'Faculty Loading',
+    'Subject Management',
+    'Room Management',
+    'Timetable',
+    'Conflicts',
+    'Reports',
+  ];
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+
+    final scaffold = Scaffold(
       backgroundColor: AppTheme.startBackground,
+      appBar: !isDesktop
+          ? AppBar(
+              title: Text(_titles[_selectedIndex]),
+              backgroundColor: const Color(0xFF720045),
+              foregroundColor: Colors.white,
+            )
+          : null,
+      drawer: !isDesktop
+          ? Drawer(
+              width: 260,
+              backgroundColor: const Color(0xFF720045),
+              child: AdminSidebar(
+                selectedIndex: _selectedIndex,
+                onDestinationSelected: (index) {
+                  setState(() {
+                    _selectedIndex = index;
+                  });
+                  Navigator.pop(context); // Close drawer
+                },
+              ),
+            )
+          : null,
       body: Row(
         children: [
-          AdminSidebar(
-            selectedIndex: _selectedIndex,
-            onDestinationSelected: (index) {
-              if (index == 8) {
-                // Logout case - handled in Sidebar usually, or here if we pass a callback.
-                // For now, let's assume index 8 is logout and we'll handle it there or via a specific callback.
-                return;
-              }
-              setState(() {
-                _selectedIndex = index;
-              });
-            },
-          ),
+          if (isDesktop)
+            AdminSidebar(
+              selectedIndex: _selectedIndex,
+              onDestinationSelected: (index) {
+                if (index == 8) {
+                  return;
+                }
+                setState(() {
+                  _selectedIndex = index;
+                });
+              },
+            ),
           Expanded(
             child: _screens[_selectedIndex],
           ),
         ],
       ),
+    );
+
+    return Stack(
+      children: [
+        scaffold,
+        DraggableFab(
+          child: FloatingActionButton.extended(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => const NLPQueryDialog(),
+              );
+            },
+            backgroundColor: const Color(0xFF4f003b),
+            foregroundColor: Colors.white,
+            icon: const Icon(Icons.auto_awesome),
+            label: const Text('Ask Me!'),
+            tooltip: 'Hey Ask Me Nigga!',
+          ),
+        ),
+      ],
     );
   }
 }

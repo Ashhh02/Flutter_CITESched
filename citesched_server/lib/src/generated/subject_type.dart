@@ -14,7 +14,8 @@ import 'package:serverpod/serverpod.dart' as _i1;
 
 enum SubjectType implements _i1.SerializableModel {
   lecture,
-  laboratory;
+  laboratory,
+  blended;
 
   static SubjectType fromJson(String name) {
     switch (name) {
@@ -22,6 +23,8 @@ enum SubjectType implements _i1.SerializableModel {
         return SubjectType.lecture;
       case 'laboratory':
         return SubjectType.laboratory;
+      case 'blended':
+        return SubjectType.blended;
       default:
         throw ArgumentError(
           'Value "$name" cannot be converted to "SubjectType"',

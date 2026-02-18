@@ -1,0 +1,4 @@
+class: ScheduleInfo
+fields:
+  schedule: Schedule
+  conflicts: List<ScheduleConflict>

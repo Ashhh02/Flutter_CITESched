@@ -5,4 +5,4 @@ fields:
   totalUnits: double
   totalSubjects: int
   loadStatus: String # Underloaded, Balanced, Overloaded
-  department: String?
+  program: String?

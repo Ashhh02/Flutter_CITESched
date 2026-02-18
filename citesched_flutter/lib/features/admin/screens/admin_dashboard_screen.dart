@@ -1,4 +1,5 @@
 import 'package:citesched_client/citesched_client.dart';
+import 'package:citesched_flutter/core/utils/responsive_helper.dart';
 import 'package:citesched_flutter/features/admin/widgets/conflict_list_modal.dart';
 import 'package:citesched_flutter/features/admin/widgets/faculty_load_chart.dart';
 import 'package:citesched_flutter/features/admin/widgets/report_modal.dart';
@@ -36,10 +37,8 @@ class AdminDashboardScreen extends ConsumerWidget {
         : const Color(0xFF720045);
     final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
 
-    // Django CSS Variables approximation
-    // var(--sidebar-bg) -> #720045
-    // var(--sidebar-hover) -> Linear gradient end
-    // var(--card-bg) -> Colors.white (or dark equivalent)
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+    final isMobile = ResponsiveHelper.isMobile(context);
 
     return Scaffold(
       backgroundColor: bgBody,
@@ -94,30 +93,27 @@ class AdminDashboardScreen extends ConsumerWidget {
           final facultyLoadData = stats.facultyLoad;
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(isMobile ? 16 : 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Header Bar (Restored from Django design)
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(28), // ~1.8rem
-                  margin: const EdgeInsets.only(bottom: 40), // ~2.5rem
+                  padding: EdgeInsets.all(isMobile ? 20 : 28),
+                  margin: EdgeInsets.only(
+                    bottom: isMobile ? 24 : 40,
+                  ),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
                         primaryPurple,
-                        const Color.fromARGB(
-                          155,
-                          85,
-                          11,
-                          74,
-                        ), // Approximate hover/light var
+                        primaryPurple.withOpacity(0.6),
                       ],
                     ),
-                    borderRadius: BorderRadius.circular(19), // ~1.2rem
+                    borderRadius: BorderRadius.circular(19),
                     border: Border.all(
                       color: Colors.white.withOpacity(0.1),
                     ),
@@ -132,7 +128,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                   child: Text(
                     'CITESched — Faculty Loading',
                     style: GoogleFonts.poppins(
-                      fontSize: 24, // clamp(1.1rem, 4vw, 1.7rem) approx
+                      fontSize: isMobile ? 18 : 24,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
                       height: 1.2,
@@ -146,13 +142,12 @@ class AdminDashboardScreen extends ConsumerWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.only(bottom: 20),
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.center, // text-center
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
                         'Welcome back, ${userInfo?.userName ?? "Administrator"}',
                         style: GoogleFonts.poppins(
-                          fontSize: 36, // ~2.3rem
+                          fontSize: isMobile ? 28 : 36,
                           fontWeight: FontWeight.bold,
                           color: textPrimary,
                           letterSpacing: -0.5,
@@ -161,9 +156,9 @@ class AdminDashboardScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Overview of the CITE Department\'s current semester status',
+                        'Overview of the CITE Program\'s current semester status',
                         style: GoogleFonts.poppins(
-                          fontSize: 16,
+                          fontSize: isMobile ? 14 : 16,
                           color: textMuted,
                         ),
                         textAlign: TextAlign.center,
@@ -184,17 +179,20 @@ class AdminDashboardScreen extends ConsumerWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primaryPurple,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
                     ),
                   ),
                 ),
 
                 const SizedBox(height: 30),
 
-                // Statistics Cards (Rows mb-5 g-4)
+                // Statistics Cards
                 LayoutBuilder(
                   builder: (context, constraints) {
-                    final isWide = constraints.maxWidth > 900;
+                    final isWide = isDesktop;
 
                     if (isWide) {
                       return Row(
@@ -203,19 +201,18 @@ class AdminDashboardScreen extends ConsumerWidget {
                             child: StatCard(
                               label: 'Scheduled Classes',
                               value: totalSchedules.toString(),
-                              icon: Icons
-                                  .calendar_today_rounded, // bi-calendar-check equivalent
+                              icon: Icons.calendar_today_rounded,
                               borderColor: primaryPurple,
                               iconColor: primaryPurple,
                               valueColor: primaryPurple,
                             ),
                           ),
-                          const SizedBox(width: 24),
+                          const SizedBox(width: 16),
                           Expanded(
                             child: StatCard(
                               label: 'Active Users',
                               value: totalUsers.toString(),
-                              icon: Icons.people_rounded, // bi-people
+                              icon: Icons.people_rounded,
                               borderColor: const Color(0xFF9333ea),
                               iconColor: const Color(0xFF9333ea),
                               valueColor: const Color(0xFF9333ea),
@@ -227,13 +224,34 @@ class AdminDashboardScreen extends ConsumerWidget {
                               },
                             ),
                           ),
-                          const SizedBox(width: 24),
+                          const SizedBox(width: 16),
                           Expanded(
                             child: StatCard(
-                              label: 'Unresolved Conflicts',
+                              label: 'Total Subjects',
+                              value: stats.totalSubjects.toString(),
+                              icon: Icons.book_rounded,
+                              borderColor: const Color(0xFFc026d3),
+                              iconColor: const Color(0xFFc026d3),
+                              valueColor: const Color(0xFFc026d3),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: StatCard(
+                              label: 'Total Rooms',
+                              value: stats.totalRooms.toString(),
+                              icon: Icons.meeting_room_rounded,
+                              borderColor: const Color(0xFFdb2777),
+                              iconColor: const Color(0xFFdb2777),
+                              valueColor: const Color(0xFFdb2777),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: StatCard(
+                              label: 'Conflicts',
                               value: totalConflicts.toString(),
-                              icon: Icons
-                                  .warning_amber_rounded, // bi-exclamation-triangle
+                              icon: Icons.warning_amber_rounded,
                               borderColor: const Color(0xFFb5179e),
                               iconColor: const Color(0xFFb5179e),
                               valueColor: const Color(0xFFb5179e),
@@ -277,6 +295,24 @@ class AdminDashboardScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 16),
                           StatCard(
+                            label: 'Total Subjects',
+                            value: stats.totalSubjects.toString(),
+                            icon: Icons.book_rounded,
+                            borderColor: const Color(0xFFc026d3),
+                            iconColor: const Color(0xFFc026d3),
+                            valueColor: const Color(0xFFc026d3),
+                          ),
+                          const SizedBox(height: 16),
+                          StatCard(
+                            label: 'Total Rooms',
+                            value: stats.totalRooms.toString(),
+                            icon: Icons.meeting_room_rounded,
+                            borderColor: const Color(0xFFdb2777),
+                            iconColor: const Color(0xFFdb2777),
+                            valueColor: const Color(0xFFdb2777),
+                          ),
+                          const SizedBox(height: 16),
+                          StatCard(
                             label: 'Unresolved Conflicts',
                             value: totalConflicts.toString(),
                             icon: Icons.warning_amber_rounded,
@@ -303,7 +339,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                 // Chart and Conflict Panel
                 LayoutBuilder(
                   builder: (context, constraints) {
-                    final isWide = constraints.maxWidth > 900;
+                    final isWide = isDesktop;
 
                     if (isWide) {
                       return Row(
@@ -314,7 +350,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                             child: _buildChartCard(
                               context,
                               cardBg,
-                              primaryPurple, // Header uses sidebar-bg equivalent
+                              primaryPurple,
                               facultyLoadData,
                             ),
                           ),
@@ -347,6 +383,65 @@ class AdminDashboardScreen extends ConsumerWidget {
                             primaryPurple,
                             recentConflicts,
                             primaryPurple,
+                          ),
+                        ],
+                      );
+                    }
+                  },
+                ),
+
+                const SizedBox(height: 32),
+
+                // Distribution Summaries
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isWide = isDesktop;
+                    if (isWide) {
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: _buildDistributionPanel(
+                              context,
+                              'Section Distribution',
+                              stats.sectionDistribution,
+                              cardBg,
+                              primaryPurple,
+                              Icons.groups_rounded,
+                            ),
+                          ),
+                          const SizedBox(width: 24),
+                          Expanded(
+                            child: _buildDistributionPanel(
+                              context,
+                              'Year Level Distribution',
+                              stats.yearLevelDistribution,
+                              cardBg,
+                              const Color(0xFF9333ea),
+                              Icons.layers_rounded,
+                            ),
+                          ),
+                        ],
+                      );
+                    } else {
+                      return Column(
+                        children: [
+                          _buildDistributionPanel(
+                            context,
+                            'Section Distribution',
+                            stats.sectionDistribution,
+                            cardBg,
+                            primaryPurple,
+                            Icons.groups_rounded,
+                          ),
+                          const SizedBox(height: 24),
+                          _buildDistributionPanel(
+                            context,
+                            'Year Level Distribution',
+                            stats.yearLevelDistribution,
+                            cardBg,
+                            const Color(0xFF9333ea),
+                            Icons.layers_rounded,
                           ),
                         ],
                       );
@@ -416,7 +511,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Faculty Teaching Load (Hours)',
+                  'Faculty Teaching Load (Units)',
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -632,6 +727,141 @@ class AdminDashboardScreen extends ConsumerWidget {
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDistributionPanel(
+    BuildContext context,
+    String title,
+    List<DistributionData> data,
+    Color cardBg,
+    Color headerBg,
+    IconData icon,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textMuted = isDark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF666666);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(19),
+        border: Border.all(color: Colors.black.withOpacity(0.05)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.hardEdge,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [headerBg, headerBg.withOpacity(0.8)],
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(icon, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  title,
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Content
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: data.isEmpty
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      child: Text(
+                        'No data available',
+                        style: GoogleFonts.poppins(color: textMuted),
+                      ),
+                    ),
+                  )
+                : Column(
+                    children: data.map((item) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: Text(
+                                item.label,
+                                style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              flex: 7,
+                              child: Stack(
+                                children: [
+                                  Container(
+                                    height: 8,
+                                    decoration: BoxDecoration(
+                                      color: isDark
+                                          ? Colors.white10
+                                          : Colors.grey[200],
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                  ),
+                                  FractionallySizedBox(
+                                    widthFactor:
+                                        (item.count /
+                                                data
+                                                    .map((e) => e.count)
+                                                    .reduce(
+                                                      (a, b) => a > b ? a : b,
+                                                    ))
+                                            .clamp(0.0, 1.0),
+                                    child: Container(
+                                      height: 8,
+                                      decoration: BoxDecoration(
+                                        color: headerBg,
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              '${item.count}',
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.bold,
+                                color: headerBg,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
           ),
         ],
       ),

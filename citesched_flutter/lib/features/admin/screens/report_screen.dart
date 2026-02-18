@@ -3,13 +3,6 @@ import 'package:citesched_flutter/main.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// We can reuse the ReportModal widget but wrap it or extract its body.
-// Since ReportModal is a Dialog with fixed size, we might want to create a ReportView widget.
-// For now, let's create a screen that mimics the ReportModal style but adapts to full screen.
-// To avoid duplication, we *should* ideally refactor ReportModal to use a shared widget.
-// But valid approach for now is to create a screen that embeds the logic.
-// Actually, ReportModal is a Dialog widget. I will copy-adapt its logic to be a full screen widget.
-
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});
 
@@ -17,8 +10,10 @@ class ReportScreen extends StatefulWidget {
   State<ReportScreen> createState() => _ReportScreenState();
 }
 
-class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderStateMixin {
+class _ReportScreenState extends State<ReportScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final maroonColor = const Color(0xFF720045);
 
   @override
   void initState() {
@@ -35,136 +30,127 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryPurple = isDark ? const Color(0xFFa21caf) : const Color(0xFF720045);
+    final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8F9FA);
     final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
-    final bgBody = isDark ? const Color(0xFF0F172A) : const Color(0xFFEEF1F6);
-    final textMuted = isDark ? const Color(0xFF94A3B8) : const Color(0xFF666666);
 
-    return Container(
-      color: bgBody,
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return Scaffold(
+      backgroundColor: bgColor,
+      body: Column(
         children: [
-          // Header
+          // Vibrant Header
           Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(32),
+            padding: const EdgeInsets.all(40),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [primaryPurple, const Color(0xFFb5179e)],
+                colors: [maroonColor, const Color(0xFFb5179e)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: primaryPurple.withOpacity(0.3),
+                  color: maroonColor.withOpacity(0.3),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
               ],
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Administrative Reports',
-                  style: GoogleFonts.poppins(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    height: 1.2,
-                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Analytical Reports',
+                      style: GoogleFonts.poppins(
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Text(
+                      'Comprehensive system metrics and utilization analysis',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        color: Colors.white.withOpacity(0.8),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'System-wide analysis and statistics',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    color: Colors.white.withOpacity(0.9),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white.withOpacity(0.2)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.calendar_today_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'AY 2025-2026',
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 24),
 
-          // Tabs
+          // Tab Selector
           Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: cardBg,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.black.withOpacity(0.05)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.02),
-                  blurRadius: 10,
-                ),
-              ],
-            ),
+            color: cardBg,
             child: TabBar(
               controller: _tabController,
-              indicator: BoxDecoration(
-                color: primaryPurple,
-                borderRadius: BorderRadius.circular(12),
+              labelColor: maroonColor,
+              unselectedLabelColor: Colors.grey,
+              indicatorColor: maroonColor,
+              indicatorWeight: 4,
+              labelStyle: GoogleFonts.poppins(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
               ),
-              dividerColor: Colors.transparent,
-              labelColor: Colors.white,
-              unselectedLabelColor: textMuted,
-              labelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600),
               tabs: const [
                 Tab(text: 'Faculty Load'),
-                Tab(text: 'Room Utilization'),
-                Tab(text: 'Conflict Summary'),
-                Tab(text: 'Schedule Overview'),
+                Tab(text: 'Room Usage'),
+                Tab(text: 'Conflicts'),
+                Tab(text: 'Schedule Stats'),
               ],
             ),
           ),
-          const SizedBox(height: 24),
 
           // Content
           Expanded(
-            child: _ReportScreenContent(tabController: _tabController),
+            child: Padding(
+              padding: const EdgeInsets.all(32.0),
+              child: TabBarView(
+                controller: _tabController,
+                children: const [
+                  _FacultyLoadTab(),
+                  _RoomUtilizationTab(),
+                  _ConflictSummaryTab(),
+                  _ScheduleOverviewTab(),
+                ],
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 }
-
-// We need to re-implement the tabs here because the ReportModal definitions are private
-// OR we can make them public. To save time and keep files clean, I will just duplicate the tab logic 
-// but pointing to the ReportModal's logic if I could.
-// Actually, since I can't easily import private classes, I'll copy the logic. It's safe given the context.
-
-// Wait, I can't import private classes from report_modal.dart.
-// I will copy the tab implementations here.
-
-class _ReportScreenContent extends StatelessWidget {
-  final TabController tabController;
-  const _ReportScreenContent({required this.tabController});
-
-  @override
-  Widget build(BuildContext context) {
-    return TabBarView(
-      controller: tabController,
-      children: const [
-        _FacultyLoadTab(),
-        _RoomUtilizationTab(),
-        _ConflictSummaryTab(),
-        _ScheduleOverviewTab(),
-      ],
-    );
-  }
-}
-
-// -- Copied Logic from ReportModal (Adapted for Screen) --
-
-// ... (Basically pasting the same widget logic but ensuring imports)
-// To keep file short, I'll implement them.
-
 
 class _FacultyLoadTab extends StatelessWidget {
   const _FacultyLoadTab();
@@ -174,50 +160,128 @@ class _FacultyLoadTab extends StatelessWidget {
     return FutureBuilder<List<FacultyLoadReport>>(
       future: client.admin.getFacultyLoadReport(),
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-        if (snapshot.hasError) return Center(child: Text('Error: ${snapshot.error}'));
-        
+        if (snapshot.connectionState == ConnectionState.waiting)
+          return const Center(child: CircularProgressIndicator());
+        if (snapshot.hasError)
+          return Center(child: Text('Error: ${snapshot.error}'));
+
         final data = snapshot.data ?? [];
-        if (data.isEmpty) return const Center(child: Text('No data available'));
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
 
         return Card(
-          elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          child: SingleChildScrollView(
+          color: cardBg,
+          elevation: 4,
+          shadowColor: Colors.black.withOpacity(0.2),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Padding(
             padding: const EdgeInsets.all(24),
-            child: DataTable(
-              headingRowColor: MaterialStateProperty.all(Theme.of(context).primaryColor.withOpacity(0.05)),
-              columns: const [
-                DataColumn(label: Text('Faculty Name', style: TextStyle(fontWeight: FontWeight.bold))),
-                DataColumn(label: Text('Department', style: TextStyle(fontWeight: FontWeight.bold))),
-                DataColumn(label: Text('Subjects', style: TextStyle(fontWeight: FontWeight.bold))),
-                DataColumn(label: Text('Total Units', style: TextStyle(fontWeight: FontWeight.bold))),
-                DataColumn(label: Text('Status', style: TextStyle(fontWeight: FontWeight.bold))),
-              ],
-              rows: data.map((item) {
-                Color statusColor;
-                if (item.loadStatus == 'Overloaded') statusColor = Colors.red;
-                else if (item.loadStatus == 'Underloaded') statusColor = Colors.orange;
-                else statusColor = Colors.green;
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.badge_outlined, color: const Color(0xFF720045)),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Faculty Teaching Load Analysis',
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minWidth: constraints.maxWidth,
+                          ),
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.vertical,
+                            child: DataTable(
+                              columnSpacing: 32,
+                              headingTextStyle: GoogleFonts.poppins(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey[600],
+                              ),
+                              rows: data.map((item) {
+                                Color statusColor;
+                                if (item.loadStatus == 'Overloaded')
+                                  statusColor = Colors.red;
+                                else if (item.loadStatus == 'Underloaded')
+                                  statusColor = Colors.orange;
+                                else
+                                  statusColor = Colors.green;
 
-                return DataRow(cells: [
-                  DataCell(Text(item.facultyName, style: GoogleFonts.poppins())),
-                  DataCell(Text(item.department ?? '-', style: GoogleFonts.poppins())),
-                  DataCell(Text(item.totalSubjects.toString(), style: GoogleFonts.poppins())),
-                  DataCell(Text(item.totalUnits.toStringAsFixed(1), style: GoogleFonts.poppins())),
-                  DataCell(Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      item.loadStatus, 
-                      style: GoogleFonts.poppins(color: statusColor, fontWeight: FontWeight.bold, fontSize: 12)
-                    ),
-                  )),
-                ]);
-              }).toList(),
+                                return DataRow(
+                                  cells: [
+                                    DataCell(
+                                      Text(
+                                        item.facultyName,
+                                        style: GoogleFonts.poppins(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                    DataCell(Text(item.program ?? 'N/A')),
+                                    DataCell(
+                                      Text(
+                                        '${item.totalUnits} Units',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    DataCell(
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 6,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: statusColor.withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(
+                                            20,
+                                          ),
+                                          border: Border.all(
+                                            color: statusColor.withOpacity(0.5),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          item.loadStatus.toUpperCase(),
+                                          style: GoogleFonts.poppins(
+                                            color: statusColor,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 10,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }).toList(),
+                              columns: const [
+                                DataColumn(label: Text('FACULTY')),
+                                DataColumn(label: Text('PROGRAM')),
+                                DataColumn(label: Text('TOTAL LOAD')),
+                                DataColumn(label: Text('STATUS')),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
         );
@@ -234,60 +298,96 @@ class _RoomUtilizationTab extends StatelessWidget {
     return FutureBuilder<List<RoomUtilizationReport>>(
       future: client.admin.getRoomUtilizationReport(),
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-        if (snapshot.hasError) return Center(child: Text('Error: ${snapshot.error}'));
-        
+        if (snapshot.connectionState == ConnectionState.waiting)
+          return const Center(child: CircularProgressIndicator());
+        if (snapshot.hasError)
+          return Center(child: Text('Error: ${snapshot.error}'));
+
         final data = snapshot.data ?? [];
-        return ListView.separated(
-          padding: EdgeInsets.zero,
-          separatorBuilder: (_,__) => const SizedBox(height: 12),
+        return GridView.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            crossAxisSpacing: 24,
+            mainAxisSpacing: 24,
+            childAspectRatio: 1.4,
+          ),
           itemCount: data.length,
           itemBuilder: (context, index) {
             final item = data[index];
+            final color = item.utilizationPercentage > 80
+                ? Colors.red
+                : (item.utilizationPercentage > 50
+                      ? Colors.orange
+                      : Colors.green);
+
             return Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10)],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 48, height: 48,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(Icons.meeting_room_rounded, color: Theme.of(context).primaryColor),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 15,
+                    offset: const Offset(0, 5),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(item.roomName, style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16)),
-                        Text('${item.totalBookings} bookings', style: GoogleFonts.poppins(color: Colors.grey)),
-                      ],
-                    ),
+                ],
+                border: Border.all(color: color.withOpacity(0.2), width: 2),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        item.roomName,
+                        style: GoogleFonts.poppins(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Icon(Icons.meeting_room_rounded, color: color),
+                    ],
                   ),
                   Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('${item.utilizationPercentage.toStringAsFixed(1)}% Usage', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: item.isActive ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          item.isActive ? 'Active' : 'Inactive',
-                          style: GoogleFonts.poppins(color: item.isActive ? Colors.green : Colors.red, fontSize: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Utilization',
+                            style: GoogleFonts.poppins(color: Colors.grey),
+                          ),
+                          Text(
+                            '${item.utilizationPercentage.toStringAsFixed(1)}%',
+                            style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.bold,
+                              color: color,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: LinearProgressIndicator(
+                          value: item.utilizationPercentage / 100,
+                          backgroundColor: color.withOpacity(0.1),
+                          color: color,
+                          minHeight: 8,
                         ),
                       ),
                     ],
+                  ),
+                  Text(
+                    '${item.totalBookings} timeslots assigned',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: Colors.grey,
+                    ),
                   ),
                 ],
               ),
@@ -307,25 +407,87 @@ class _ConflictSummaryTab extends StatelessWidget {
     return FutureBuilder<ConflictSummaryReport>(
       future: client.admin.getConflictSummaryReport(),
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-        if (snapshot.hasError) return Center(child: Text('Error: ${snapshot.error}'));
-        
+        if (snapshot.connectionState == ConnectionState.waiting)
+          return const Center(child: CircularProgressIndicator());
+        if (snapshot.hasError)
+          return Center(child: Text('Error: ${snapshot.error}'));
+
         final data = snapshot.data;
         if (data == null) return const Center(child: Text('No data'));
 
         return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.check_circle_outline, size: 80, color: Colors.green),
-              const SizedBox(height: 16),
-              Text(
-                'Total Conflicts: ${data.totalConflicts}',
-                style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Text('System integrity is ${data.totalConflicts == 0 ? "optimal" : "needs attention"}', style: GoogleFonts.poppins(color: Colors.grey)),
-            ],
+          child: Container(
+            width: 500,
+            padding: const EdgeInsets.all(48),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(32),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 30),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: data.totalConflicts == 0
+                        ? Colors.green.withOpacity(0.1)
+                        : Colors.red.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    data.totalConflicts == 0
+                        ? Icons.verified_user_rounded
+                        : Icons.warning_rounded,
+                    size: 80,
+                    color: data.totalConflicts == 0 ? Colors.green : Colors.red,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                Text(
+                  '${data.totalConflicts} Conflicts Detected',
+                  style: GoogleFonts.poppins(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  data.totalConflicts == 0
+                      ? 'Great job! The system is free of scheduling conflicts. All sessions are properly assigned and resource-optimized.'
+                      : 'Action required. There are active scheduling conflicts that need to be resolved to ensure system integrity.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    color: Colors.grey[600],
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                if (data.totalConflicts > 0)
+                  ElevatedButton(
+                    onPressed: () {}, // Navigate to conflict screen if desired
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF720045),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 16,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'VIEW ALL CONFLICTS',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
         );
       },
@@ -341,41 +503,210 @@ class _ScheduleOverviewTab extends StatelessWidget {
     return FutureBuilder<ScheduleOverviewReport>(
       future: client.admin.getScheduleOverviewReport(),
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-        if (snapshot.hasError) return Center(child: Text('Error: ${snapshot.error}'));
-        
+        if (snapshot.connectionState == ConnectionState.waiting)
+          return const Center(child: CircularProgressIndicator());
+        if (snapshot.hasError)
+          return Center(child: Text('Error: ${snapshot.error}'));
+
         final data = snapshot.data;
         if (data == null) return const Center(child: Text('No data'));
 
-        return GridView.count(
-          crossAxisCount: 2,
-          mainAxisSpacing: 16,
-          crossAxisSpacing: 16,
-          childAspectRatio: 1.5,
+        return Column(
           children: [
-            _buildStatCard(context, 'Total Classes', data.totalSchedules.toString(), Icons.class_outlined, Colors.blue),
-            ...data.schedulesByProgram.entries.map((e) => _buildStatCard(context, '${e.key} Classes', e.value.toString(), Icons.bookmark_outline, Colors.orange)),
+            Row(
+              children: [
+                _buildStatTile(
+                  context,
+                  'Total Schedules',
+                  data.totalSchedules.toString(),
+                  Icons.event_note_rounded,
+                  Colors.blue,
+                ),
+                const SizedBox(width: 24),
+                _buildStatTile(
+                  context,
+                  'Active Programs',
+                  data.schedulesByProgram.length.toString(),
+                  Icons.account_tree_rounded,
+                  Colors.purple,
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            Expanded(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _buildProgramBreakdown(
+                      context,
+                      data.schedulesByProgram,
+                    ),
+                  ),
+                  const SizedBox(width: 24),
+                  Expanded(
+                    child: _buildTermBreakdown(context, data.schedulesByTerm),
+                  ),
+                ],
+              ),
+            ),
           ],
         );
       },
     );
   }
 
-  Widget _buildStatCard(BuildContext context, String title, String value, IconData icon, Color color) {
+  Widget _buildStatTile(
+    BuildContext context,
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(icon, color: color, size: 32),
+            ),
+            const SizedBox(width: 24),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  style: GoogleFonts.poppins(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  title,
+                  style: GoogleFonts.poppins(
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProgramBreakdown(BuildContext context, Map<String, int> data) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10)],
+        borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 32, color: color),
-          const SizedBox(height: 12),
-          Text(value, style: GoogleFonts.poppins(fontSize: 32, fontWeight: FontWeight.bold)),
-          Text(title, style: GoogleFonts.poppins(color: Colors.grey)),
+          Text(
+            'Program Distribution',
+            style: GoogleFonts.poppins(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 24),
+          ...data.entries
+              .map(
+                (e) => Padding(
+                  padding: const EdgeInsets.only(bottom: 16.0),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            e.key.toUpperCase(),
+                            style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            '${e.value} Classes',
+                            style: GoogleFonts.poppins(color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: 0.7, // Placeholder ratio
+                          backgroundColor: Colors.grey.withOpacity(0.1),
+                          color: const Color(0xFF720045),
+                          minHeight: 6,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+              .toList(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTermBreakdown(BuildContext context, Map<String, int> data) {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Enrollment by Term',
+            style: GoogleFonts.poppins(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 24),
+          ...data.entries
+              .map(
+                (e) => ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const CircleAvatar(
+                    backgroundColor: Color(0xFF720045),
+                    child: Icon(Icons.flash_on, color: Colors.white, size: 16),
+                  ),
+                  title: Text(
+                    'Term ${e.key}',
+                    style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+                  ),
+                  trailing: Text(
+                    '${e.value} Subjects',
+                    style: GoogleFonts.poppins(
+                      color: const Color(0xFF720045),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              )
+              .toList(),
         ],
       ),
     );

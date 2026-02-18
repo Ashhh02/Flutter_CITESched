@@ -1,8 +1,11 @@
 import 'package:citesched_client/citesched_client.dart';
+import 'package:citesched_flutter/core/utils/date_utils.dart';
 import 'package:citesched_flutter/main.dart';
+import 'package:citesched_flutter/features/admin/screens/faculty_load_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:citesched_flutter/core/providers/conflict_provider.dart';
 
 // Providers
 final schedulesProvider = FutureProvider<List<Schedule>>((ref) async {
@@ -55,7 +58,7 @@ class _FacultyLoadingScreenState extends ConsumerState<FacultyLoadingScreen> {
       builder: (context) => _NewAssignmentModal(
         maroonColor: maroonColor,
         onSuccess: () {
-          ref.refresh(schedulesProvider);
+          ref.invalidate(schedulesProvider);
         },
       ),
     );
@@ -68,7 +71,7 @@ class _FacultyLoadingScreenState extends ConsumerState<FacultyLoadingScreen> {
         schedule: schedule,
         maroonColor: maroonColor,
         onSuccess: () {
-          ref.refresh(schedulesProvider);
+          ref.invalidate(schedulesProvider);
         },
       ),
     );
@@ -107,7 +110,7 @@ class _FacultyLoadingScreenState extends ConsumerState<FacultyLoadingScreen> {
     if (confirm == true && mounted) {
       try {
         await client.admin.deleteSchedule(schedule.id!);
-        ref.refresh(schedulesProvider);
+        ref.invalidate(schedulesProvider);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -140,214 +143,178 @@ class _FacultyLoadingScreenState extends ConsumerState<FacultyLoadingScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8F9FA);
 
-    return Scaffold(
-      backgroundColor: bgColor,
-      body: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Faculty Loading',
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: bgColor,
+        body: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Faculty Loading',
+                        style: GoogleFonts.poppins(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Manage faculty schedule assignments and workload',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: _showNewAssignmentModal,
+                    icon: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.add_rounded, size: 20),
+                    ),
+                    label: Text(
+                      'Assign Subject',
                       style: GoogleFonts.poppins(
-                        fontSize: 32,
                         fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : Colors.black87,
+                        letterSpacing: 0.5,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Manage faculty schedule assignments and workload',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: Colors.grey[600],
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: maroonColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 18,
                       ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 4,
+                      shadowColor: maroonColor.withValues(alpha: 0.4),
                     ),
-                  ],
-                ),
-                ElevatedButton.icon(
-                  onPressed: _showNewAssignmentModal,
-                  icon: const Icon(Icons.add_rounded),
-                  label: Text(
-                    'New Assignment',
-                    style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
                   ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: maroonColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 16,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 2,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
+                ],
+              ),
+              const SizedBox(height: 24),
 
-            // Conflict Warning Banner
-            _buildConflictBanner(schedulesAsync, facultyAsync),
-            const SizedBox(height: 20),
+              // Conflict Warning Banner
+              _buildConflictBanner(schedulesAsync, facultyAsync),
+              const SizedBox(height: 20),
 
-            // Search and Filter Row
-            Row(
-              children: [
-                // Search Bar
-                // Search Bar
-                Expanded(
-                  flex: 3,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: isDark ? Colors.transparent : Colors.grey[300]!,
+              // Search and Filter Row
+              Row(
+                children: [
+                  // Search Bar
+                  Expanded(
+                    flex: 3,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isDark ? Colors.transparent : Colors.grey[300]!,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF1E293B).withValues(alpha: 0.03),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF1E293B).withOpacity(0.03),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.search_rounded,
-                          color: maroonColor,
-                          size: 22,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: TextField(
-                            controller: _searchController,
-                            onChanged: (value) {
-                              setState(() {
-                                _searchQuery = value.toLowerCase();
-                              });
-                            },
-                            // FIX: Cursor matches text color
-                            cursorColor: isDark ? Colors.white : Colors.black87,
-                            // FIX: Text color adapts to theme
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: isDark ? Colors.white : Colors.black87,
-                            ),
-                            decoration: InputDecoration(
-                              // FIX: Remove internal background color
-                              filled: false,
-                              fillColor: Colors.transparent,
-                              hintText:
-                                  'Search by faculty, subject, or section...',
-                              hintStyle: GoogleFonts.poppins(
-                                color: Colors.grey[500],
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.search_rounded,
+                            color: maroonColor,
+                            size: 22,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: TextField(
+                              controller: _searchController,
+                              onChanged: (value) {
+                                setState(() {
+                                  _searchQuery = value.toLowerCase();
+                                });
+                              },
+                              cursorColor: maroonColor,
+                              style: GoogleFonts.poppins(
                                 fontSize: 14,
+                                color: isDark ? Colors.white : Colors.black87,
                               ),
-                              // FIX: Remove all default borders
-                              border: InputBorder.none,
-                              focusedBorder: InputBorder.none,
-                              enabledBorder: InputBorder.none,
-                              errorBorder: InputBorder.none,
-                              disabledBorder: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(
-                                vertical: 16,
+                              decoration: InputDecoration(
+                                border: InputBorder.none,
+                                hintText: 'Search by faculty, subject, or section...',
+                                hintStyle: GoogleFonts.poppins(
+                                  color: Colors.grey[500],
+                                  fontSize: 14,
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(vertical: 16),
                               ),
                             ),
                           ),
-                        ),
-                        if (_searchQuery.isNotEmpty)
-                          IconButton(
-                            icon: Icon(Icons.clear, color: Colors.grey[600]),
-                            onPressed: () {
-                              _searchController.clear();
-                              setState(() {
-                                _searchQuery = '';
-                              });
-                            },
-                          ),
-                      ],
+                          if (_searchQuery.isNotEmpty)
+                            IconButton(
+                              icon: Icon(Icons.clear, color: Colors.grey[600]),
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() {
+                                  _searchQuery = '';
+                                });
+                              },
+                            ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-
-                // Faculty Filter
-                Expanded(
-                  flex: 2,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color.fromRGBO(30, 41, 59, 1)
-                          : Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey[300]!),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Color(0xFF1E293B).withOpacity(0.03),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
+                  const SizedBox(width: 16),
+                  
+                  // Faculty Filter
+                  Expanded(
+                    flex: 2,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isDark ? Colors.transparent : Colors.grey[300]!,
                         ),
-                      ],
-                    ),
-                    child: facultyAsync.when(
-                      loading: () => const SizedBox(),
-                      error: (_, __) => const SizedBox(),
-                      data: (facultyList) {
-                        return DropdownButtonHideUnderline(
+                      ),
+                      child: facultyAsync.when(
+                        loading: () => const Center(child: CircularProgressIndicator()),
+                        error: (error, stack) => const Text('Error'),
+                        data: (faculty) => DropdownButtonHideUnderline(
                           child: DropdownButton<String>(
                             value: _selectedFaculty,
-                            hint: Row(
-                              children: [
-                                Icon(
-                                  Icons.person_outline,
-                                  color: maroonColor,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Filter by Faculty',
-                                  style: GoogleFonts.poppins(
-                                    color: Colors.grey[600],
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
+                            hint: Text('Filter by Faculty', style: GoogleFonts.poppins(fontSize: 14)),
                             isExpanded: true,
-                            icon: Icon(
-                              Icons.arrow_drop_down,
-                              color: Colors.grey[600],
-                            ),
                             items: [
                               DropdownMenuItem<String>(
                                 value: null,
-                                child: Text(
-                                  'All Faculty',
-                                  style: GoogleFonts.poppins(fontSize: 14),
-                                ),
+                                child: Text('All Faculty', style: GoogleFonts.poppins(fontSize: 14)),
                               ),
-                              ...facultyList.map((faculty) {
-                                return DropdownMenuItem<String>(
-                                  value: faculty.id.toString(),
-                                  child: Text(
-                                    faculty.name,
-                                    style: GoogleFonts.poppins(fontSize: 14),
-                                  ),
-                                );
-                              }),
+                              ...faculty.map((f) => DropdownMenuItem<String>(
+                                value: f.id.toString(),
+                                child: Text(f.name, style: GoogleFonts.poppins(fontSize: 14)),
+                              )),
                             ],
                             onChanged: (value) {
                               setState(() {
@@ -355,858 +322,864 @@ class _FacultyLoadingScreenState extends ConsumerState<FacultyLoadingScreen> {
                               });
                             },
                           ),
-                        );
-                      },
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
+                ],
+              ),
+              const SizedBox(height: 24),
 
-            // Schedule Table
-            Expanded(
-              child: schedulesAsync.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, stack) => Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.error_outline,
-                        size: 64,
-                        color: Colors.red,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Error loading schedules',
-                        style: GoogleFonts.poppins(fontSize: 18),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        error.toString(),
-                        style: GoogleFonts.poppins(color: Colors.grey),
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () => ref.refresh(schedulesProvider),
-                        child: const Text('Retry'),
-                      ),
-                    ],
-                  ),
+              // Tab Bar
+              Container(
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-                data: (schedules) {
-                  return facultyAsync.when(
+                child: TabBar(
+                  indicator: BoxDecoration(
+                    color: maroonColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: maroonColor.withValues(alpha: 0.2)),
+                  ),
+                  indicatorColor: maroonColor,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  labelColor: maroonColor,
+                  unselectedLabelColor: Colors.grey[600],
+                  labelStyle: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 13),
+                  unselectedLabelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w500, fontSize: 13),
+                  tabs: const [
+                    Tab(text: 'Faculty Loading Summary'),
+                    Tab(text: 'Subject Assignments'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Main Content Area
+              Expanded(
+                child: TabBarView(
+                  children: [
+                    _buildFacultySummaryView(
+                      schedulesAsync,
+                      facultyAsync,
+                      subjectsAsync,
+                      roomsAsync,
+                      timeslotsAsync,
+                      isDark,
+                    ),
+                    _buildSubjectAssignmentsView(
+                      schedulesAsync,
+                      facultyAsync,
+                      subjectsAsync,
+                      roomsAsync,
+                      timeslotsAsync,
+                      isDark,
+                      maroonColor,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+  Widget _buildSubjectAssignmentsView(
+    AsyncValue<List<Schedule>> schedulesAsync,
+    AsyncValue<List<Faculty>> facultyAsync,
+    AsyncValue<List<Subject>> subjectsAsync,
+    AsyncValue<List<Room>> roomsAsync,
+    AsyncValue<List<Timeslot>> timeslotsAsync,
+    bool isDark,
+    Color maroonColor,
+  ) {
+    return Column(
+      children: [
+        Expanded(
+          child: schedulesAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, stack) => Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.error_outline,
+                    size: 64,
+                    color: Colors.red,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error loading schedules',
+                    style: GoogleFonts.poppins(fontSize: 18),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    error.toString(),
+                    style: GoogleFonts.poppins(color: Colors.grey),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => ref.invalidate(schedulesProvider),
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            ),
+            data: (schedules) {
+              return facultyAsync.when(
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (error, stack) => const Center(child: Text('Error')),
+                data: (facultyList) {
+                  return subjectsAsync.when(
                     loading: () =>
                         const Center(child: CircularProgressIndicator()),
-                    error: (_, __) => const Center(child: Text('Error')),
-                    data: (facultyList) {
-                      return subjectsAsync.when(
-                        loading: () =>
-                            const Center(child: CircularProgressIndicator()),
-                        error: (_, __) => const Center(child: Text('Error')),
-                        data: (subjectList) {
-                          return roomsAsync.when(
+                    error: (error, stack) => const Center(child: Text('Error')),
+                    data: (subjectList) {
+                      return roomsAsync.when(
+                        loading: () => const Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                        error: (error, stack) =>
+                            const Center(child: Text('Error')),
+                        data: (roomList) {
+                          return timeslotsAsync.when(
                             loading: () => const Center(
                               child: CircularProgressIndicator(),
                             ),
-                            error: (_, __) =>
+                            error: (error, stack) =>
                                 const Center(child: Text('Error')),
-                            data: (roomList) {
-                              return timeslotsAsync.when(
-                                loading: () => const Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                                error: (_, __) =>
-                                    const Center(child: Text('Error')),
-                                data: (timeslotList) {
-                                  // Create maps for lookup
-                                  final facultyMap = {
-                                    for (var f in facultyList) f.id!: f,
-                                  };
-                                  final subjectMap = {
-                                    for (var s in subjectList) s.id!: s,
-                                  };
-                                  final roomMap = {
-                                    for (var r in roomList) r.id!: r,
-                                  };
-                                  final timeslotMap = {
-                                    for (var t in timeslotList) t.id!: t,
-                                  };
+                            data: (timeslotList) {
+                              // Create maps for lookup
+                              final facultyMap = {
+                                for (var f in facultyList) f.id!: f,
+                              };
+                              final subjectMap = {
+                                for (var s in subjectList) s.id!: s,
+                              };
+                              final roomMap = {
+                                for (var r in roomList) r.id!: r,
+                              };
+                              final timeslotMap = {
+                                for (var t in timeslotList) t.id!: t,
+                              };
 
-                                  // Filter schedules
-                                  final filteredSchedules = schedules.where((
-                                    schedule,
-                                  ) {
-                                    // Search filter
-                                    final matchesSearch =
-                                        _searchQuery.isEmpty ||
-                                        () {
-                                          final faculty =
-                                              facultyMap[schedule.facultyId];
-                                          final subject =
-                                              subjectMap[schedule.subjectId];
-                                          return (faculty?.name
-                                                      .toLowerCase()
-                                                      .contains(_searchQuery) ??
-                                                  false) ||
-                                              (subject?.name
-                                                      .toLowerCase()
-                                                      .contains(
-                                                        _searchQuery,
-                                                      ) ??
-                                                  false) ||
-                                              schedule.section
+                              final filteredSchedules = schedules.where((
+                                schedule,
+                              ) {
+                                final matchesSearch =
+                                    _searchQuery.isEmpty ||
+                                    () {
+                                      final faculty =
+                                          facultyMap[schedule.facultyId];
+                                      final subject =
+                                          subjectMap[schedule.subjectId];
+                                      return (faculty?.name
                                                   .toLowerCase()
-                                                  .contains(
-                                                    _searchQuery,
-                                                  );
-                                        }();
+                                                  .contains(_searchQuery) ??
+                                              false) ||
+                                          (subject?.name
+                                                  .toLowerCase()
+                                                  .contains(_searchQuery) ??
+                                              false) ||
+                                          schedule.section
+                                              .toLowerCase()
+                                              .contains(_searchQuery);
+                                    }();
 
-                                    // Faculty filter
-                                    final matchesFaculty =
-                                        _selectedFaculty == null ||
-                                        schedule.facultyId.toString() ==
-                                            _selectedFaculty;
+                                final matchesFaculty =
+                                    _selectedFaculty == null ||
+                                    schedule.facultyId.toString() ==
+                                        _selectedFaculty;
 
-                                    return matchesSearch && matchesFaculty;
-                                  }).toList();
+                                return matchesSearch && matchesFaculty;
+                              }).toList();
 
-                                  if (filteredSchedules.isEmpty) {
-                                    return Center(
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            Icons.assignment_outlined,
-                                            size: 64,
-                                            color: Colors.grey[400],
-                                          ),
-                                          const SizedBox(height: 16),
-                                          Text(
-                                            _searchQuery.isEmpty
-                                                ? 'No assignments yet'
-                                                : 'No assignments found',
-                                            style: GoogleFonts.poppins(
-                                              fontSize: 18,
-                                              color: Colors.grey[600],
-                                            ),
-                                          ),
-                                          if (_searchQuery.isEmpty) ...[
-                                            const SizedBox(height: 8),
-                                            Text(
-                                              'Click "New Assignment" to get started',
-                                              style: GoogleFonts.poppins(
-                                                color: Colors.grey[500],
-                                              ),
-                                            ),
-                                          ],
-                                        ],
+                              if (filteredSchedules.isEmpty) {
+                                return Center(
+                                  child: Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.assignment_outlined,
+                                        size: 64,
+                                        color: Colors.grey[400],
                                       ),
-                                    );
-                                  }
-
-                                  return Container(
-                                    decoration: BoxDecoration(
-                                      color: isDark
-                                          ? const Color(0xFF1E293B)
-                                          : Colors.white,
-                                      borderRadius: BorderRadius.circular(16),
-                                      border: Border(
-                                        left: BorderSide(
-                                          color: maroonColor,
-                                          width: 4,
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        _searchQuery.isEmpty
+                                            ? 'No assignments yet'
+                                            : 'No assignments found',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 18,
+                                          color: Colors.grey[600],
                                         ),
                                       ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.08),
-                                          blurRadius: 16,
-                                          offset: const Offset(0, 4),
+                                      if (_searchQuery.isEmpty) ...[
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          'Click "New Assignment" to get started',
+                                          style: GoogleFonts.poppins(
+                                            color: Colors.grey[500],
+                                          ),
                                         ),
                                       ],
+                                    ],
+                                  ),
+                                );
+                              }
+
+                              return Container(
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? const Color(0xFF1E293B)
+                                      : Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(
+                                        alpha: 0.05,
+                                      ),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 2),
                                     ),
-                                    child: Column(
-                                      children: [
-                                        // Table Header
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 24,
-                                            vertical: 16,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: maroonColor.withOpacity(
-                                              0.05,
-                                            ),
-                                            borderRadius:
-                                                const BorderRadius.only(
-                                                  topLeft: Radius.circular(16),
-                                                  topRight: Radius.circular(16),
-                                                ),
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              Icon(
-                                                Icons.assignment_rounded,
-                                                color: maroonColor,
-                                                size: 20,
-                                              ),
-                                              const SizedBox(width: 8),
-                                              Text(
-                                                'Schedule Assignments',
-                                                style: GoogleFonts.poppins(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: maroonColor,
-                                                ),
-                                              ),
-                                              const Spacer(),
-                                              Container(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                      horizontal: 12,
-                                                      vertical: 6,
-                                                    ),
-                                                decoration: BoxDecoration(
-                                                  color: maroonColor,
-                                                  borderRadius:
-                                                      BorderRadius.circular(20),
-                                                ),
-                                                child: Text(
-                                                  '${filteredSchedules.length} Total',
-                                                  style: GoogleFonts.poppins(
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: Colors.white,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
+                                  ],
+                                ),
+                                child: Column(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 24,
+                                        vertical: 16,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color:
+                                            maroonColor.withValues(alpha: 0.05),
+                                        borderRadius: const BorderRadius.only(
+                                          topLeft: Radius.circular(16),
+                                          topRight: Radius.circular(16),
                                         ),
-
-                                        // Table Content
-                                        Expanded(
-                                          child: SingleChildScrollView(
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.assignment_rounded,
+                                            color: maroonColor,
+                                            size: 20,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'Schedule Assignments',
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: maroonColor,
+                                            ),
+                                          ),
+                                          const Spacer(),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 12,
+                                              vertical: 6,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: maroonColor,
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                            ),
+                                            child: Text(
+                                              '${filteredSchedules.length} Total',
+                                              style: GoogleFonts.poppins(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: LayoutBuilder(
+                                        builder: (context, constraints) {
+                                          return SingleChildScrollView(
                                             scrollDirection: Axis.horizontal,
-                                            child: SingleChildScrollView(
-                                              child: DataTable(
-                                                headingRowColor:
-                                                    WidgetStateProperty.all(
-                                                      maroonColor,
-                                                    ),
-                                                headingTextStyle:
-                                                    GoogleFonts.poppins(
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 13,
-                                                      letterSpacing: 0.5,
-                                                    ),
-                                                dataRowMinHeight: 70,
-                                                dataRowMaxHeight: 90,
-                                                columnSpacing: 28,
-                                                horizontalMargin: 24,
-                                                decoration: BoxDecoration(
-                                                  color: Colors.transparent,
-                                                ),
-                                                columns: const [
-                                                  DataColumn(
-                                                    label: Text('FACULTY'),
+                                            child: ConstrainedBox(
+                                              constraints: BoxConstraints(
+                                                minWidth: constraints.maxWidth,
+                                              ),
+                                              child: SingleChildScrollView(
+                                                scrollDirection: Axis.vertical,
+                                                child: DataTable(
+                                                  headingRowColor:
+                                                      WidgetStateProperty.all(
+                                                    maroonColor,
                                                   ),
-                                                  DataColumn(
-                                                    label: Text('SUBJECT'),
+                                                  headingTextStyle:
+                                                      GoogleFonts.poppins(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 13,
+                                                    letterSpacing: 0.5,
                                                   ),
-                                                  DataColumn(
-                                                    label: Text('SECTION'),
+                                                  dataRowMinHeight: 70,
+                                                  dataRowMaxHeight: 90,
+                                                  columnSpacing: 28,
+                                                  horizontalMargin: 24,
+                                                  decoration:
+                                                      const BoxDecoration(
+                                                    color: Colors.transparent,
                                                   ),
-                                                  DataColumn(
-                                                    label: Text('TYPE'),
-                                                  ),
-                                                  DataColumn(
-                                                    label: Text('UNITS'),
-                                                  ),
-                                                  DataColumn(
-                                                    label: Text(
-                                                      'ROOM & SCHEDULE',
-                                                    ),
-                                                  ),
-                                                  DataColumn(
-                                                    label: Text('STATUS'),
-                                                  ),
-                                                  DataColumn(
-                                                    label: Text('ACTIONS'),
-                                                  ),
-                                                ],
-                                                rows: filteredSchedules.asMap().entries.map((
-                                                  entry,
-                                                ) {
-                                                  final schedule = entry.value;
-                                                  final index = entry.key;
-                                                  final faculty =
-                                                      facultyMap[schedule
-                                                          .facultyId];
-                                                  final subject =
-                                                      subjectMap[schedule
-                                                          .subjectId];
-                                                  final room =
-                                                      roomMap[schedule.roomId];
-                                                  final timeslot =
-                                                      timeslotMap[schedule
-                                                          .timeslotId];
+                                                  columns: const [
+                                                    DataColumn(label: Text('FACULTY')),
+                                                    DataColumn(label: Text('SUBJECT')),
+                                                    DataColumn(label: Text('SECTION')),
+                                                    DataColumn(label: Text('LOAD')),
+                                                    DataColumn(label: Text('UNITS')),
+                                                    DataColumn(label: Text('HOURS')),
+                                                    DataColumn(label: Text('ROOM & SCHEDULE')),
+                                                    DataColumn(label: Text('STATUS')),
+                                                    DataColumn(label: Text('ACTIONS')),
+                                                  ],
+                                                  rows: filteredSchedules.asMap().entries.map((
+                                                    entry,
+                                                  ) {
+                                                    final schedule = entry.value;
+                                                    final index = entry.key;
+                                                    final faculty =
+                                                        facultyMap[schedule.facultyId];
+                                                    final subject =
+                                                        subjectMap[schedule.subjectId];
+                                                    final room =
+                                                        roomMap[schedule.roomId];
+                                                    final timeslot =
+                                                        timeslotMap[schedule.timeslotId];
 
-                                                  final isAutoAssign =
-                                                      schedule.roomId == -1 ||
-                                                      schedule.timeslotId == -1;
+                                                    final isAutoAssign =
+                                                        schedule.roomId == -1 ||
+                                                        schedule.timeslotId == -1;
 
-                                                  return DataRow(
-                                                    color: WidgetStateProperty.resolveWith<Color?>(
-                                                      (states) {
-                                                        if (states.contains(
-                                                          WidgetState.hovered,
-                                                        )) {
-                                                          return maroonColor
-                                                              .withOpacity(
-                                                                0.05,
-                                                              );
-                                                        }
-                                                        return index.isEven
-                                                            ? (isDark
+                                                    return DataRow(
+                                                      color:
+                                                          WidgetStateProperty
+                                                              .resolveWith<Color?>(
+                                                        (states) {
+                                                          if (states.contains(
+                                                            WidgetState.hovered,
+                                                          )) {
+                                                            return maroonColor
+                                                                .withValues(
+                                                              alpha: 0.05,
+                                                            );
+                                                          }
+                                                          return index.isEven
+                                                              ? (isDark
                                                                   ? Colors.white
-                                                                        .withOpacity(
-                                                                          0.02,
-                                                                        )
+                                                                      .withValues(
+                                                                    alpha: 0.02,
+                                                                  )
                                                                   : Colors.grey
-                                                                        .withOpacity(
-                                                                          0.02,
-                                                                        ))
-                                                            : null;
-                                                      },
-                                                    ),
-                                                    cells: [
-                                                      DataCell(
-                                                        Row(
-                                                          children: [
-                                                            Container(
-                                                              width: 40,
-                                                              height: 40,
-                                                              decoration: BoxDecoration(
-                                                                gradient: LinearGradient(
-                                                                  colors: [
-                                                                    maroonColor,
-                                                                    maroonColor
-                                                                        .withOpacity(
-                                                                          0.7,
-                                                                        ),
-                                                                  ],
+                                                                      .withValues(
+                                                                    alpha: 0.02,
+                                                                  ))
+                                                              : null;
+                                                        },
+                                                      ),
+                                                      cells: [
+                                                        DataCell(
+                                                          Row(
+                                                            children: [
+                                                              Container(
+                                                                width: 40,
+                                                                height: 40,
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  gradient:
+                                                                      LinearGradient(
+                                                                    colors: [
+                                                                      maroonColor,
+                                                                      maroonColor
+                                                                          .withValues(
+                                                                        alpha: 0.7,
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                    10,
+                                                                  ),
                                                                 ),
-                                                                borderRadius:
-                                                                    BorderRadius.circular(
-                                                                      10,
-                                                                    ),
-                                                              ),
-                                                              child: Center(
-                                                                child: Text(
-                                                                  (faculty?.name.isNotEmpty ??
-                                                                          false)
-                                                                      ? faculty!
+                                                                child: Center(
+                                                                  child: Text(
+                                                                    (faculty?.name
+                                                                                .isNotEmpty ??
+                                                                            false)
+                                                                        ? faculty!
                                                                             .name[0]
                                                                             .toUpperCase()
-                                                                      : '?',
-                                                                  style: GoogleFonts.poppins(
-                                                                    color: Colors
-                                                                        .white,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold,
-                                                                    fontSize:
-                                                                        16,
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                            const SizedBox(
-                                                              width: 12,
-                                                            ),
-                                                            Column(
-                                                              crossAxisAlignment:
-                                                                  CrossAxisAlignment
-                                                                      .start,
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .center,
-                                                              children: [
-                                                                Text(
-                                                                  faculty?.name ??
-                                                                      'Unknown',
-                                                                  style: GoogleFonts.poppins(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w600,
-                                                                    fontSize:
-                                                                        14,
-                                                                  ),
-                                                                ),
-                                                                if (faculty
-                                                                        ?.facultyId !=
-                                                                    null)
-                                                                  Text(
-                                                                    'ID: ${faculty!.facultyId}',
-                                                                    style: GoogleFonts.poppins(
-                                                                      fontSize:
-                                                                          11,
-                                                                      color: Colors
-                                                                          .grey[600],
+                                                                        : '?',
+                                                                    style:
+                                                                        GoogleFonts
+                                                                            .poppins(
+                                                                      color:
+                                                                          Colors
+                                                                              .white,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold,
+                                                                      fontSize: 16,
                                                                     ),
                                                                   ),
-                                                              ],
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      DataCell(
-                                                        Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
-                                                          children: [
-                                                            Text(
-                                                              subject?.name ??
-                                                                  'Unknown',
-                                                              style: GoogleFonts.poppins(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w600,
-                                                                fontSize: 13,
+                                                                ),
                                                               ),
-                                                            ),
-                                                            if (subject?.code !=
-                                                                null)
+                                                              const SizedBox(
+                                                                width: 12,
+                                                              ),
+                                                              Column(
+                                                                crossAxisAlignment:
+                                                                    CrossAxisAlignment.start,
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment.center,
+                                                                children: [
+                                                                  Text(
+                                                                    faculty?.name ?? 'Unknown',
+                                                                    style: GoogleFonts.poppins(
+                                                                      fontWeight: FontWeight.w600,
+                                                                      fontSize: 14,
+                                                                    ),
+                                                                  ),
+                                                                  if (faculty?.facultyId != null)
+                                                                    Text(
+                                                                      'ID: ${faculty!.facultyId}',
+                                                                      style: GoogleFonts.poppins(
+                                                                        fontSize: 11,
+                                                                        color: Colors.grey[600],
+                                                                      ),
+                                                                    ),
+                                                                ],
+                                                              ),
+                                                            ],
+                                                          )
+                                                        ),
+                                                        DataCell(
+                                                          Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .center,
+                                                            children: [
                                                               Text(
-                                                                subject!.code!,
-                                                                style: GoogleFonts.poppins(
-                                                                  fontSize: 11,
-                                                                  color: Colors
-                                                                      .grey[600],
-                                                                ),
-                                                              ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      DataCell(
-                                                        Container(
-                                                          padding:
-                                                              const EdgeInsets.symmetric(
-                                                                horizontal: 12,
-                                                                vertical: 8,
-                                                              ),
-                                                          decoration: BoxDecoration(
-                                                            color: maroonColor
-                                                                .withOpacity(
-                                                                  0.08,
-                                                                ),
-                                                            borderRadius:
-                                                                BorderRadius.circular(
-                                                                  10,
-                                                                ),
-                                                          ),
-                                                          child: Text(
-                                                            schedule.section,
-                                                            style:
-                                                                GoogleFonts.poppins(
+                                                                subject?.name ??
+                                                                    'Unknown',
+                                                                style:
+                                                                    GoogleFonts
+                                                                        .poppins(
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .w600,
                                                                   fontSize: 13,
-                                                                  color:
-                                                                      maroonColor,
-                                                                ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      DataCell(
-                                                        Container(
-                                                          padding:
-                                                              const EdgeInsets.symmetric(
-                                                                horizontal: 12,
-                                                                vertical: 7,
-                                                              ),
-                                                          decoration: BoxDecoration(
-                                                            gradient: LinearGradient(
-                                                              colors: [
-                                                                _getLoadTypeColor(
-                                                                  schedule
-                                                                      .loadType,
-                                                                ),
-                                                                _getLoadTypeColor(
-                                                                  schedule
-                                                                      .loadType,
-                                                                ).withOpacity(
-                                                                  0.7,
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            borderRadius:
-                                                                BorderRadius.circular(
-                                                                  16,
-                                                                ),
-                                                            boxShadow: [
-                                                              BoxShadow(
-                                                                color: _getLoadTypeColor(
-                                                                  schedule
-                                                                      .loadType,
-                                                                ).withOpacity(0.3),
-                                                                blurRadius: 6,
-                                                                offset:
-                                                                    const Offset(
-                                                                      0,
-                                                                      2,
-                                                                    ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                          child: Row(
-                                                            mainAxisSize:
-                                                                MainAxisSize
-                                                                    .min,
-                                                            children: [
-                                                              Icon(
-                                                                _getLoadTypeIcon(
-                                                                  schedule
-                                                                      .loadType,
-                                                                ),
-                                                                size: 13,
-                                                                color: Colors
-                                                                    .white,
-                                                              ),
-                                                              const SizedBox(
-                                                                width: 6,
-                                                              ),
-                                                              Text(
-                                                                _getLoadTypeText(
-                                                                  schedule
-                                                                      .loadType,
-                                                                ),
-                                                                style: GoogleFonts.poppins(
-                                                                  fontSize: 12,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600,
-                                                                  color: Colors
-                                                                      .white,
                                                                 ),
                                                               ),
+                                                              if (subject?.code !=
+                                                                  null)
+                                                                Text(
+                                                                  subject!.code,
+                                                                  style:
+                                                                      GoogleFonts
+                                                                          .poppins(
+                                                                    fontSize: 11,
+                                                                    color:
+                                                                        Colors.grey[
+                                                                            600],
+                                                                  ),
+                                                                ),
                                                             ],
                                                           ),
                                                         ),
-                                                      ),
-                                                      DataCell(
-                                                        Row(
-                                                          children: [
-                                                            Icon(
-                                                              Icons.school,
-                                                              size: 16,
-                                                              color: Colors
-                                                                  .grey[600],
+                                                        DataCell(
+                                                          Container(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                              horizontal: 12,
+                                                              vertical: 8,
                                                             ),
-                                                            const SizedBox(
-                                                              width: 6,
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              color: maroonColor
+                                                                  .withValues(
+                                                                alpha: 0.08,
+                                                              ),
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                10,
+                                                              ),
                                                             ),
-                                                            Text(
-                                                              schedule.units
-                                                                      ?.toString() ??
-                                                                  'N/A',
-                                                              style: GoogleFonts.poppins(
-                                                                fontSize: 13,
+                                                            child: Text(
+                                                              schedule.section,
+                                                              style:
+                                                                  GoogleFonts
+                                                                      .poppins(
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .w600,
+                                                                fontSize: 13,
+                                                                color: maroonColor,
                                                               ),
                                                             ),
-                                                          ],
+                                                          ),
                                                         ),
-                                                      ),
-                                                      DataCell(
-                                                        Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
-                                                          children: [
-                                                            Row(
+                                                        DataCell(
+                                                          Container(
+                                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                                            decoration: BoxDecoration(
+                                                              color: _getLoadTypeColor(schedule.loadTypes).withValues(alpha: 0.1),
+                                                              borderRadius: BorderRadius.circular(12),
+                                                              border: Border.all(color: _getLoadTypeColor(schedule.loadTypes).withValues(alpha: 0.3)),
+                                                            ),
+                                                            child: Row(
+                                                              mainAxisSize: MainAxisSize.min,
                                                               children: [
-                                                                Icon(
-                                                                  Icons
-                                                                      .meeting_room_rounded,
-                                                                  size: 16,
-                                                                  color:
-                                                                      isAutoAssign
-                                                                      ? Colors
-                                                                            .orange
-                                                                      : maroonColor,
-                                                                ),
-                                                                const SizedBox(
-                                                                  width: 6,
-                                                                ),
-                                                                Text(
-                                                                  room?.name ??
-                                                                      'Waiting for AI...',
-                                                                  style: GoogleFonts.poppins(
-                                                                    fontSize:
-                                                                        12,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w600,
-                                                                    color:
-                                                                        isAutoAssign
-                                                                        ? Colors
-                                                                              .orange
-                                                                        : Colors
-                                                                              .black87,
-                                                                    fontStyle:
-                                                                        isAutoAssign
-                                                                        ? FontStyle
-                                                                              .italic
-                                                                        : null,
-                                                                  ),
-                                                                ),
+                                                                Icon(_getLoadTypeIcon((schedule.loadTypes != null && schedule.loadTypes!.isNotEmpty) ? schedule.loadTypes!.first : null), 
+                                                                     size: 14, color: _getLoadTypeColor(schedule.loadTypes)),
+                                                                const SizedBox(width: 4),
+                                                                Text(_getLoadTypeText(schedule.loadTypes),
+                                                                  style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: _getLoadTypeColor(schedule.loadTypes))),
                                                               ],
                                                             ),
-                                                            const SizedBox(
-                                                              height: 4,
+                                                          ),
+                                                        ),
+                                                        DataCell(
+                                                          Text(
+                                                            schedule.units
+                                                                    ?.toString() ??
+                                                                'N/A',
+                                                            style:
+                                                                GoogleFonts.poppins(
+                                                              fontSize: 13,
+                                                              fontWeight:
+                                                                  FontWeight.w600,
                                                             ),
-                                                            Row(
-                                                              children: [
-                                                                Icon(
-                                                                  Icons
-                                                                      .access_time_rounded,
-                                                                  size: 16,
-                                                                  color:
-                                                                      isAutoAssign
-                                                                      ? Colors
-                                                                            .orange
-                                                                      : Colors
-                                                                            .grey[600],
-                                                                ),
-                                                                const SizedBox(
-                                                                  width: 6,
-                                                                ),
-                                                                Text(
-                                                                  timeslot !=
-                                                                          null
-                                                                      ? '${_getDayAbbr(timeslot.day)} ${timeslot.startTime}-${timeslot.endTime}'
-                                                                      : 'Waiting for AI...',
-                                                                  style: GoogleFonts.poppins(
-                                                                    fontSize:
-                                                                        11,
+                                                          ),
+                                                        ),
+                                                        DataCell(
+                                                          Text(
+                                                            schedule.hours
+                                                                    ?.toString() ??
+                                                                'N/A',
+                                                            style:
+                                                                GoogleFonts.poppins(
+                                                              fontSize: 13,
+                                                              fontWeight:
+                                                                  FontWeight.w600,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        DataCell(
+                                                          Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .center,
+                                                            children: [
+                                                              Row(
+                                                                children: [
+                                                                  Icon(
+                                                                    Icons
+                                                                        .meeting_room_rounded,
+                                                                    size: 16,
                                                                     color:
                                                                         isAutoAssign
-                                                                        ? Colors
-                                                                              .orange
-                                                                        : Colors
-                                                                              .grey[700],
-                                                                    fontStyle:
-                                                                        isAutoAssign
-                                                                        ? FontStyle
-                                                                              .italic
-                                                                        : null,
+                                                                            ? Colors
+                                                                                .orange
+                                                                            : maroonColor,
                                                                   ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      DataCell(
-                                                        Container(
-                                                          padding:
-                                                              const EdgeInsets.symmetric(
-                                                                horizontal: 14,
-                                                                vertical: 8,
-                                                              ),
-                                                          decoration: BoxDecoration(
-                                                            gradient: LinearGradient(
-                                                              colors:
-                                                                  isAutoAssign
-                                                                  ? [
-                                                                      Colors
-                                                                          .orange,
-                                                                      Colors
-                                                                          .orange
-                                                                          .withOpacity(
-                                                                            0.7,
-                                                                          ),
-                                                                    ]
-                                                                  : [
-                                                                      Colors
-                                                                          .green,
-                                                                      Colors
-                                                                          .green
-                                                                          .withOpacity(
-                                                                            0.7,
-                                                                          ),
-                                                                    ],
-                                                            ),
-                                                            borderRadius:
-                                                                BorderRadius.circular(
-                                                                  20,
-                                                                ),
-                                                            boxShadow: [
-                                                              BoxShadow(
-                                                                color:
-                                                                    (isAutoAssign
-                                                                            ? Colors.orange
-                                                                            : Colors.green)
-                                                                        .withOpacity(
-                                                                          0.3,
-                                                                        ),
-                                                                blurRadius: 8,
-                                                                offset:
-                                                                    const Offset(
-                                                                      0,
-                                                                      2,
+                                                                  const SizedBox(
+                                                                    width: 6,
+                                                                  ),
+                                                                  Text(
+                                                                    room?.name ??
+                                                                        'Waiting for AI...',
+                                                                    style:
+                                                                        GoogleFonts
+                                                                            .poppins(
+                                                                      fontSize: 12,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w600,
+                                                                      color:
+                                                                          isAutoAssign
+                                                                              ? Colors
+                                                                                  .orange
+                                                                              : Colors
+                                                                                  .black87,
+                                                                      fontStyle:
+                                                                          isAutoAssign
+                                                                              ? FontStyle
+                                                                                  .italic
+                                                                              : null,
                                                                     ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              const SizedBox(
+                                                                height: 4,
+                                                              ),
+                                                              Row(
+                                                                children: [
+                                                                  Icon(
+                                                                    Icons
+                                                                        .access_time_rounded,
+                                                                    size: 16,
+                                                                    color:
+                                                                        isAutoAssign
+                                                                            ? Colors
+                                                                                .orange
+                                                                            : Colors
+                                                                                .grey[600],
+                                                                  ),
+                                                                  const SizedBox(
+                                                                    width: 6,
+                                                                  ),
+                                                                  Text(
+                                                                    timeslot !=
+                                                                            null
+                                                                        ? '${_getDayAbbr(timeslot.day)} ${timeslot.startTime}-${timeslot.endTime}'
+                                                                        : 'Waiting for AI...',
+                                                                    style:
+                                                                        GoogleFonts
+                                                                            .poppins(
+                                                                      fontSize: 11,
+                                                                      color:
+                                                                          isAutoAssign
+                                                                              ? Colors
+                                                                                  .orange
+                                                                              : Colors
+                                                                                  .grey[700],
+                                                                      fontStyle:
+                                                                          isAutoAssign
+                                                                              ? FontStyle
+                                                                                  .italic
+                                                                              : null,
+                                                                    ),
+                                                                  ),
+                                                                ],
                                                               ),
                                                             ],
                                                           ),
-                                                          child: Row(
-                                                            mainAxisSize:
-                                                                MainAxisSize
-                                                                    .min,
-                                                            children: [
-                                                              Icon(
-                                                                isAutoAssign
-                                                                    ? Icons
+                                                        ),
+                                                        DataCell(
+                                                          Container(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                              horizontal: 14,
+                                                              vertical: 8,
+                                                            ),
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              gradient:
+                                                                  LinearGradient(
+                                                                colors:
+                                                                    isAutoAssign
+                                                                        ? [
+                                                                            Colors.orange,
+                                                                            Colors.orange
+                                                                                .withValues(
+                                                                              alpha: 0.7,
+                                                                            )
+                                                                          ]
+                                                                        : [
+                                                                            Colors.green,
+                                                                            Colors.green
+                                                                                .withValues(
+                                                                              alpha: 0.7,
+                                                                            )
+                                                                          ],
+                                                              ),
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                20,
+                                                              ),
+                                                              boxShadow: [
+                                                                BoxShadow(
+                                                                  color: (isAutoAssign
+                                                                          ? Colors
+                                                                              .orange
+                                                                          : Colors.green)
+                                                                      .withValues(
+                                                                    alpha: 0.3,
+                                                                  ),
+                                                                  blurRadius: 8,
+                                                                  offset:
+                                                                      const Offset(
+                                                                    0,
+                                                                    2,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            child: Row(
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .min,
+                                                              children: [
+                                                                Icon(
+                                                                  isAutoAssign
+                                                                      ? Icons
                                                                           .pending_actions
-                                                                    : Icons
+                                                                      : Icons
                                                                           .check_circle,
-                                                                size: 14,
-                                                                color: Colors
-                                                                    .white,
-                                                              ),
-                                                              const SizedBox(
-                                                                width: 6,
-                                                              ),
-                                                              Text(
-                                                                isAutoAssign
-                                                                    ? 'Pending AI'
-                                                                    : 'Scheduled',
-                                                                style: GoogleFonts.poppins(
-                                                                  fontSize: 12,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600,
+                                                                  size: 14,
                                                                   color: Colors
                                                                       .white,
                                                                 ),
+                                                                const SizedBox(
+                                                                  width: 6,
+                                                                ),
+                                                                Text(
+                                                                  isAutoAssign
+                                                                      ? 'Pending AI'
+                                                                      : 'Scheduled',
+                                                                  style:
+                                                                      GoogleFonts
+                                                                          .poppins(
+                                                                    fontSize: 12,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w600,
+                                                                    color: Colors
+                                                                        .white,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        DataCell(
+                                                          Row(
+                                                            mainAxisSize:
+                                                                MainAxisSize.min,
+                                                            children: [
+                                                              Material(
+                                                                color: Colors
+                                                                    .transparent,
+                                                                child: InkWell(
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                    8,
+                                                                  ),
+                                                                  onTap: () =>
+                                                                      _showEditAssignmentModal(
+                                                                    schedule,
+                                                                  ),
+                                                                  child:
+                                                                      Container(
+                                                                    padding:
+                                                                        const EdgeInsets
+                                                                            .all(
+                                                                      8,
+                                                                    ),
+                                                                    decoration:
+                                                                        BoxDecoration(
+                                                                      color: maroonColor
+                                                                          .withValues(
+                                                                        alpha: 0.1,
+                                                                      ),
+                                                                      borderRadius:
+                                                                          BorderRadius
+                                                                              .circular(
+                                                                        8,
+                                                                      ),
+                                                                    ),
+                                                                    child: Icon(
+                                                                      Icons
+                                                                          .edit_outlined,
+                                                                      color: maroonColor,
+                                                                      size: 18,
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                              const SizedBox(
+                                                                width: 8,
+                                                              ),
+                                                              Material(
+                                                                color: Colors
+                                                                    .transparent,
+                                                                child: InkWell(
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                    8,
+                                                                  ),
+                                                                  onTap: () =>
+                                                                      _deleteSchedule(
+                                                                    schedule,
+                                                                  ),
+                                                                  child:
+                                                                      Container(
+                                                                    padding:
+                                                                        const EdgeInsets
+                                                                            .all(
+                                                                      8,
+                                                                    ),
+                                                                    decoration:
+                                                                        BoxDecoration(
+                                                                      color: Colors
+                                                                          .red
+                                                                          .withValues(
+                                                                        alpha: 0.1,
+                                                                      ),
+                                                                      borderRadius:
+                                                                          BorderRadius
+                                                                              .circular(
+                                                                        8,
+                                                                      ),
+                                                                    ),
+                                                                    child:
+                                                                        const Icon(
+                                                                      Icons
+                                                                          .delete_outline,
+                                                                      color: Colors
+                                                                          .red,
+                                                                      size: 18,
+                                                                    ),
+                                                                  ),
+                                                                ),
                                                               ),
                                                             ],
                                                           ),
                                                         ),
-                                                      ),
-                                                      DataCell(
-                                                        Row(
-                                                          mainAxisSize:
-                                                              MainAxisSize.min,
-                                                          children: [
-                                                            Material(
-                                                              color: Colors
-                                                                  .transparent,
-                                                              child: InkWell(
-                                                                borderRadius:
-                                                                    BorderRadius.circular(
-                                                                      8,
-                                                                    ),
-                                                                onTap: () =>
-                                                                    _showEditAssignmentModal(
-                                                                      schedule,
-                                                                    ),
-                                                                child: Container(
-                                                                  padding:
-                                                                      const EdgeInsets.all(
-                                                                        8,
-                                                                      ),
-                                                                  decoration: BoxDecoration(
-                                                                    color: maroonColor
-                                                                        .withOpacity(
-                                                                          0.1,
-                                                                        ),
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(
-                                                                          8,
-                                                                        ),
-                                                                  ),
-                                                                  child: Icon(
-                                                                    Icons
-                                                                        .edit_outlined,
-                                                                    color:
-                                                                        maroonColor,
-                                                                    size: 18,
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                            const SizedBox(
-                                                              width: 8,
-                                                            ),
-                                                            Material(
-                                                              color: Colors
-                                                                  .transparent,
-                                                              child: InkWell(
-                                                                borderRadius:
-                                                                    BorderRadius.circular(
-                                                                      8,
-                                                                    ),
-                                                                onTap: () =>
-                                                                    _deleteSchedule(
-                                                                      schedule,
-                                                                    ),
-                                                                child: Container(
-                                                                  padding:
-                                                                      const EdgeInsets.all(
-                                                                        8,
-                                                                      ),
-                                                                  decoration: BoxDecoration(
-                                                                    color: Colors
-                                                                        .red
-                                                                        .withOpacity(
-                                                                          0.1,
-                                                                        ),
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(
-                                                                          8,
-                                                                        ),
-                                                                  ),
-                                                                  child: const Icon(
-                                                                    Icons
-                                                                        .delete_outline,
-                                                                    color: Colors
-                                                                        .red,
-                                                                    size: 18,
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  );
-                                                }).toList(),
+                                                      ],
+                                                    );
+                                                  }).toList(),
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                        ),
-                                      ],
+                                          );
+                                        },
+                                      ),
                                     ),
-                                  );
-                                },
+                                  ],
+                                ),
                               );
                             },
                           );
@@ -1215,32 +1188,179 @@ class _FacultyLoadingScreenState extends ConsumerState<FacultyLoadingScreen> {
                     },
                   );
                 },
-              ),
-            ),
-          ],
+              );
+            },
+          ),
         ),
-      ),
+      ],
     );
   }
+  Widget _buildFacultySummaryView(
+    AsyncValue<List<Schedule>> schedulesAsync,
+    AsyncValue<List<Faculty>> facultyAsync,
+    AsyncValue<List<Subject>> subjectsAsync,
+    AsyncValue<List<Room>> roomsAsync,
+    AsyncValue<List<Timeslot>> timeslotsAsync,
+    bool isDark,
+  ) {
+    final maroonColor = const Color(0xFF4f003b);
 
-  Color _getLoadTypeColor(SubjectType? type) {
-    if (type == null) return Colors.grey;
-    switch (type) {
-      case SubjectType.lecture:
-        return Colors.purple;
-      case SubjectType.laboratory:
-        return Colors.teal;
-    }
+    return schedulesAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stack) => Center(child: Text('Error: $error')),
+      data: (schedules) => facultyAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stack) => Center(child: Text('Error: $error')),
+        data: (facultyList) {
+          final subjectList = subjectsAsync.maybeWhen(data: (d) => d, orElse: () => <Subject>[]);
+          final timeslotList = timeslotsAsync.maybeWhen(data: (d) => d, orElse: () => <Timeslot>[]);
+          
+          final subjectMap = {for (var s in subjectList) s.id ?? -1: s};
+          final timeslotMap = {for (var t in timeslotList) t.id ?? -1: t};
+          final allConflicts = ref.watch(allConflictsProvider);
+
+          // Pre-calculate stats for each faculty to avoid work in build/rows
+          final List<Map<String, dynamic>> facultyStats = facultyList.where((f) {
+            if (_searchQuery.isEmpty) return true;
+            return f.name.toLowerCase().contains(_searchQuery.toLowerCase());
+          }).map((faculty) {
+            final assignments = schedules.where((s) => s.facultyId == faculty.id).toList();
+            
+            double totalUnits = 0;
+            double totalHours = 0;
+            bool hasConflicts = false;
+
+            for (var schedule in assignments) {
+              // Units from schedule or fallback to subject
+              totalUnits += schedule.units ?? (subjectMap[schedule.subjectId]?.units.toDouble() ?? 0.0);
+              
+              // Hours (prefer explicit hours field, fallback to timeslot)
+              if (schedule.hours != null) {
+                totalHours += schedule.hours!;
+              } else if (schedule.timeslotId != null) {
+                final t = timeslotMap[schedule.timeslotId];
+                if (t != null) {
+                  try {
+                    final startParts = t.startTime.split(':');
+                    final endParts = t.endTime.split(':');
+                    final startMin = int.parse(startParts[0]) * 60 + int.parse(startParts[1]);
+                    final endMin = int.parse(endParts[0]) * 60 + int.parse(endParts[1]);
+                    totalHours += (endMin - startMin) / 60.0;
+                  } catch (e) { /* ignore */ }
+                }
+              }
+
+              // Conflicts check
+              final conflictsForSchedule = allConflicts.maybeWhen(
+                data: (conflicts) => conflicts.where((c) => 
+                  c.facultyId == faculty.id || 
+                  c.conflictingScheduleId == schedule.id || 
+                  c.scheduleId == schedule.id
+                ).isNotEmpty,
+                orElse: () => false,
+              );
+              
+              if (conflictsForSchedule) hasConflicts = true;
+            }
+
+            return {
+              'faculty': faculty,
+              'assignedSubjects': assignments.length,
+              'totalUnits': totalUnits,
+              'totalHours': totalHours,
+              'hasConflicts': hasConflicts,
+              'remainingLoad': faculty.maxLoad - totalHours,
+            };
+          }).toList();
+
+          return Container(
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1E293B) : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: DataTable(
+                columnSpacing: 24,
+                showCheckboxColumn: false,
+                headingRowColor: WidgetStateProperty.all(maroonColor.withValues(alpha: 0.05)),
+                columns: [
+                  DataColumn(label: Text('FACULTY NAME', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 13))),
+                  DataColumn(label: Text('SUBJECTS', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 13))),
+                  DataColumn(label: Text('UNITS', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 13))),
+                  DataColumn(label: Text('HOURS', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 13))),
+                  DataColumn(label: Text('REMAINING', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 13))),
+                  DataColumn(label: Text('STATUS', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 13))),
+                ],
+                rows: facultyStats.map((stats) {
+                  final f = stats['faculty'] as Faculty;
+                  final hasC = stats['hasConflicts'] as bool;
+                  final remLoad = stats['remainingLoad'] as double;
+                  
+                  return DataRow(
+                    onSelectChanged: (_) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => FacultyLoadDetailsScreen(
+                            faculty: f,
+                            initialSchedules: schedules.where((s) => s.facultyId == f.id).toList(),
+                          ),
+                        ),
+                      );
+                    },
+                    cells: [
+                      DataCell(Row(
+                        children: [
+                          if (hasC) const Icon(Icons.warning_rounded, color: Colors.orange, size: 16),
+                          if (hasC) const SizedBox(width: 4),
+                          Text(f.name, style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                        ],
+                      )),
+                      DataCell(Text(stats['assignedSubjects'].toString(), style: GoogleFonts.poppins())),
+                      DataCell(Text(stats['totalUnits'].toString(), style: GoogleFonts.poppins())),
+                      DataCell(Text('${(stats['totalHours'] as double).toStringAsFixed(1)}h', style: GoogleFonts.poppins())),
+                      DataCell(Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: remLoad < 0 ? Colors.red.withValues(alpha: 0.1) : Colors.green.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(remLoad.toStringAsFixed(1),
+                          style: GoogleFonts.poppins(color: remLoad < 0 ? Colors.red : Colors.green, fontWeight: FontWeight.bold)),
+                      )),
+                      DataCell(hasC 
+                        ? const Icon(Icons.error_outline, color: Colors.red) 
+                        : const Icon(Icons.check_circle_outline, color: Colors.green)),
+                    ],
+                    );
+                  }).toList(),
+                ),
+              ),
+            );
+          },
+        ),
+      );
   }
 
-  String _getLoadTypeText(SubjectType? type) {
-    if (type == null) return 'N/A';
-    switch (type) {
-      case SubjectType.lecture:
-        return 'Lecture';
-      case SubjectType.laboratory:
-        return 'Lab';
-    }
+  Color _getLoadTypeColor(List<SubjectType>? types) {
+    if (types == null || types.isEmpty) return Colors.grey;
+    if (types.contains(SubjectType.lecture) && types.contains(SubjectType.laboratory)) return Colors.orange;
+    if (types.contains(SubjectType.lecture)) return Colors.purple;
+    if (types.contains(SubjectType.laboratory)) return Colors.teal;
+    return Colors.blue; 
+  }
+
+  String _getLoadTypeText(List<SubjectType>? types) {
+    if (types == null || types.isEmpty) return 'N/A';
+    return types.map((t) => t.name.toUpperCase()).join(' / ');
   }
 
   IconData _getLoadTypeIcon(SubjectType? type) {
@@ -1250,6 +1370,8 @@ class _FacultyLoadingScreenState extends ConsumerState<FacultyLoadingScreen> {
         return Icons.menu_book;
       case SubjectType.laboratory:
         return Icons.science;
+      case SubjectType.blended:
+        return Icons.layers_outlined;
     }
   }
 
@@ -1278,7 +1400,7 @@ class _FacultyLoadingScreenState extends ConsumerState<FacultyLoadingScreen> {
   ) {
     return schedulesAsync.when(
       loading: () => const SizedBox(),
-      error: (_, __) => const SizedBox(),
+      error: (error, stack) => const SizedBox(),
       data: (schedules) {
         // Simple conflict detection - check for duplicate timeslots
         final conflicts = <String>[];
@@ -1309,9 +1431,7 @@ class _FacultyLoadingScreenState extends ConsumerState<FacultyLoadingScreen> {
             ),
             boxShadow: [
               BoxShadow(
-                color: (hasConflicts ? Colors.red : Colors.green).withOpacity(
-                  0.1,
-                ),
+                color: (hasConflicts ? Colors.red : Colors.green).withValues(alpha: 0.1,),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -1335,8 +1455,8 @@ class _FacultyLoadingScreenState extends ConsumerState<FacultyLoadingScreen> {
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: hasConflicts
-                              ? Colors.red.withOpacity(0.1)
-                              : Colors.green.withOpacity(0.1),
+                              ? Colors.red.withValues(alpha: 0.1)
+                              : Colors.green.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Icon(
@@ -1454,9 +1574,9 @@ class _FacultyLoadingScreenState extends ConsumerState<FacultyLoadingScreen> {
                 ),
             ],
           ),
-        );
-      },
-    );
+          );
+        },
+      );
   }
 }
 
@@ -1479,12 +1599,13 @@ class _NewAssignmentModalState extends ConsumerState<_NewAssignmentModal> {
   final _formKey = GlobalKey<FormState>();
   final _sectionController = TextEditingController();
   final _unitsController = TextEditingController();
+  final _hoursController = TextEditingController();
 
   int? _selectedFacultyId;
   int? _selectedSubjectId;
   int? _selectedRoomId;
   int? _selectedTimeslotId;
-  SubjectType? _loadType;
+  final List<SubjectType> _selectedLoadTypes = [];
   bool _isAutoAssign = false;
   bool _isLoading = false;
 
@@ -1492,6 +1613,7 @@ class _NewAssignmentModalState extends ConsumerState<_NewAssignmentModal> {
   void dispose() {
     _sectionController.dispose();
     _unitsController.dispose();
+    _hoursController.dispose();
     super.dispose();
   }
 
@@ -1504,11 +1626,12 @@ class _NewAssignmentModalState extends ConsumerState<_NewAssignmentModal> {
       final schedule = Schedule(
         facultyId: _selectedFacultyId!,
         subjectId: _selectedSubjectId!,
-        roomId: _isAutoAssign ? -1 : (_selectedRoomId ?? -1),
-        timeslotId: _isAutoAssign ? -1 : (_selectedTimeslotId ?? -1),
+        roomId: _isAutoAssign ? null : _selectedRoomId,
+        timeslotId: _isAutoAssign ? null : _selectedTimeslotId,
         section: _sectionController.text.trim(),
-        loadType: _loadType,
+        loadTypes: _selectedLoadTypes,
         units: double.tryParse(_unitsController.text),
+        hours: double.tryParse(_hoursController.text),
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
@@ -1603,7 +1726,7 @@ class _NewAssignmentModalState extends ConsumerState<_NewAssignmentModal> {
                       // Faculty Dropdown
                       facultyAsync.when(
                         loading: () => const CircularProgressIndicator(),
-                        error: (_, __) => const Text('Error loading faculty'),
+                        error: (error, stack) => const Text('Error loading faculty'),
                         data: (facultyList) => _buildDropdown<int>(
                           label: 'Faculty',
                           value: _selectedFacultyId,
@@ -1621,7 +1744,7 @@ class _NewAssignmentModalState extends ConsumerState<_NewAssignmentModal> {
                       // Subject Dropdown
                       subjectsAsync.when(
                         loading: () => const CircularProgressIndicator(),
-                        error: (_, __) => const Text('Error loading subjects'),
+                        error: (error, stack) => const Text('Error loading subjects'),
                         data: (subjectList) => _buildDropdown<int>(
                           label: 'Subject',
                           value: _selectedSubjectId,
@@ -1647,19 +1770,49 @@ class _NewAssignmentModalState extends ConsumerState<_NewAssignmentModal> {
                       const SizedBox(height: 16),
 
                       // Load Type
-                      _buildDropdown<SubjectType>(
-                        label: 'Load Type',
-                        value: _loadType,
-                        items: SubjectType.values,
-                        itemLabel: (type) {
-                          switch (type) {
-                            case SubjectType.lecture:
-                              return 'Lecture';
-                            case SubjectType.laboratory:
-                              return 'Laboratory';
-                          }
-                        },
-                        onChanged: (value) => setState(() => _loadType = value),
+                      // Load Types
+                      Text(
+                        'Subject Types',
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.grey[300]
+                              : Colors.grey[700],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        children: SubjectType.values.map((type) {
+                          final isSelected = _selectedLoadTypes.contains(type);
+                          return FilterChip(
+                            label: Text(type.name.toUpperCase()),
+                            selected: isSelected,
+                            onSelected: (selected) {
+                              setState(() {
+                                if (selected) {
+                                  _selectedLoadTypes.add(type);
+                                } else {
+                                  _selectedLoadTypes.remove(type);
+                                }
+                              });
+                            },
+                            selectedColor: widget.maroonColor.withValues(alpha: 0.2),
+                            checkmarkColor: widget.maroonColor,
+                            labelStyle: GoogleFonts.poppins(
+                              color: isSelected
+                                  ? widget.maroonColor
+                                  : (Theme.of(context).brightness == Brightness.dark
+                                      ? Colors.white70
+                                      : Colors.black87),
+                              fontSize: 12,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
+                          );
+                        }).toList(),
                       ),
                       const SizedBox(height: 16),
 
@@ -1668,6 +1821,15 @@ class _NewAssignmentModalState extends ConsumerState<_NewAssignmentModal> {
                         controller: _unitsController,
                         label: 'Units',
                         icon: Icons.numbers,
+                        keyboardType: TextInputType.number,
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Hours
+                      _buildTextField(
+                        controller: _hoursController,
+                        label: 'Hours',
+                        icon: Icons.access_time,
                         keyboardType: TextInputType.number,
                       ),
                       const SizedBox(height: 24),
@@ -1702,7 +1864,7 @@ class _NewAssignmentModalState extends ConsumerState<_NewAssignmentModal> {
                       if (!_isAutoAssign) ...[
                         roomsAsync.when(
                           loading: () => const CircularProgressIndicator(),
-                          error: (_, __) => const Text('Error loading rooms'),
+                          error: (error, stack) => const Text('Error loading rooms'),
                           data: (roomList) => _buildDropdown<int>(
                             label: 'Room',
                             value: _selectedRoomId,
@@ -1716,7 +1878,7 @@ class _NewAssignmentModalState extends ConsumerState<_NewAssignmentModal> {
                         const SizedBox(height: 16),
                         timeslotsAsync.when(
                           loading: () => const CircularProgressIndicator(),
-                          error: (_, __) =>
+                          error: (error, stack) =>
                               const Text('Error loading timeslots'),
                           data: (timeslotList) => _buildDropdown<int>(
                             label: 'Timeslot',
@@ -1726,7 +1888,11 @@ class _NewAssignmentModalState extends ConsumerState<_NewAssignmentModal> {
                               final t = timeslotList.firstWhere(
                                 (t) => t.id == id,
                               );
-                              return '${_getDayName(t.day)} ${t.startTime}-${t.endTime}';
+                              return CITESchedDateUtils.formatTimeslot(
+                                t.day,
+                                t.startTime,
+                                t.endTime,
+                              );
                             },
                             onChanged: (value) =>
                                 setState(() => _selectedTimeslotId = value),
@@ -1832,7 +1998,7 @@ class _NewAssignmentModalState extends ConsumerState<_NewAssignmentModal> {
     String? Function(T?)? validator,
   }) {
     return DropdownButtonFormField<T>(
-      value: value,
+      initialValue: value,
       decoration: InputDecoration(
         labelText: label,
         labelStyle: GoogleFonts.poppins(),
@@ -1856,24 +2022,6 @@ class _NewAssignmentModalState extends ConsumerState<_NewAssignmentModal> {
     );
   }
 
-  String _getDayName(DayOfWeek day) {
-    switch (day) {
-      case DayOfWeek.mon:
-        return 'Monday';
-      case DayOfWeek.tue:
-        return 'Tuesday';
-      case DayOfWeek.wed:
-        return 'Wednesday';
-      case DayOfWeek.thu:
-        return 'Thursday';
-      case DayOfWeek.fri:
-        return 'Friday';
-      case DayOfWeek.sat:
-        return 'Saturday';
-      case DayOfWeek.sun:
-        return 'Sunday';
-    }
-  }
 }
 
 // Edit Assignment Modal (similar structure to New Assignment)
@@ -1897,12 +2045,13 @@ class _EditAssignmentModalState extends ConsumerState<_EditAssignmentModal> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _sectionController;
   late TextEditingController _unitsController;
+  late TextEditingController _hoursController;
 
   late int _selectedFacultyId;
   late int _selectedSubjectId;
   int? _selectedRoomId;
   int? _selectedTimeslotId;
-  SubjectType? _loadType;
+  List<SubjectType> _selectedLoadTypes = [];
   bool _isAutoAssign = false;
   bool _isLoading = false;
 
@@ -1913,6 +2062,9 @@ class _EditAssignmentModalState extends ConsumerState<_EditAssignmentModal> {
     _unitsController = TextEditingController(
       text: widget.schedule.units?.toString() ?? '',
     );
+    _hoursController = TextEditingController(
+      text: widget.schedule.hours?.toString() ?? '',
+    );
     _selectedFacultyId = widget.schedule.facultyId;
     _selectedSubjectId = widget.schedule.subjectId;
     _selectedRoomId = widget.schedule.roomId == -1
@@ -1921,7 +2073,7 @@ class _EditAssignmentModalState extends ConsumerState<_EditAssignmentModal> {
     _selectedTimeslotId = widget.schedule.timeslotId == -1
         ? null
         : widget.schedule.timeslotId;
-    _loadType = widget.schedule.loadType;
+    _selectedLoadTypes = List.from(widget.schedule.loadTypes ?? []);
     _isAutoAssign =
         widget.schedule.roomId == -1 || widget.schedule.timeslotId == -1;
   }
@@ -1930,6 +2082,7 @@ class _EditAssignmentModalState extends ConsumerState<_EditAssignmentModal> {
   void dispose() {
     _sectionController.dispose();
     _unitsController.dispose();
+    _hoursController.dispose();
     super.dispose();
   }
 
@@ -1943,11 +2096,12 @@ class _EditAssignmentModalState extends ConsumerState<_EditAssignmentModal> {
         id: widget.schedule.id,
         facultyId: _selectedFacultyId,
         subjectId: _selectedSubjectId,
-        roomId: _isAutoAssign ? -1 : (_selectedRoomId ?? -1),
-        timeslotId: _isAutoAssign ? -1 : (_selectedTimeslotId ?? -1),
+        roomId: _isAutoAssign ? null : _selectedRoomId,
+        timeslotId: _isAutoAssign ? null : _selectedTimeslotId,
         section: _sectionController.text.trim(),
-        loadType: _loadType,
+        loadTypes: _selectedLoadTypes,
         units: double.tryParse(_unitsController.text),
+        hours: double.tryParse(_hoursController.text),
         createdAt: widget.schedule.createdAt,
         updatedAt: DateTime.now(),
       );
@@ -2038,7 +2192,7 @@ class _EditAssignmentModalState extends ConsumerState<_EditAssignmentModal> {
                       // Faculty Dropdown
                       facultyAsync.when(
                         loading: () => const CircularProgressIndicator(),
-                        error: (_, __) => const Text('Error loading faculty'),
+                        error: (error, stack) => const Text('Error loading faculty'),
                         data: (facultyList) => _buildDropdown<int>(
                           label: 'Faculty',
                           value: _selectedFacultyId,
@@ -2056,7 +2210,7 @@ class _EditAssignmentModalState extends ConsumerState<_EditAssignmentModal> {
                       // Subject Dropdown
                       subjectsAsync.when(
                         loading: () => const CircularProgressIndicator(),
-                        error: (_, __) => const Text('Error loading subjects'),
+                        error: (error, stack) => const Text('Error loading subjects'),
                         data: (subjectList) => _buildDropdown<int>(
                           label: 'Subject',
                           value: _selectedSubjectId,
@@ -2082,19 +2236,49 @@ class _EditAssignmentModalState extends ConsumerState<_EditAssignmentModal> {
                       const SizedBox(height: 16),
 
                       // Load Type
-                      _buildDropdown<SubjectType>(
-                        label: 'Load Type',
-                        value: _loadType,
-                        items: SubjectType.values,
-                        itemLabel: (type) {
-                          switch (type) {
-                            case SubjectType.lecture:
-                              return 'Lecture';
-                            case SubjectType.laboratory:
-                              return 'Laboratory';
-                          }
-                        },
-                        onChanged: (value) => setState(() => _loadType = value),
+                      // Load Types
+                      Text(
+                        'Subject Types',
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.grey[300]
+                              : Colors.grey[700],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        children: SubjectType.values.map((type) {
+                          final isSelected = _selectedLoadTypes.contains(type);
+                          return FilterChip(
+                            label: Text(type.name.toUpperCase()),
+                            selected: isSelected,
+                            onSelected: (selected) {
+                              setState(() {
+                                if (selected) {
+                                  _selectedLoadTypes.add(type);
+                                } else {
+                                  _selectedLoadTypes.remove(type);
+                                }
+                              });
+                            },
+                            selectedColor: widget.maroonColor.withValues(alpha: 0.2),
+                            checkmarkColor: widget.maroonColor,
+                            labelStyle: GoogleFonts.poppins(
+                              color: isSelected
+                                  ? widget.maroonColor
+                                  : (Theme.of(context).brightness == Brightness.dark
+                                      ? Colors.white70
+                                      : Colors.black87),
+                              fontSize: 12,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
+                          );
+                        }).toList(),
                       ),
                       const SizedBox(height: 16),
 
@@ -2103,6 +2287,15 @@ class _EditAssignmentModalState extends ConsumerState<_EditAssignmentModal> {
                         controller: _unitsController,
                         label: 'Units',
                         icon: Icons.numbers,
+                        keyboardType: TextInputType.number,
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Hours
+                      _buildTextField(
+                        controller: _hoursController,
+                        label: 'Hours',
+                        icon: Icons.access_time,
                         keyboardType: TextInputType.number,
                       ),
                       const SizedBox(height: 24),
@@ -2137,7 +2330,7 @@ class _EditAssignmentModalState extends ConsumerState<_EditAssignmentModal> {
                       if (!_isAutoAssign) ...[
                         roomsAsync.when(
                           loading: () => const CircularProgressIndicator(),
-                          error: (_, __) => const Text('Error loading rooms'),
+                          error: (error, stack) => const Text('Error loading rooms'),
                           data: (roomList) => _buildDropdown<int>(
                             label: 'Room',
                             value: _selectedRoomId,
@@ -2151,7 +2344,7 @@ class _EditAssignmentModalState extends ConsumerState<_EditAssignmentModal> {
                         const SizedBox(height: 16),
                         timeslotsAsync.when(
                           loading: () => const CircularProgressIndicator(),
-                          error: (_, __) =>
+                          error: (error, stack) =>
                               const Text('Error loading timeslots'),
                           data: (timeslotList) => _buildDropdown<int>(
                             label: 'Timeslot',
@@ -2161,7 +2354,11 @@ class _EditAssignmentModalState extends ConsumerState<_EditAssignmentModal> {
                               final t = timeslotList.firstWhere(
                                 (t) => t.id == id,
                               );
-                              return '${_getDayName(t.day)} ${t.startTime}-${t.endTime}';
+                              return CITESchedDateUtils.formatTimeslot(
+                                t.day,
+                                t.startTime,
+                                t.endTime,
+                              );
                             },
                             onChanged: (value) =>
                                 setState(() => _selectedTimeslotId = value),
@@ -2267,7 +2464,7 @@ class _EditAssignmentModalState extends ConsumerState<_EditAssignmentModal> {
     String? Function(T?)? validator,
   }) {
     return DropdownButtonFormField<T>(
-      value: value,
+      initialValue: value,
       decoration: InputDecoration(
         labelText: label,
         labelStyle: GoogleFonts.poppins(),
@@ -2291,22 +2488,4 @@ class _EditAssignmentModalState extends ConsumerState<_EditAssignmentModal> {
     );
   }
 
-  String _getDayName(DayOfWeek day) {
-    switch (day) {
-      case DayOfWeek.mon:
-        return 'Monday';
-      case DayOfWeek.tue:
-        return 'Tuesday';
-      case DayOfWeek.wed:
-        return 'Wednesday';
-      case DayOfWeek.thu:
-        return 'Thursday';
-      case DayOfWeek.fri:
-        return 'Friday';
-      case DayOfWeek.sat:
-        return 'Saturday';
-      case DayOfWeek.sun:
-        return 'Sunday';
-    }
-  }
 }

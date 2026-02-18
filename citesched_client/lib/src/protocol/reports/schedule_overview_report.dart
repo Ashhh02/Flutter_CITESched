@@ -17,6 +17,7 @@ abstract class ScheduleOverviewReport implements _i1.SerializableModel {
   ScheduleOverviewReport._({
     required this.totalSchedules,
     required this.schedulesByProgram,
+    required this.schedulesByTerm,
     this.activeTerm,
     this.academicYear,
   });
@@ -24,6 +25,7 @@ abstract class ScheduleOverviewReport implements _i1.SerializableModel {
   factory ScheduleOverviewReport({
     required int totalSchedules,
     required Map<String, int> schedulesByProgram,
+    required Map<String, int> schedulesByTerm,
     int? activeTerm,
     String? academicYear,
   }) = _ScheduleOverviewReportImpl;
@@ -36,6 +38,9 @@ abstract class ScheduleOverviewReport implements _i1.SerializableModel {
       schedulesByProgram: _i2.Protocol().deserialize<Map<String, int>>(
         jsonSerialization['schedulesByProgram'],
       ),
+      schedulesByTerm: _i2.Protocol().deserialize<Map<String, int>>(
+        jsonSerialization['schedulesByTerm'],
+      ),
       activeTerm: jsonSerialization['activeTerm'] as int?,
       academicYear: jsonSerialization['academicYear'] as String?,
     );
@@ -44,6 +49,8 @@ abstract class ScheduleOverviewReport implements _i1.SerializableModel {
   int totalSchedules;
 
   Map<String, int> schedulesByProgram;
+
+  Map<String, int> schedulesByTerm;
 
   int? activeTerm;
 
@@ -55,6 +62,7 @@ abstract class ScheduleOverviewReport implements _i1.SerializableModel {
   ScheduleOverviewReport copyWith({
     int? totalSchedules,
     Map<String, int>? schedulesByProgram,
+    Map<String, int>? schedulesByTerm,
     int? activeTerm,
     String? academicYear,
   });
@@ -64,6 +72,7 @@ abstract class ScheduleOverviewReport implements _i1.SerializableModel {
       '__className__': 'ScheduleOverviewReport',
       'totalSchedules': totalSchedules,
       'schedulesByProgram': schedulesByProgram.toJson(),
+      'schedulesByTerm': schedulesByTerm.toJson(),
       if (activeTerm != null) 'activeTerm': activeTerm,
       if (academicYear != null) 'academicYear': academicYear,
     };
@@ -81,11 +90,13 @@ class _ScheduleOverviewReportImpl extends ScheduleOverviewReport {
   _ScheduleOverviewReportImpl({
     required int totalSchedules,
     required Map<String, int> schedulesByProgram,
+    required Map<String, int> schedulesByTerm,
     int? activeTerm,
     String? academicYear,
   }) : super._(
          totalSchedules: totalSchedules,
          schedulesByProgram: schedulesByProgram,
+         schedulesByTerm: schedulesByTerm,
          activeTerm: activeTerm,
          academicYear: academicYear,
        );
@@ -97,6 +108,7 @@ class _ScheduleOverviewReportImpl extends ScheduleOverviewReport {
   ScheduleOverviewReport copyWith({
     int? totalSchedules,
     Map<String, int>? schedulesByProgram,
+    Map<String, int>? schedulesByTerm,
     Object? activeTerm = _Undefined,
     Object? academicYear = _Undefined,
   }) {
@@ -105,6 +117,17 @@ class _ScheduleOverviewReportImpl extends ScheduleOverviewReport {
       schedulesByProgram:
           schedulesByProgram ??
           this.schedulesByProgram.map(
+            (
+              key0,
+              value0,
+            ) => MapEntry(
+              key0,
+              value0,
+            ),
+          ),
+      schedulesByTerm:
+          schedulesByTerm ??
+          this.schedulesByTerm.map(
             (
               key0,
               value0,

@@ -38,8 +38,13 @@ import 'package:citesched_client/src/protocol/reports/conflict_summary_report.da
 import 'package:citesched_client/src/protocol/reports/schedule_overview_report.dart'
     as _i19;
 import 'package:serverpod_auth_client/serverpod_auth_client.dart' as _i20;
-import 'package:citesched_client/src/protocol/greetings/greeting.dart' as _i21;
-import 'protocol.dart' as _i22;
+import 'package:citesched_client/src/protocol/nlp_response.dart' as _i21;
+import 'package:citesched_client/src/protocol/schedule_info.dart' as _i22;
+import 'package:citesched_client/src/protocol/timetable_filter_request.dart'
+    as _i23;
+import 'package:citesched_client/src/protocol/timetable_summary.dart' as _i24;
+import 'package:citesched_client/src/protocol/greetings/greeting.dart' as _i25;
+import 'protocol.dart' as _i26;
 
 /// By extending [EmailIdpBaseEndpoint], the email identity provider endpoints
 /// are made available on the server and enable the corresponding sign-in widget
@@ -461,6 +466,30 @@ class EndpointAdmin extends _i2.EndpointRef {
         {},
       );
 
+  /// Get schedule for a specific faculty with includes.
+  _i3.Future<List<_i11.Schedule>> getFacultySchedule(int facultyId) =>
+      caller.callServerEndpoint<List<_i11.Schedule>>(
+        'admin',
+        'getFacultySchedule',
+        {'facultyId': facultyId},
+      );
+
+  /// Get schedule for a specific subject with includes.
+  _i3.Future<List<_i11.Schedule>> getSubjectSchedule(int subjectId) =>
+      caller.callServerEndpoint<List<_i11.Schedule>>(
+        'admin',
+        'getSubjectSchedule',
+        {'subjectId': subjectId},
+      );
+
+  /// Get schedule for a specific room with includes.
+  _i3.Future<List<_i11.Schedule>> getRoomSchedule(int roomId) =>
+      caller.callServerEndpoint<List<_i11.Schedule>>(
+        'admin',
+        'getRoomSchedule',
+        {'roomId': roomId},
+      );
+
   /// Update a schedule entry with conflict detection.
   _i3.Future<_i11.Schedule> updateSchedule(_i11.Schedule schedule) =>
       caller.callServerEndpoint<_i11.Schedule>(
@@ -580,6 +609,45 @@ class EndpointDebug extends _i2.EndpointRef {
 }
 
 /// {@category Endpoint}
+class EndpointFaculty extends _i2.EndpointRef {
+  EndpointFaculty(_i2.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'faculty';
+
+  /// Fetches the schedule for the logged-in faculty.
+  _i3.Future<List<_i11.Schedule>> getMySchedule() =>
+      caller.callServerEndpoint<List<_i11.Schedule>>(
+        'faculty',
+        'getMySchedule',
+        {},
+      );
+
+  /// Get personal profile
+  _i3.Future<_i6.Faculty?> getMyProfile() =>
+      caller.callServerEndpoint<_i6.Faculty?>(
+        'faculty',
+        'getMyProfile',
+        {},
+      );
+}
+
+/// {@category Endpoint}
+class EndpointNLP extends _i2.EndpointRef {
+  EndpointNLP(_i2.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'nLP';
+
+  _i3.Future<_i21.NLPResponse> query(String text) =>
+      caller.callServerEndpoint<_i21.NLPResponse>(
+        'nLP',
+        'query',
+        {'text': text},
+      );
+}
+
+/// {@category Endpoint}
 class EndpointSetup extends _i2.EndpointRef {
   EndpointSetup(_i2.EndpointCaller caller) : super(caller);
 
@@ -681,6 +749,53 @@ class EndpointStudent extends _i2.EndpointRef {
       );
 }
 
+/// {@category Endpoint}
+class EndpointStudentSchedule extends _i2.EndpointRef {
+  EndpointStudentSchedule(_i2.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'studentSchedule';
+
+  /// Fetches the schedule for the logged-in student based on their section.
+  _i3.Future<List<_i11.Schedule>> fetchMySchedule() =>
+      caller.callServerEndpoint<List<_i11.Schedule>>(
+        'studentSchedule',
+        'fetchMySchedule',
+        {},
+      );
+}
+
+/// {@category Endpoint}
+class EndpointTimetable extends _i2.EndpointRef {
+  EndpointTimetable(_i2.EndpointCaller caller) : super(caller);
+
+  @override
+  String get name => 'timetable';
+
+  _i3.Future<List<_i22.ScheduleInfo>> getSchedules(
+    _i23.TimetableFilterRequest filter,
+  ) => caller.callServerEndpoint<List<_i22.ScheduleInfo>>(
+    'timetable',
+    'getSchedules',
+    {'filter': filter},
+  );
+
+  _i3.Future<_i24.TimetableSummary> getSummary(
+    _i23.TimetableFilterRequest filter,
+  ) => caller.callServerEndpoint<_i24.TimetableSummary>(
+    'timetable',
+    'getSummary',
+    {'filter': filter},
+  );
+
+  _i3.Future<List<_i22.ScheduleInfo>> getPersonalSchedule() =>
+      caller.callServerEndpoint<List<_i22.ScheduleInfo>>(
+        'timetable',
+        'getPersonalSchedule',
+        {},
+      );
+}
+
 /// This is an example endpoint that returns a greeting message through
 /// its [hello] method.
 /// {@category Endpoint}
@@ -691,8 +806,8 @@ class EndpointGreeting extends _i2.EndpointRef {
   String get name => 'greeting';
 
   /// Returns a personalized greeting message: "Hello {name}".
-  _i3.Future<_i21.Greeting> hello(String name) =>
-      caller.callServerEndpoint<_i21.Greeting>(
+  _i3.Future<_i25.Greeting> hello(String name) =>
+      caller.callServerEndpoint<_i25.Greeting>(
         'greeting',
         'hello',
         {'name': name},
@@ -733,7 +848,7 @@ class Client extends _i2.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
          host,
-         _i22.Protocol(),
+         _i26.Protocol(),
          securityContext: securityContext,
          streamingConnectionTimeout: streamingConnectionTimeout,
          connectionTimeout: connectionTimeout,
@@ -747,8 +862,12 @@ class Client extends _i2.ServerpodClientShared {
     admin = EndpointAdmin(this);
     customAuth = EndpointCustomAuth(this);
     debug = EndpointDebug(this);
+    faculty = EndpointFaculty(this);
+    nLP = EndpointNLP(this);
     setup = EndpointSetup(this);
     student = EndpointStudent(this);
+    studentSchedule = EndpointStudentSchedule(this);
+    timetable = EndpointTimetable(this);
     greeting = EndpointGreeting(this);
     modules = Modules(this);
   }
@@ -763,9 +882,17 @@ class Client extends _i2.ServerpodClientShared {
 
   late final EndpointDebug debug;
 
+  late final EndpointFaculty faculty;
+
+  late final EndpointNLP nLP;
+
   late final EndpointSetup setup;
 
   late final EndpointStudent student;
+
+  late final EndpointStudentSchedule studentSchedule;
+
+  late final EndpointTimetable timetable;
 
   late final EndpointGreeting greeting;
 
@@ -778,8 +905,12 @@ class Client extends _i2.ServerpodClientShared {
     'admin': admin,
     'customAuth': customAuth,
     'debug': debug,
+    'faculty': faculty,
+    'nLP': nLP,
     'setup': setup,
     'student': student,
+    'studentSchedule': studentSchedule,
+    'timetable': timetable,
     'greeting': greeting,
   };
 

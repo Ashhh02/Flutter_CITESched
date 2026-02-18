@@ -2,5 +2,6 @@ class: ScheduleOverviewReport
 fields:
   totalSchedules: int
   schedulesByProgram: Map<String, int>
+  schedulesByTerm: Map<String, int>
   activeTerm: int?
   academicYear: String?

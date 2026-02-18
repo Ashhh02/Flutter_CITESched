@@ -242,6 +242,25 @@ class AdminEndpoint extends Endpoint {
 
   /// Create a new room with validation.
   Future<Room> createRoom(Session session, Room room) async {
+    // Enforce 3-room limit
+    var allRooms = await Room.db.find(session);
+    if (allRooms.length >= 3) {
+      throw Exception(
+        'Limit Exceeded: Only 3 rooms are allowed in the system.',
+      );
+    }
+
+    // Enforce Program Distribution (2 IT, 1 EMC)
+    var itRooms = allRooms.where((r) => r.program == Program.it).length;
+    var emcRooms = allRooms.where((r) => r.program == Program.emc).length;
+
+    if (room.program == Program.it && itRooms >= 2) {
+      throw Exception('Limit Exceeded: Already have 2 IT rooms.');
+    }
+    if (room.program == Program.emc && emcRooms >= 1) {
+      throw Exception('Limit Exceeded: Already have 1 EMC room.');
+    }
+
     // Validate capacity
     if (room.capacity <= 0) {
       throw Exception('Room capacity must be greater than 0');
@@ -276,6 +295,20 @@ class AdminEndpoint extends Endpoint {
     var existing = await Room.db.findById(session, room.id!);
     if (existing == null) {
       throw Exception('Room not found with ID: ${room.id}');
+    }
+
+    // If program is changing, check distribution
+    if (existing.program != room.program) {
+      var allRooms = await Room.db.find(session);
+      var itRooms = allRooms.where((r) => r.program == Program.it).length;
+      var emcRooms = allRooms.where((r) => r.program == Program.emc).length;
+
+      if (room.program == Program.it && itRooms >= 2) {
+        throw Exception('Limit Exceeded: Already have 2 IT rooms.');
+      }
+      if (room.program == Program.emc && emcRooms >= 1) {
+        throw Exception('Limit Exceeded: Already have 1 EMC room.');
+      }
     }
 
     // Validate capacity
@@ -494,9 +527,13 @@ class AdminEndpoint extends Endpoint {
 
   /// Create a new schedule entry with conflict detection.
   Future<Schedule> createSchedule(Session session, Schedule schedule) async {
+    // Normalize sentinel values from frontend
+    if (schedule.roomId == -1) schedule.roomId = null;
+    if (schedule.timeslotId == -1) schedule.timeslotId = null;
+
     // Validate schedule entry against all conflicts
     var conflicts = await ConflictService().validateSchedule(session, schedule);
-    
+
     if (conflicts.isNotEmpty) {
       var messages = conflicts.map((c) => c.message).join('; ');
       throw Exception('Schedule validation failed: $messages');
@@ -514,8 +551,66 @@ class AdminEndpoint extends Endpoint {
     return await Schedule.db.find(session);
   }
 
+  /// Get schedule for a specific faculty with includes.
+  Future<List<Schedule>> getFacultySchedule(
+    Session session,
+    int facultyId,
+  ) async {
+    return await Schedule.db.find(
+      session,
+      where: (t) => t.facultyId.equals(facultyId),
+      include: Schedule.include(
+        subject: Subject.include(),
+        faculty: Faculty.include(),
+        room: Room.include(),
+        timeslot: Timeslot.include(),
+      ),
+      orderBy: (s) => s.timeslotId,
+    );
+  }
+
+  /// Get schedule for a specific subject with includes.
+  Future<List<Schedule>> getSubjectSchedule(
+    Session session,
+    int subjectId,
+  ) async {
+    return await Schedule.db.find(
+      session,
+      where: (t) => t.subjectId.equals(subjectId),
+      include: Schedule.include(
+        subject: Subject.include(),
+        faculty: Faculty.include(),
+        room: Room.include(),
+        timeslot: Timeslot.include(),
+      ),
+      orderBy: (s) => s.timeslotId,
+    );
+  }
+
+  /// Get schedule for a specific room with includes.
+  Future<List<Schedule>> getRoomSchedule(
+    Session session,
+    int roomId,
+  ) async {
+    return await Schedule.db.find(
+      session,
+      where: (t) => t.roomId.equals(roomId),
+      include: Schedule.include(
+        subject: Subject.include(),
+        faculty: Faculty.include(),
+        room: Room.include(),
+        timeslot: Timeslot.include(),
+      ),
+      orderBy: (s) => s.timeslotId,
+    );
+  }
+
   /// Update a schedule entry with conflict detection.
   Future<Schedule> updateSchedule(Session session, Schedule schedule) async {
+    // Normalize sentinel values from frontend
+    if (schedule.roomId == -1) schedule.roomId = null;
+    if (schedule.timeslotId == -1) schedule.timeslotId = null;
+
     // Ensure schedule exists
     var existing = await Schedule.db.findById(session, schedule.id!);
     if (existing == null) {
@@ -595,19 +690,20 @@ class AdminEndpoint extends Endpoint {
   /// Get aggregated dashboard statistics.
   Future<DashboardStats> getDashboardStats(Session session) async {
     try {
-      print('[DEBUG] getDashboardStats: Step 1 - Fetching counts');
-      session.log('Step 1: Fetching counts...');
       var totalSchedules = await Schedule.db.count(session);
       var totalFaculty = await Faculty.db.count(session);
       var totalStudents = await Student.db.count(session);
-      print('[DEBUG] getDashboardStats: Counts - schedules=$totalSchedules, faculty=$totalFaculty, students=$totalStudents');
+      var totalSubjects = await Subject.db.count(session);
+      var totalRooms = await Room.db.count(session);
 
       // 2. Calculate Faculty Load
       print('[DEBUG] getDashboardStats: Step 2 - Fetching all data');
       var allSchedules = await Schedule.db.find(session);
       var allFaculty = await Faculty.db.find(session);
       var allSubjects = await Subject.db.find(session);
-      print('[DEBUG] getDashboardStats: Fetched ${allSchedules.length} schedules, ${allFaculty.length} faculty');
+      print(
+        '[DEBUG] getDashboardStats: Fetched ${allSchedules.length} schedules, ${allFaculty.length} faculty',
+      );
 
       // Map subject ID to units for quick lookup
       var subjectUnits = <int, double>{
@@ -638,17 +734,58 @@ class AdminEndpoint extends Endpoint {
 
       // 3. Integrity Check (Conflicts)
       print('[DEBUG] getDashboardStats: Step 3 - Calculating conflicts');
-      List<ScheduleConflict> conflicts = await ConflictService().getAllConflicts(session);
-      
-      print('[DEBUG] getDashboardStats: Step 3 complete. Found ${conflicts.length} conflicts.');
+      List<ScheduleConflict> conflicts = await ConflictService()
+          .getAllConflicts(session);
+
+      print(
+        '[DEBUG] getDashboardStats: Step 3 complete. Found ${conflicts.length} conflicts.',
+      );
+
+      // 4. Distribution Summaries
+      var sectionCounts = <String, int>{};
+      var yearLevelCounts = <String, int>{};
+
+      for (var schedule in allSchedules) {
+        // Section Distribution
+        sectionCounts[schedule.section] =
+            (sectionCounts[schedule.section] ?? 0) + 1;
+
+        // Year Level Distribution (lookup from subject)
+        var subject = allSubjects.firstWhere(
+          (s) => s.id == schedule.subjectId,
+          orElse: () => Subject(
+            code: 'N/A',
+            name: 'N/A',
+            units: 0,
+            studentsCount: 0,
+            program: Program.it,
+            types: [],
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          ),
+        );
+        var yearLevel = subject.yearLevel?.toString() ?? 'N/A';
+        yearLevelCounts[yearLevel] = (yearLevelCounts[yearLevel] ?? 0) + 1;
+      }
+
+      List<DistributionData> sectionDistribution = sectionCounts.entries
+          .map((e) => DistributionData(label: e.key, count: e.value))
+          .toList();
+      List<DistributionData> yearLevelDistribution = yearLevelCounts.entries
+          .map((e) => DistributionData(label: 'Year ${e.key}', count: e.value))
+          .toList();
 
       return DashboardStats(
         totalSchedules: totalSchedules,
         totalFaculty: totalFaculty,
         totalStudents: totalStudents,
+        totalSubjects: totalSubjects,
+        totalRooms: totalRooms,
         totalConflicts: conflicts.length,
         facultyLoad: facultyLoad,
         recentConflicts: conflicts,
+        sectionDistribution: sectionDistribution,
+        yearLevelDistribution: yearLevelDistribution,
       );
     } catch (e, stack) {
       print('[ERROR] getDashboardStats failed: $e');
@@ -658,7 +795,10 @@ class AdminEndpoint extends Endpoint {
   }
   // ─── Conflict & Reports ──────────────────────────────────────────────
 
-  Future<List<ScheduleConflict>> validateSchedule(Session session, Schedule schedule) async {
+  Future<List<ScheduleConflict>> validateSchedule(
+    Session session,
+    Schedule schedule,
+  ) async {
     return await ConflictService().validateSchedule(session, schedule);
   }
 
@@ -673,18 +813,23 @@ class AdminEndpoint extends Endpoint {
   }
 
   /// Generates the Room Utilization Report.
-  Future<List<RoomUtilizationReport>> getRoomUtilizationReport(Session session) async {
+  Future<List<RoomUtilizationReport>> getRoomUtilizationReport(
+    Session session,
+  ) async {
     return await ReportService().generateRoomUtilizationReport(session);
   }
 
   /// Generates the Conflict Summary Report.
-  Future<ConflictSummaryReport> getConflictSummaryReport(Session session) async {
+  Future<ConflictSummaryReport> getConflictSummaryReport(
+    Session session,
+  ) async {
     return await ReportService().generateConflictSummary(session);
   }
 
   /// Generates the Schedule Overview Report.
-  Future<ScheduleOverviewReport> getScheduleOverviewReport(Session session) async {
+  Future<ScheduleOverviewReport> getScheduleOverviewReport(
+    Session session,
+  ) async {
     return await ReportService().generateScheduleOverview(session);
   }
 }
-

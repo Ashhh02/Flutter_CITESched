@@ -13,6 +13,7 @@
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 import 'subject_type.dart' as _i2;
 import 'program.dart' as _i3;
+import 'package:citesched_client/src/protocol/protocol.dart' as _i4;
 
 abstract class Subject implements _i1.SerializableModel {
   Subject._({
@@ -20,9 +21,10 @@ abstract class Subject implements _i1.SerializableModel {
     required this.code,
     required this.name,
     required this.units,
+    this.hours,
     this.yearLevel,
     this.term,
-    required this.type,
+    required this.types,
     required this.program,
     required this.studentsCount,
     required this.createdAt,
@@ -34,9 +36,10 @@ abstract class Subject implements _i1.SerializableModel {
     required String code,
     required String name,
     required int units,
+    double? hours,
     int? yearLevel,
     int? term,
-    required _i2.SubjectType type,
+    required List<_i2.SubjectType> types,
     required _i3.Program program,
     required int studentsCount,
     required DateTime createdAt,
@@ -49,9 +52,12 @@ abstract class Subject implements _i1.SerializableModel {
       code: jsonSerialization['code'] as String,
       name: jsonSerialization['name'] as String,
       units: jsonSerialization['units'] as int,
+      hours: (jsonSerialization['hours'] as num?)?.toDouble(),
       yearLevel: jsonSerialization['yearLevel'] as int?,
       term: jsonSerialization['term'] as int?,
-      type: _i2.SubjectType.fromJson((jsonSerialization['type'] as String)),
+      types: _i4.Protocol().deserialize<List<_i2.SubjectType>>(
+        jsonSerialization['types'],
+      ),
       program: _i3.Program.fromJson((jsonSerialization['program'] as String)),
       studentsCount: jsonSerialization['studentsCount'] as int,
       createdAt: _i1.DateTimeJsonExtension.fromJson(
@@ -74,11 +80,13 @@ abstract class Subject implements _i1.SerializableModel {
 
   int units;
 
+  double? hours;
+
   int? yearLevel;
 
   int? term;
 
-  _i2.SubjectType type;
+  List<_i2.SubjectType> types;
 
   _i3.Program program;
 
@@ -96,9 +104,10 @@ abstract class Subject implements _i1.SerializableModel {
     String? code,
     String? name,
     int? units,
+    double? hours,
     int? yearLevel,
     int? term,
-    _i2.SubjectType? type,
+    List<_i2.SubjectType>? types,
     _i3.Program? program,
     int? studentsCount,
     DateTime? createdAt,
@@ -112,9 +121,10 @@ abstract class Subject implements _i1.SerializableModel {
       'code': code,
       'name': name,
       'units': units,
+      if (hours != null) 'hours': hours,
       if (yearLevel != null) 'yearLevel': yearLevel,
       if (term != null) 'term': term,
-      'type': type.toJson(),
+      'types': types.toJson(valueToJson: (v) => v.toJson()),
       'program': program.toJson(),
       'studentsCount': studentsCount,
       'createdAt': createdAt.toJson(),
@@ -136,9 +146,10 @@ class _SubjectImpl extends Subject {
     required String code,
     required String name,
     required int units,
+    double? hours,
     int? yearLevel,
     int? term,
-    required _i2.SubjectType type,
+    required List<_i2.SubjectType> types,
     required _i3.Program program,
     required int studentsCount,
     required DateTime createdAt,
@@ -148,9 +159,10 @@ class _SubjectImpl extends Subject {
          code: code,
          name: name,
          units: units,
+         hours: hours,
          yearLevel: yearLevel,
          term: term,
-         type: type,
+         types: types,
          program: program,
          studentsCount: studentsCount,
          createdAt: createdAt,
@@ -166,9 +178,10 @@ class _SubjectImpl extends Subject {
     String? code,
     String? name,
     int? units,
+    Object? hours = _Undefined,
     Object? yearLevel = _Undefined,
     Object? term = _Undefined,
-    _i2.SubjectType? type,
+    List<_i2.SubjectType>? types,
     _i3.Program? program,
     int? studentsCount,
     DateTime? createdAt,
@@ -179,9 +192,10 @@ class _SubjectImpl extends Subject {
       code: code ?? this.code,
       name: name ?? this.name,
       units: units ?? this.units,
+      hours: hours is double? ? hours : this.hours,
       yearLevel: yearLevel is int? ? yearLevel : this.yearLevel,
       term: term is int? ? term : this.term,
-      type: type ?? this.type,
+      types: types ?? this.types.map((e0) => e0).toList(),
       program: program ?? this.program,
       studentsCount: studentsCount ?? this.studentsCount,
       createdAt: createdAt ?? this.createdAt,

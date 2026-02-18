@@ -1,0 +1,6 @@
+class: TimetableSummary
+fields:
+  totalSubjects: int
+  totalUnits: double
+  totalWeeklyHours: double
+  conflictCount: int

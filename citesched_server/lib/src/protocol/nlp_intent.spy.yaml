@@ -1,0 +1,7 @@
+enum: NLPIntent
+values:
+  - conflict
+  - facultyLoad
+  - roomStatus
+  - schedule
+  - unknown

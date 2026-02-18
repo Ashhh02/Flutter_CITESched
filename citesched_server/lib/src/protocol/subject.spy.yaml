@@ -4,9 +4,10 @@ fields:
   code: String
   name: String
   units: int
+  hours: double?
   yearLevel: int?
   term: int?
-  type: SubjectType
+  types: List<SubjectType>
   program: Program
   studentsCount: int
   createdAt: DateTime
