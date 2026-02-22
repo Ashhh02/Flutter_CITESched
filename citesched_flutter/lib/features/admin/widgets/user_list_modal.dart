@@ -87,11 +87,19 @@ class _UserListModalState extends State<UserListModal>
         ? const Color(0xFF94A3B8)
         : const Color(0xFF666666);
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final isMobile = screenWidth < 600;
+
     return Dialog(
       backgroundColor: Colors.transparent,
+      insetPadding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 12 : 40,
+        vertical: isMobile ? 12 : 40,
+      ),
       child: Container(
-        width: 900,
-        height: 700,
+        width: isMobile ? screenWidth * 0.95 : 900,
+        height: isMobile ? screenHeight * 0.9 : 700,
         decoration: BoxDecoration(
           color: cardBg,
           borderRadius: BorderRadius.circular(19),
@@ -132,7 +140,7 @@ class _UserListModalState extends State<UserListModal>
                       Text(
                         'User Management',
                         style: GoogleFonts.poppins(
-                          fontSize: 26,
+                          fontSize: isMobile ? 20 : 26,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                           letterSpacing: -0.5,
@@ -140,9 +148,11 @@ class _UserListModalState extends State<UserListModal>
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Manage system users and permissions',
+                        isMobile
+                            ? 'Staff & Students'
+                            : 'Manage system users and permissions',
                         style: GoogleFonts.poppins(
-                          fontSize: 14,
+                          fontSize: isMobile ? 11 : 14,
                           color: Colors.white.withOpacity(0.85),
                         ),
                       ),
@@ -150,7 +160,7 @@ class _UserListModalState extends State<UserListModal>
                   ),
                   Row(
                     children: [
-                      ElevatedButton.icon(
+                      ElevatedButton(
                         onPressed: () {
                           showDialog(
                             context: context,
@@ -161,28 +171,35 @@ class _UserListModalState extends State<UserListModal>
                             ),
                           );
                         },
-                        icon: const Icon(Icons.add_rounded, size: 20),
-                        label: Text(
-                          'Add User',
-                          style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15,
-                          ),
-                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: primaryPurple,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 14,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isMobile ? 12 : 20,
+                            vertical: isMobile ? 10 : 14,
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                           elevation: 0,
                         ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.add_rounded, size: 20),
+                            if (!isMobile) ...[
+                              const SizedBox(width: 8),
+                              Text(
+                                'Add User',
+                                style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 8),
                       IconButton(
                         icon: const Icon(
                           Icons.close_rounded,
@@ -191,6 +208,7 @@ class _UserListModalState extends State<UserListModal>
                         onPressed: () => Navigator.of(context).pop(),
                         style: IconButton.styleFrom(
                           backgroundColor: Colors.white.withOpacity(0.2),
+                          padding: isMobile ? const EdgeInsets.all(8) : null,
                         ),
                       ),
                     ],
@@ -228,8 +246,8 @@ class _UserListModalState extends State<UserListModal>
                     fontSize: 15,
                   ),
                   padding: const EdgeInsets.all(4),
-                  tabs: const [
-                    Tab(text: 'Faculty & Admin'),
+                  tabs: [
+                    Tab(text: isMobile ? 'Staff' : 'Faculty & Admin'),
                     Tab(text: 'Students'),
                   ],
                 ),
@@ -275,28 +293,38 @@ class _UserListModalState extends State<UserListModal>
     Color textMuted,
     Color bgBody,
   ) {
+    final isMobile = MediaQuery.of(context).size.width < 600;
+
     return Column(
       children: [
         // Filter Bar
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
-          child: Row(
+          padding: EdgeInsets.symmetric(
+            horizontal: isMobile ? 16 : 28,
+            vertical: 16,
+          ),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              Icon(Icons.filter_list_rounded, color: textMuted, size: 20),
-              const SizedBox(width: 12),
-              Text(
-                'Filter by Role:',
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: textPrimary,
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.filter_list_rounded, color: textMuted, size: 18),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Role:',
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: textPrimary,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 16),
               _buildFilterChip('All', 'all', primaryColor, textPrimary),
-              const SizedBox(width: 8),
               _buildFilterChip('Faculty', 'faculty', primaryColor, textPrimary),
-              const SizedBox(width: 8),
               _buildFilterChip('Admin', 'admin', primaryColor, textPrimary),
             ],
           ),
@@ -339,26 +367,37 @@ class _UserListModalState extends State<UserListModal>
     Color textMuted,
     Color bgBody,
   ) {
+    final isMobile = MediaQuery.of(context).size.width < 600;
+
     return Column(
       children: [
         // Sort Bar
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
-          child: Row(
+          padding: EdgeInsets.symmetric(
+            horizontal: isMobile ? 16 : 28,
+            vertical: 16,
+          ),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              Icon(Icons.sort_by_alpha_rounded, color: textMuted, size: 20),
-              const SizedBox(width: 12),
-              Text(
-                'Sort by Name:',
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: textPrimary,
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.sort_by_alpha_rounded, color: textMuted, size: 18),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Sort:',
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: textPrimary,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 16),
               _buildSortChip('A → Z', 'asc', primaryColor, textPrimary),
-              const SizedBox(width: 8),
               _buildSortChip('Z → A', 'desc', primaryColor, textPrimary),
             ],
           ),

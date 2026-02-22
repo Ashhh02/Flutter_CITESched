@@ -1,10 +1,11 @@
 import 'package:citesched_client/citesched_client.dart';
-import 'package:citesched_flutter/core/providers/subject_provider.dart';
+import 'package:citesched_flutter/core/providers/admin_providers.dart';
 import 'package:citesched_flutter/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'subject_details_screen.dart';
+import 'package:citesched_flutter/core/utils/responsive_helper.dart';
 import 'package:citesched_flutter/core/providers/conflict_provider.dart';
 
 // Local provider removed in favor of shared subjectsProvider
@@ -227,154 +228,242 @@ class _SubjectManagementScreenState
     final subjectsAsync = ref.watch(subjectsProvider);
     final conflictsAsync = ref.watch(allConflictsProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8F9FA);
+    const bgColor = Colors.white;
+
+    final isMobile = ResponsiveHelper.isMobile(context);
 
     return Scaffold(
       backgroundColor: bgColor,
       body: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: EdgeInsets.all(isMobile ? 16 : 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Subject Management',
-                      style: GoogleFonts.poppins(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Manage academic subjects, units, and program assignments',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-                ElevatedButton.icon(
-                  onPressed: _showAddSubjectModal,
-                  icon: const Icon(Icons.add_rounded),
-                  label: Text(
-                    'Add Subject',
-                    style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: maroonColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 16,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 2,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-
-            // Search and Filter Row
-            Row(
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+            // Header Banner
+            isMobile
+                ? Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: isDark ? Colors.transparent : Colors.grey[300]!,
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          maroonColor,
+                          const Color(0xFF8e005b),
+                        ],
                       ),
+                      borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color.fromRGBO(30, 41, 59, 1)
-                              .withOpacity(
-                                0.03,
+                          color: maroonColor.withValues(alpha: 0.3),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
+                              child: const Icon(
+                                Icons.auto_stories_rounded,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Subject Management',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      letterSpacing: -0.5,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Manage academic subjects and units',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      color: Colors.white.withValues(
+                                        alpha: 0.8,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: _showAddSubjectModal,
+                            icon: const Icon(Icons.add_rounded, size: 20),
+                            label: Text(
+                              'Add New Subject',
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: maroonColor,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              elevation: 0,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(32),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          maroonColor,
+                          const Color(0xFF8e005b),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(28),
+                      boxShadow: [
+                        BoxShadow(
+                          color: maroonColor.withValues(alpha: 0.3),
+                          blurRadius: 25,
+                          offset: const Offset(0, 12),
                         ),
                       ],
                     ),
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Icon(
-                          Icons.search_rounded,
-                          color: maroonColor,
-                          size: 22,
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.2),
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.auto_stories_rounded,
+                                color: Colors.white,
+                                size: 32,
+                              ),
+                            ),
+                            const SizedBox(width: 24),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Subject Management',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    letterSpacing: -1,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Manage academic subjects, units, and curriculum distributions',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 16,
+                                    color: Colors.white.withValues(alpha: 0.8),
+                                    letterSpacing: 0.2,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: TextField(
-                            controller: _searchController,
-                            onChanged: (value) {
-                              setState(() {
-                                _searchQuery = value.toLowerCase();
-                              });
-                            },
-                            cursorColor: isDark ? Colors.white : Colors.black87,
+                        ElevatedButton.icon(
+                          onPressed: _showAddSubjectModal,
+                          icon: const Icon(Icons.add_rounded, size: 20),
+                          label: Text(
+                            'Add New Subject',
                             style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: isDark ? Colors.white : Colors.black87,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              letterSpacing: 0.5,
                             ),
-                            decoration: InputDecoration(
-                              filled: false,
-                              fillColor: Colors.transparent,
-                              hintText: 'Search by code or title...',
-                              hintStyle: GoogleFonts.poppins(
-                                color: Colors.grey[500],
-                                fontSize: 14,
-                              ),
-                              border: InputBorder.none,
-                              focusedBorder: InputBorder.none,
-                              enabledBorder: InputBorder.none,
-                              errorBorder: InputBorder.none,
-                              disabledBorder: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(
-                                vertical: 16,
-                              ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: maroonColor,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 28,
+                              vertical: 20,
                             ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                            elevation: 8,
+                            shadowColor: Colors.black.withValues(alpha: 0.2),
                           ),
                         ),
-                        if (_searchQuery.isNotEmpty)
-                          IconButton(
-                            icon: Icon(Icons.clear, color: Colors.grey[600]),
-                            onPressed: () {
-                              _searchController.clear();
-                              setState(() {
-                                _searchQuery = '';
-                              });
-                            },
-                          ),
                       ],
                     ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  flex: 1,
-                  child: _buildYearFilter(isDark),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  flex: 1,
-                  child: _buildProgramFilter(isDark),
-                ),
-              ],
-            ),
+            const SizedBox(height: 32),
+
+            // Search and Filter Row
+            isMobile
+                ? Column(
+                    children: [
+                      _buildSearchBar(isDark),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(child: _buildYearFilter(isDark)),
+                          const SizedBox(width: 8),
+                          Expanded(child: _buildProgramFilter(isDark)),
+                        ],
+                      ),
+                    ],
+                  )
+                : Row(
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: _buildSearchBar(isDark),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        flex: 1,
+                        child: _buildYearFilter(isDark),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        flex: 1,
+                        child: _buildProgramFilter(isDark),
+                      ),
+                    ],
+                  ),
             const SizedBox(height: 24),
 
             // Table
@@ -396,8 +485,8 @@ class _SubjectManagementScreenState
                     return matchesSearch && matchesYear && matchesProgram;
                   }).toList();
 
-                  if (filtered.isEmpty) {
-                    return const Center(child: Text('No subjects found'));
+                  if (isMobile) {
+                    return _buildMobileSubjectList(filtered, isDark);
                   }
 
                   return Container(
@@ -667,13 +756,228 @@ class _SubjectManagementScreenState
     );
   }
 
+  Widget _buildSearchBar(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.search_rounded,
+            color: maroonColor,
+            size: 22,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value.toLowerCase();
+                });
+              },
+              cursorColor: isDark ? Colors.white : Colors.black87,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
+              decoration: InputDecoration(
+                filled: false,
+                fillColor: Colors.transparent,
+                hintText: 'Search code or title...',
+                hintStyle: GoogleFonts.poppins(
+                  color: Colors.grey[500],
+                  fontSize: 14,
+                ),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 16,
+                ),
+              ),
+            ),
+          ),
+          if (_searchQuery.isNotEmpty)
+            IconButton(
+              icon: Icon(Icons.clear, color: Colors.grey[600]),
+              onPressed: () {
+                _searchController.clear();
+                setState(() {
+                  _searchQuery = '';
+                });
+              },
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileSubjectList(List<Subject> subjects, bool isDark) {
+    return ListView.builder(
+      itemCount: subjects.length,
+      padding: const EdgeInsets.only(bottom: 24),
+      itemBuilder: (context, index) {
+        final subject = subjects[index];
+        return Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E293B) : Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isDark ? Colors.grey[800]! : Colors.grey[200]!,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: InkWell(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => SubjectDetailsScreen(subject: subject),
+              ),
+            ),
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              subject.code,
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: maroonColor,
+                              ),
+                            ),
+                            Text(
+                              subject.name,
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                                color: isDark ? Colors.white : Colors.black87,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(
+                              Icons.edit,
+                              color: Colors.blue,
+                              size: 20,
+                            ),
+                            onPressed: () => _showEditSubjectModal(subject),
+                          ),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.delete,
+                              color: Colors.red,
+                              size: 20,
+                            ),
+                            onPressed: () => _deleteSubject(subject),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const Divider(height: 24),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildInfoChip(
+                        Icons.numbers_rounded,
+                        '${subject.units} Units',
+                        Colors.blue,
+                      ),
+                      _buildInfoChip(
+                        Icons.school_outlined,
+                        subject.program.name.toUpperCase(),
+                        Colors.purple,
+                      ),
+                      _buildInfoChip(
+                        Icons.calendar_today_outlined,
+                        'Year ${subject.yearLevel ?? "-"}',
+                        Colors.orange,
+                      ),
+                      _buildInfoChip(
+                        Icons.groups_outlined,
+                        '${subject.studentsCount} Students',
+                        Colors.green,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildInfoChip(IconData icon, String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(0.2)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: GoogleFonts.poppins(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildYearFilter(bool isDark) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[300]!),
+        border: Border.all(
+          color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.03),
@@ -689,11 +993,14 @@ class _SubjectManagementScreenState
             children: [
               Icon(Icons.calendar_today_outlined, color: maroonColor, size: 20),
               const SizedBox(width: 8),
-              Text(
-                'Year Level',
-                style: GoogleFonts.poppins(
-                  color: Colors.grey[600],
-                  fontSize: 14,
+              Expanded(
+                child: Text(
+                  ResponsiveHelper.isMobile(context) ? 'Year' : 'Year Level',
+                  style: GoogleFonts.poppins(
+                    color: Colors.grey[600],
+                    fontSize: 14,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -704,7 +1011,7 @@ class _SubjectManagementScreenState
             DropdownMenuItem(
               value: null,
               child: Text(
-                'All Years',
+                'All',
                 style: GoogleFonts.poppins(fontSize: 14),
               ),
             ),
@@ -731,7 +1038,9 @@ class _SubjectManagementScreenState
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[300]!),
+        border: Border.all(
+          color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.03),
@@ -741,17 +1050,20 @@ class _SubjectManagementScreenState
         ],
       ),
       child: DropdownButtonHideUnderline(
-        child: DropdownButton<Program>(
+        child: DropdownButton<Program?>(
           value: _selectedProgram,
           hint: Row(
             children: [
               Icon(Icons.school_outlined, color: maroonColor, size: 20),
               const SizedBox(width: 8),
-              Text(
-                'Program',
-                style: GoogleFonts.poppins(
-                  color: Colors.grey[600],
-                  fontSize: 14,
+              Expanded(
+                child: Text(
+                  ResponsiveHelper.isMobile(context) ? 'Prog' : 'Program',
+                  style: GoogleFonts.poppins(
+                    color: Colors.grey[600],
+                    fontSize: 14,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -762,7 +1074,7 @@ class _SubjectManagementScreenState
             DropdownMenuItem(
               value: null,
               child: Text(
-                'All Programs',
+                'All',
                 style: GoogleFonts.poppins(fontSize: 14),
               ),
             ),
@@ -816,11 +1128,15 @@ class _AddSubjectModalState extends State<_AddSubjectModal> {
         ? Colors.white.withOpacity(0.1)
         : Colors.black.withOpacity(0.1);
 
+    final isMobile = ResponsiveHelper.isMobile(context);
+
     return Dialog(
       backgroundColor: Colors.transparent,
       child: Container(
-        width: 650,
-        constraints: const BoxConstraints(maxHeight: 800),
+        width: isMobile ? double.infinity : 650,
+        constraints: BoxConstraints(
+          maxHeight: isMobile ? MediaQuery.of(context).size.height * 0.9 : 800,
+        ),
         decoration: BoxDecoration(
           color: cardBg,
           borderRadius: BorderRadius.circular(20),
@@ -839,14 +1155,13 @@ class _AddSubjectModalState extends State<_AddSubjectModal> {
             // Header
             Container(
               padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [widget.maroonColor, const Color(0xFFb5179e)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: const BorderRadius.vertical(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(
                   top: Radius.circular(20),
+                ),
+                border: Border(
+                  bottom: BorderSide(color: Colors.black, width: 1),
                 ),
               ),
               child: Row(
@@ -854,12 +1169,13 @@ class _AddSubjectModalState extends State<_AddSubjectModal> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.black.withOpacity(0.05),
                       borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.black.withOpacity(0.15)),
                     ),
                     child: const Icon(
                       Icons.library_add_rounded,
-                      color: Colors.white,
+                      color: Colors.black,
                       size: 24,
                     ),
                   ),
@@ -872,14 +1188,14 @@ class _AddSubjectModalState extends State<_AddSubjectModal> {
                         style: GoogleFonts.poppins(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: Colors.black,
                         ),
                       ),
                       Text(
                         'Enter subject details below',
                         style: GoogleFonts.poppins(
                           fontSize: 13,
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.black54,
                         ),
                       ),
                     ],
@@ -887,9 +1203,9 @@ class _AddSubjectModalState extends State<_AddSubjectModal> {
                   const Spacer(),
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close, color: Colors.white),
+                    icon: const Icon(Icons.close, color: Colors.black),
                     style: IconButton.styleFrom(
-                      backgroundColor: Colors.white.withOpacity(0.1),
+                      backgroundColor: Colors.black.withOpacity(0.05),
                     ),
                   ),
                 ],
@@ -1318,6 +1634,7 @@ class _EditSubjectModalState extends State<_EditSubjectModal> {
     final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
     final textPrimary = isDark ? Colors.white : const Color(0xFF333333);
     final textMuted = isDark ? Colors.grey[400]! : Colors.grey[600]!;
+    final isMobile = ResponsiveHelper.isMobile(context);
     final borderColor = isDark
         ? Colors.white.withOpacity(0.1)
         : Colors.black.withOpacity(0.1);
@@ -1325,8 +1642,10 @@ class _EditSubjectModalState extends State<_EditSubjectModal> {
     return Dialog(
       backgroundColor: Colors.transparent,
       child: Container(
-        width: 650,
-        constraints: const BoxConstraints(maxHeight: 800),
+        width: isMobile ? double.infinity : 650,
+        constraints: BoxConstraints(
+          maxHeight: isMobile ? MediaQuery.of(context).size.height * 0.9 : 800,
+        ),
         decoration: BoxDecoration(
           color: cardBg,
           borderRadius: BorderRadius.circular(20),
@@ -1345,14 +1664,13 @@ class _EditSubjectModalState extends State<_EditSubjectModal> {
             // Header
             Container(
               padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [widget.maroonColor, const Color(0xFFb5179e)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: const BorderRadius.vertical(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(
                   top: Radius.circular(20),
+                ),
+                border: Border(
+                  bottom: BorderSide(color: Colors.black, width: 1),
                 ),
               ),
               child: Row(
@@ -1360,12 +1678,13 @@ class _EditSubjectModalState extends State<_EditSubjectModal> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.black.withOpacity(0.05),
                       borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.black.withOpacity(0.15)),
                     ),
                     child: const Icon(
                       Icons.edit_note_rounded,
-                      color: Colors.white,
+                      color: Colors.black,
                       size: 24,
                     ),
                   ),
@@ -1378,14 +1697,14 @@ class _EditSubjectModalState extends State<_EditSubjectModal> {
                         style: GoogleFonts.poppins(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: Colors.black,
                         ),
                       ),
                       Text(
                         'Update subject details below',
                         style: GoogleFonts.poppins(
                           fontSize: 13,
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.black54,
                         ),
                       ),
                     ],
@@ -1393,9 +1712,9 @@ class _EditSubjectModalState extends State<_EditSubjectModal> {
                   const Spacer(),
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close, color: Colors.white),
+                    icon: const Icon(Icons.close, color: Colors.black),
                     style: IconButton.styleFrom(
-                      backgroundColor: Colors.white.withOpacity(0.1),
+                      backgroundColor: Colors.black.withOpacity(0.05),
                     ),
                   ),
                 ],

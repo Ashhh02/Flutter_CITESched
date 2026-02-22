@@ -7,10 +7,7 @@ import 'faculty_details_screen.dart';
 import 'package:citesched_flutter/core/providers/conflict_provider.dart';
 import 'package:citesched_flutter/core/utils/responsive_helper.dart';
 
-// Provider for faculty list
-final facultyListProvider = FutureProvider<List<Faculty>>((ref) async {
-  return await client.admin.getAllFaculty();
-});
+import 'package:citesched_flutter/core/providers/admin_providers.dart';
 
 // Helper extension for conflicts (already in core/providers/conflict_provider.dart)
 
@@ -25,7 +22,7 @@ class FacultyManagementScreen extends ConsumerStatefulWidget {
 class _FacultyManagementScreenState
     extends ConsumerState<FacultyManagementScreen> {
   String _searchQuery = '';
-  String? _selectedProgram;
+  Program? _selectedProgram;
   final TextEditingController _searchController = TextEditingController();
 
   // Color scheme matching admin sidebar
@@ -127,7 +124,7 @@ class _FacultyManagementScreenState
     final facultyAsync = ref.watch(facultyListProvider);
     final conflictsAsync = ref.watch(allConflictsProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8F9FA);
+    const bgColor = Colors.white;
 
     final isMobile = ResponsiveHelper.isMobile(context);
 
@@ -140,97 +137,193 @@ class _FacultyManagementScreenState
           children: [
             // Header
             isMobile
-                ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Faculty Management',
-                        style: GoogleFonts.poppins(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : Colors.black87,
-                        ),
+                ? Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          maroonColor,
+                          const Color(0xFF8e005b),
+                        ],
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Manage faculty members and their information',
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          color: Colors.grey[600],
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: maroonColor.withValues(alpha: 0.3),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
                         ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(
+                                Icons.people_rounded,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Faculty Management',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      letterSpacing: -0.5,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Manage instructors and workload',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      color: Colors.white.withValues(
+                                        alpha: 0.8,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: _showAddFacultyModal,
+                            icon: const Icon(Icons.add_rounded, size: 20),
+                            label: Text(
+                              'Add Faculty Member',
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: maroonColor,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              elevation: 0,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(32),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          maroonColor,
+                          const Color(0xFF8e005b),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
+                      borderRadius: BorderRadius.circular(28),
+                      boxShadow: [
+                        BoxShadow(
+                          color: maroonColor.withValues(alpha: 0.3),
+                          blurRadius: 25,
+                          offset: const Offset(0, 12),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.2),
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.people_outline_rounded,
+                                color: Colors.white,
+                                size: 32,
+                              ),
+                            ),
+                            const SizedBox(width: 24),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Faculty Management',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    letterSpacing: -1,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Manage faculty members, workload assignments, and preferences',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 16,
+                                    color: Colors.white.withValues(alpha: 0.8),
+                                    letterSpacing: 0.2,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        ElevatedButton.icon(
                           onPressed: _showAddFacultyModal,
-                          icon: const Icon(Icons.add_rounded),
+                          icon: const Icon(Icons.add_rounded, size: 20),
                           label: Text(
-                            'Add Faculty',
+                            'Add Faculty Member',
                             style: GoogleFonts.poppins(
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              letterSpacing: 0.5,
                             ),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: maroonColor,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.all(16),
+                            backgroundColor: Colors.white,
+                            foregroundColor: maroonColor,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 28,
+                              vertical: 20,
+                            ),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(18),
                             ),
-                            elevation: 2,
+                            elevation: 8,
+                            shadowColor: Colors.black.withValues(alpha: 0.2),
                           ),
                         ),
-                      ),
-                    ],
-                  )
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Faculty Management',
-                            style: GoogleFonts.poppins(
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                              color: isDark ? Colors.white : Colors.black87,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Manage faculty members and their information',
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
-                      ElevatedButton.icon(
-                        onPressed: _showAddFacultyModal,
-                        icon: const Icon(Icons.add_rounded),
-                        label: Text(
-                          'Add Faculty',
-                          style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: maroonColor,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 16,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          elevation: 2,
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
             const SizedBox(height: 32),
 
@@ -300,7 +393,7 @@ class _FacultyManagementScreenState
                     // Program filter
                     final matchesProgram =
                         _selectedProgram == null ||
-                        faculty.program.name.toUpperCase() == _selectedProgram;
+                        faculty.program == _selectedProgram;
 
                     return matchesSearch && matchesProgram;
                   }).toList();
@@ -975,11 +1068,13 @@ class _FacultyManagementScreenState
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
+          color: isDark
+              ? Colors.grey[800]!
+              : const Color.fromARGB(255, 0, 0, 0)!,
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color.fromRGBO(30, 41, 59, 1).withOpacity(0.03),
+            color: Colors.black.withOpacity(0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -1000,7 +1095,9 @@ class _FacultyManagementScreenState
               cursorColor: isDark ? Colors.white : Colors.black87,
               style: GoogleFonts.poppins(
                 fontSize: 14,
-                color: isDark ? Colors.white : Colors.black87,
+                color: isDark
+                    ? const Color.fromARGB(255, 0, 0, 0)
+                    : Colors.black87,
               ),
               decoration: InputDecoration(
                 filled: false,
@@ -1034,75 +1131,88 @@ class _FacultyManagementScreenState
     AsyncValue<List<Faculty>> facultyAsync,
     bool isDark,
   ) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[300]!),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildLabel(
+          'Program',
+          Icons.school_outlined,
+          isDark ? Colors.white : Colors.black87,
+        ),
+        _buildDropdown<Program?>(
+          value: _selectedProgram,
+          items: [null, ...Program.values],
+          onChanged: (value) {
+            setState(() {
+              _selectedProgram = value;
+            });
+          },
+          itemLabel: (program) =>
+              program == null ? 'ALL' : program.name.toUpperCase(),
+          bgBody: isDark ? const Color(0xFF1E293B) : Colors.white,
+          textPrimary: isDark ? Colors.white : Colors.black87,
+          textMuted: Colors.grey,
+          primaryPurple: maroonColor,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLabel(String label, IconData icon, Color color) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8, left: 4),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: color.withOpacity(0.7)),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
           ),
         ],
       ),
-      child: facultyAsync.when(
-        loading: () => const SizedBox(),
-        error: (_, __) => const SizedBox(),
-        data: (facultyList) {
-          final programs =
-              facultyList
-                  .map((f) => f.program.name.toUpperCase())
-                  .toSet()
-                  .toList()
-                ..sort();
+    );
+  }
 
-          return DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: _selectedProgram,
-              hint: Row(
-                children: [
-                  Icon(Icons.filter_list_rounded, color: maroonColor, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Filter by Program',
-                    style: GoogleFonts.poppins(
-                      color: Colors.grey[600],
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-              isExpanded: true,
-              icon: Icon(Icons.arrow_drop_down, color: Colors.grey[600]),
-              items: [
-                DropdownMenuItem<String>(
-                  value: null,
-                  child: Text(
-                    'All Programs',
-                    style: GoogleFonts.poppins(fontSize: 14),
-                  ),
-                ),
-                ...programs.map((prog) {
-                  return DropdownMenuItem<String>(
-                    value: prog,
-                    child: Text(
-                      prog,
-                      style: GoogleFonts.poppins(fontSize: 14),
-                    ),
-                  );
-                }),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  _selectedProgram = value;
-                });
-              },
-            ),
-          );
-        },
+  Widget _buildDropdown<T>({
+    required T value,
+    required List<T> items,
+    required ValueChanged<T?> onChanged,
+    required String Function(T) itemLabel,
+    required Color bgBody,
+    required Color textPrimary,
+    required Color textMuted,
+    required Color primaryPurple,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: bgBody,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.black.withOpacity(0.05)),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<T>(
+          value: value,
+          isExpanded: true,
+          icon: Icon(Icons.keyboard_arrow_down_rounded, color: textMuted),
+          style: GoogleFonts.poppins(
+            fontSize: 15,
+            color: textPrimary,
+            fontWeight: FontWeight.w500,
+          ),
+          items: items.map((T item) {
+            return DropdownMenuItem<T>(
+              value: item,
+              child: Text(itemLabel(item)),
+            );
+          }).toList(),
+          onChanged: onChanged,
+        ),
       ),
     );
   }
@@ -1358,58 +1468,76 @@ class _AddFacultyModalState extends State<_AddFacultyModal> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('Building _AddFacultyModal...');
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryPurple = widget.maroonColor; // Use maroon as primaryPurple
+    final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final bgBody = isDark ? const Color(0xFF0F172A) : const Color(0xFFEEF1F6);
+    final textPrimary = isDark
+        ? const Color(0xFFE2E8F0)
+        : const Color(0xFF333333);
+    final textMuted = isDark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF666666);
     final isMobile = ResponsiveHelper.isMobile(context);
 
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      backgroundColor: Colors.transparent,
       child: Container(
-        width: isMobile ? double.infinity : 900,
+        width: isMobile ? double.infinity : 650,
         constraints: BoxConstraints(
-          maxHeight: isMobile ? MediaQuery.of(context).size.height * 0.9 : 700,
+          maxHeight: isMobile ? MediaQuery.of(context).size.height * 0.9 : 750,
+        ),
+        decoration: BoxDecoration(
+          color: cardBg,
+          borderRadius: BorderRadius.circular(19),
+          border: Border.all(color: Colors.black.withOpacity(0.05)),
+          boxShadow: [
+            BoxShadow(
+              color: primaryPurple.withOpacity(0.15),
+              blurRadius: 30,
+              offset: const Offset(0, 15),
+            ),
+          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Header Section
+            // Header Section with Gradient
             Container(
-              padding: EdgeInsets.all(isMobile ? 16 : 28),
+              padding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 20 : 28,
+                vertical: isMobile ? 20 : 24,
+              ),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                   colors: [
-                    widget.maroonColor,
-                    widget.maroonColor.withOpacity(0.8),
+                    primaryPurple,
+                    const Color(0xFFb5179e),
                   ],
                 ),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(19),
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: widget.maroonColor.withOpacity(0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+                border: Border.all(color: Colors.white.withOpacity(0.1)),
               ),
               child: Row(
                 children: [
-                  if (!isMobile) ...[
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.person_add_rounded,
-                        color: Colors.white,
-                        size: 28,
-                      ),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    const SizedBox(width: 16),
-                  ],
+                    child: const Icon(
+                      Icons.person_add_rounded,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1417,19 +1545,20 @@ class _AddFacultyModalState extends State<_AddFacultyModal> {
                         Text(
                           'Add New Faculty',
                           style: GoogleFonts.poppins(
-                            fontSize: isMobile ? 18 : 22,
+                            fontSize: isMobile ? 20 : 24,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
+                            letterSpacing: -0.5,
                           ),
                         ),
-                        if (!isMobile)
-                          Text(
-                            'Fill in the details to create a new faculty profile',
-                            style: GoogleFonts.poppins(
-                              fontSize: 13,
-                              color: Colors.white.withOpacity(0.9),
-                            ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Create a new faculty profile in the system',
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            color: Colors.white.withOpacity(0.85),
                           ),
+                        ),
                       ],
                     ),
                   ),
@@ -1437,11 +1566,11 @@ class _AddFacultyModalState extends State<_AddFacultyModal> {
                     icon: const Icon(
                       Icons.close,
                       color: Colors.white,
-                      size: 24,
+                      size: 20,
                     ),
                     onPressed: () => Navigator.pop(context),
                     style: IconButton.styleFrom(
-                      backgroundColor: Colors.white.withOpacity(0.2),
+                      backgroundColor: Colors.white.withOpacity(0.1),
                     ),
                   ),
                 ],
@@ -1449,135 +1578,96 @@ class _AddFacultyModalState extends State<_AddFacultyModal> {
             ),
 
             // Main Body
-            Expanded(
+            Flexible(
               child: SingleChildScrollView(
-                child: Padding(
-                  padding: EdgeInsets.all(isMobile ? 16 : 0),
-                  child: Flex(
-                    direction: isMobile ? Axis.vertical : Axis.horizontal,
-                    crossAxisAlignment: isMobile
-                        ? CrossAxisAlignment.stretch
-                        : CrossAxisAlignment.start,
-                    children: [
-                      // Context/Info (Hidden or simplified on mobile)
-                      if (!isMobile)
-                        SizedBox(
-                          width: 300, // Fixed width for desktop sidebar
-                          child: Container(
-                            padding: const EdgeInsets.all(32),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[50],
-                              border: Border(
-                                right: BorderSide(color: Colors.grey[300]!),
-                              ),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildInfoSection(
-                                  icon: Icons.info_outline,
-                                  title: 'Faculty Information',
-                                  description:
-                                      'Enter basic information about the faculty member including their name, email, and faculty ID.',
-                                ),
-                                const SizedBox(height: 24),
-                                _buildInfoSection(
-                                  icon: Icons.work_outline,
-                                  title: 'Employment Details',
-                                  description:
-                                      'Specify the employment status (Full-Time or Part-Time) and program assignment.',
-                                ),
-                                const SizedBox(height: 24),
-                                _buildInfoSection(
-                                  icon: Icons.schedule,
-                                  title: 'Schedule Preferences',
-                                  description:
-                                      'Set the maximum teaching load (in hours) and preferred shift times for scheduling.',
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                      // Input Form
-                      if (isMobile)
-                        Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: _buildForm(context),
-                        )
-                      else
-                        Expanded(child: _buildForm(context)),
-                    ],
-                  ),
+                padding: EdgeInsets.all(isMobile ? 20 : 28),
+                child: _buildForm(
+                  context,
+                  bgBody,
+                  primaryPurple,
+                  textPrimary,
+                  textMuted,
                 ),
               ),
             ),
 
-            // -------------------------
-            // 3. Footer Actions
-            // -------------------------
+            // Footer Actions
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.grey[50],
-                border: Border(top: BorderSide(color: Colors.grey[300]!)),
+                color: cardBg,
+                border: Border(
+                  top: BorderSide(color: Colors.black.withOpacity(0.05)),
+                ),
                 borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(20),
-                  bottomRight: Radius.circular(20),
+                  bottomLeft: Radius.circular(19),
+                  bottomRight: Radius.circular(19),
                 ),
               ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton(
-                    onPressed: _isLoading ? null : () => Navigator.pop(context),
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 14,
+                  Expanded(
+                    child: TextButton(
+                      onPressed: _isLoading
+                          ? null
+                          : () => Navigator.pop(context),
+                      style: TextButton.styleFrom(
+                        foregroundColor: textMuted,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(
+                            color: Colors.black.withOpacity(0.1),
+                          ),
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      'Cancel',
-                      style: GoogleFonts.poppins(
-                        color: Colors.grey[700],
-                        fontWeight: FontWeight.w600,
+                      child: Text(
+                        'Cancel',
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),
                   const SizedBox(width: 12),
-                  ElevatedButton.icon(
-                    onPressed: _isLoading ? null : _submit,
-                    icon: _isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
+                  Expanded(
+                    flex: 2,
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _submit,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryPurple,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                        disabledBackgroundColor: primaryPurple.withOpacity(0.5),
+                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
                               ),
+                            )
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.check_rounded, size: 20),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Add Faculty Member',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
-                          )
-                        : const Icon(Icons.add_rounded, size: 20),
-                    label: Text(
-                      'Add Faculty Member',
-                      style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: widget.maroonColor,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 16,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      elevation: 0,
                     ),
                   ),
                 ],
@@ -1589,369 +1679,341 @@ class _AddFacultyModalState extends State<_AddFacultyModal> {
     );
   }
 
-  // -------------------------
-  // Helper Widgets
-  // -------------------------
-
-  Widget _buildInfoSection({
-    required IconData icon,
-    required String title,
-    required String description,
-  }) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: widget.maroonColor.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(10),
+  Widget _buildForm(
+    BuildContext context,
+    Color bgBody,
+    Color primaryPurple,
+    Color textPrimary,
+    Color textMuted,
+  ) {
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildLabel('Full Name', Icons.person_outline_rounded, textPrimary),
+          TextFormField(
+            controller: _nameController,
+            decoration: _buildInputDecoration(
+              'Jerwin A. Carreon',
+              bgBody,
+              primaryPurple,
+              textMuted,
+            ),
+            style: GoogleFonts.poppins(fontSize: 15, color: textPrimary),
+            validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
           ),
-          child: Icon(icon, color: widget.maroonColor, size: 22),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                description,
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                  height: 1.5,
-                ),
-              ),
-            ],
+          const SizedBox(height: 20),
+          _buildLabel('Email Address', Icons.email_outlined, textPrimary),
+          TextFormField(
+            controller: _emailController,
+            decoration: _buildInputDecoration(
+              'jerwin.carreon@jmc.edu.ph',
+              bgBody,
+              primaryPurple,
+              textMuted,
+            ),
+            keyboardType: TextInputType.emailAddress,
+            style: GoogleFonts.poppins(fontSize: 15, color: textPrimary),
+            validator: (value) {
+              if (value?.isEmpty ?? true) return 'Required';
+              if (!value!.contains('@')) return 'Invalid email';
+              return null;
+            },
           ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildForm(BuildContext context) {
-    final isMobile = ResponsiveHelper.isMobile(context);
-    return Padding(
-      padding: EdgeInsets.all(isMobile ? 0 : 32),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Basic Information',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: widget.maroonColor,
+          const SizedBox(height: 20),
+          _buildLabel('Faculty ID', Icons.badge_rounded, textPrimary),
+          TextFormField(
+            controller: _facultyIdController,
+            decoration: _buildInputDecoration(
+              'FAC-001',
+              bgBody,
+              primaryPurple,
+              textMuted,
+            ),
+            style: GoogleFonts.poppins(fontSize: 15, color: textPrimary),
+            validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
+          ),
+          const SizedBox(height: 20),
+          _buildLabel(
+            'Max Load (hours)',
+            Icons.access_time_rounded,
+            textPrimary,
+          ),
+          TextFormField(
+            controller: _maxLoadController,
+            decoration: _buildInputDecoration(
+              '21',
+              bgBody,
+              primaryPurple,
+              textMuted,
+            ),
+            keyboardType: TextInputType.number,
+            style: GoogleFonts.poppins(fontSize: 15, color: textPrimary),
+            validator: (value) {
+              if (value?.isEmpty ?? true) return 'Required';
+              if (int.tryParse(value!) == null) return 'Invalid number';
+              return null;
+            },
+          ),
+          const SizedBox(height: 24),
+          _buildLabel(
+            'Employment Status',
+            Icons.work_outline_rounded,
+            textPrimary,
+          ),
+          _buildDropdown<EmploymentStatus>(
+            value: _employmentStatus,
+            bgBody: bgBody,
+            textPrimary: textPrimary,
+            textMuted: textMuted,
+            primaryPurple: primaryPurple,
+            items: EmploymentStatus.values,
+            onChanged: (value) => setState(() => _employmentStatus = value!),
+            itemLabel: (status) =>
+                status == EmploymentStatus.fullTime ? 'Full-Time' : 'Part-Time',
+          ),
+          const SizedBox(height: 20),
+          _buildLabel('Shift Preference', Icons.schedule_rounded, textPrimary),
+          _buildDropdown<FacultyShiftPreference>(
+            value: _shiftPreference,
+            bgBody: bgBody,
+            textPrimary: textPrimary,
+            textMuted: textMuted,
+            primaryPurple: primaryPurple,
+            items: FacultyShiftPreference.values,
+            onChanged: (value) => setState(() => _shiftPreference = value!),
+            itemLabel: (pref) {
+              switch (pref) {
+                case FacultyShiftPreference.any:
+                  return 'Any Time (Flexible)';
+                case FacultyShiftPreference.morning:
+                  return 'Morning (7:00 AM – 12:00 PM)';
+                case FacultyShiftPreference.afternoon:
+                  return 'Afternoon (1:00 PM – 6:00 PM)';
+                case FacultyShiftPreference.evening:
+                  return 'Evening (6:00 PM – 9:00 PM)';
+                case FacultyShiftPreference.custom:
+                  return 'Custom';
+              }
+            },
+          ),
+          const SizedBox(height: 24),
+          _buildLabel('Time Preferences', Icons.more_time_rounded, textPrimary),
+          OutlinedButton.icon(
+            onPressed: _showCustomHoursPicker,
+            icon: const Icon(Icons.add_circle_outline, size: 20),
+            label: Text(
+              _customPreferredHours == null
+                  ? 'Add Custom Hours'
+                  : 'Change Custom Hours',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+            ),
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size(double.infinity, 54),
+              side: BorderSide(color: primaryPurple, width: 1.5),
+              foregroundColor: primaryPurple,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
+          ),
+          if (_customPreferredHours != null) ...[
             const SizedBox(height: 16),
-            _buildTextField(
-              controller: _nameController,
-              label: 'Full Name',
-              icon: Icons.person,
-              helperText: 'Complete name of the faculty',
-              validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
-            ),
-            const SizedBox(height: 20),
-            _buildTextField(
-              controller: _emailController,
-              label: 'Email Address',
-              icon: Icons.email,
-              helperText: 'Official email address',
-              keyboardType: TextInputType.emailAddress,
-              validator: (value) {
-                if (value?.isEmpty ?? true) return 'Required';
-                if (!value!.contains('@')) return 'Invalid email';
-                return null;
-              },
-            ),
-            const SizedBox(height: 20),
-            _buildTextField(
-              controller: _facultyIdController,
-              label: 'Faculty ID',
-              icon: Icons.badge,
-              helperText: 'Unique identifier',
-              validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
-            ),
-            const SizedBox(height: 20),
-            const Divider(),
-            const SizedBox(height: 20),
-            Text(
-              'Employment & Schedule',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: widget.maroonColor,
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.green.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.green.withOpacity(0.1)),
               ),
-            ),
-            const SizedBox(height: 16),
-            _buildTextField(
-              controller: _maxLoadController,
-              label: 'Max Load (hours)',
-              icon: Icons.access_time,
-              helperText: 'Max teaching hours per week',
-              keyboardType: TextInputType.number,
-              validator: (value) {
-                if (value?.isEmpty ?? true) return 'Required';
-                if (int.tryParse(value!) == null) return 'Invalid number';
-                return null;
-              },
-            ),
-            const SizedBox(height: 20),
-            _buildDropdown<EmploymentStatus>(
-              label: 'Employment Status',
-              value: _employmentStatus,
-              items: EmploymentStatus.values,
-              onChanged: (value) => setState(() => _employmentStatus = value!),
-              itemLabel: (status) => status == EmploymentStatus.fullTime
-                  ? 'Full-Time'
-                  : 'Part-Time',
-            ),
-            const SizedBox(height: 20),
-            _buildDropdown<FacultyShiftPreference>(
-              label: 'Shift Preference',
-              value: _shiftPreference,
-              items: FacultyShiftPreference.values,
-              onChanged: (value) => setState(() => _shiftPreference = value!),
-              itemLabel: (pref) {
-                switch (pref) {
-                  case FacultyShiftPreference.any:
-                    return 'Any Time (Flexible)';
-                  case FacultyShiftPreference.morning:
-                    return 'Morning (7:00 AM – 12:00 PM)';
-                  case FacultyShiftPreference.afternoon:
-                    return 'Afternoon (1:00 PM – 6:00 PM)';
-                  case FacultyShiftPreference.evening:
-                    return 'Evening (6:00 PM – 9:00 PM)';
-                  case FacultyShiftPreference.custom:
-                    return 'Custom';
-                }
-              },
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'TIME PREFERENCES',
-              style: GoogleFonts.poppins(
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.2,
-                color: Colors.grey[600],
-              ),
-            ),
-            const SizedBox(height: 12),
-            OutlinedButton.icon(
-              onPressed: _showCustomHoursPicker,
-              icon: const Icon(Icons.add_circle_outline, size: 20),
-              label: Text(
-                _customPreferredHours == null
-                    ? 'Add Custom Hours'
-                    : 'Change Custom Hours',
-                style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-              ),
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
-                side: BorderSide(color: widget.maroonColor, width: 2),
-                foregroundColor: widget.maroonColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-            if (_customPreferredHours != null) ...[
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border(
-                    left: BorderSide(color: Colors.green[400]!, width: 4),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Custom Hours Applied',
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green[700],
-                            ),
-                          ),
-                          Text(
-                            _customPreferredHours!,
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: Colors.black87,
-                            ),
-                          ),
-                        ],
-                      ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.1),
+                      shape: BoxShape.circle,
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.close, size: 20),
-                      onPressed: () =>
-                          setState(() => _customPreferredHours = null),
-                      color: Colors.grey[600],
+                    child: const Icon(
+                      Icons.check_rounded,
+                      size: 16,
+                      color: Colors.green,
                     ),
-                  ],
-                ),
-              ),
-            ],
-            const SizedBox(height: 20),
-            _buildDropdown<Program>(
-              label: 'Program',
-              value: _program,
-              items: Program.values,
-              onChanged: (value) => setState(() => _program = value!),
-              itemLabel: (prog) => prog.name.toUpperCase(),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Text(
-                  'Is Active',
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
                   ),
-                ),
-                const Spacer(),
-                Switch(
-                  value: _isActive,
-                  onChanged: (value) => setState(() => _isActive = value),
-                  activeColor: widget.maroonColor,
-                ),
-              ],
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Custom Hours Applied',
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green[700],
+                          ),
+                        ),
+                        Text(
+                          _customPreferredHours!,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            color: textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 18),
+                    onPressed: () =>
+                        setState(() => _customPreferredHours = null),
+                    color: textMuted,
+                  ),
+                ],
+              ),
             ),
           ],
-        ),
+          const SizedBox(height: 24),
+          _buildLabel('Program Assignment', Icons.school_outlined, textPrimary),
+          _buildDropdown<Program>(
+            value: _program,
+            bgBody: bgBody,
+            textPrimary: textPrimary,
+            textMuted: textMuted,
+            primaryPurple: primaryPurple,
+            items: Program.values,
+            onChanged: (value) => setState(() => _program = value!),
+            itemLabel: (prog) => prog.name.toUpperCase(),
+          ),
+          const SizedBox(height: 24),
+          InkWell(
+            onTap: () => setState(() => _isActive = !_isActive),
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: bgBody,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.black.withOpacity(0.05)),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.check_circle_outline_rounded,
+                    size: 20,
+                    color: textMuted,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Is Active',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: textPrimary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const Spacer(),
+                  Switch(
+                    value: _isActive,
+                    onChanged: (value) => setState(() => _isActive = value),
+                    activeColor: primaryPurple,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    required String helperText,
-    TextInputType? keyboardType,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      validator: validator,
-      style: GoogleFonts.poppins(fontSize: 14, color: Colors.black87),
-      decoration: InputDecoration(
-        labelText: label,
-        helperText: helperText,
+  Widget _buildLabel(String label, IconData icon, Color color) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8, left: 4),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: color.withOpacity(0.7)),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-        // Label is grey when inactive
-        labelStyle: GoogleFonts.poppins(color: Colors.grey[600], fontSize: 14),
-        helperStyle: GoogleFonts.poppins(color: Colors.grey[500], fontSize: 12),
-        hintStyle: GoogleFonts.poppins(color: Colors.grey[400]),
-
-        // FIXED: Label stays grey even when focused/floating
-        floatingLabelStyle: GoogleFonts.poppins(
-          color: Colors.grey[600], // Changed from maroon to grey
-          fontWeight: FontWeight.w600,
-        ),
-
-        prefixIcon: Icon(icon, color: Colors.grey[500], size: 20),
-        contentPadding: const EdgeInsets.symmetric(
-          vertical: 16,
-          horizontal: 20,
-        ),
-
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[300]!),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[300]!),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: widget.maroonColor, width: 1.5),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.red[300]!),
-        ),
-        filled: true,
-        fillColor: Colors.white,
+  InputDecoration _buildInputDecoration(
+    String hintText,
+    Color bgBody,
+    Color primaryPurple,
+    Color textMuted,
+  ) {
+    return InputDecoration(
+      hintText: hintText,
+      hintStyle: GoogleFonts.poppins(color: textMuted, fontSize: 14),
+      filled: true,
+      fillColor: bgBody,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.black.withOpacity(0.05)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.black.withOpacity(0.05)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: primaryPurple, width: 1.5),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Colors.red, width: 1),
       ),
     );
   }
 
   Widget _buildDropdown<T>({
-    required String label,
     required T value,
     required List<T> items,
     required ValueChanged<T?> onChanged,
     required String Function(T) itemLabel,
+    required Color bgBody,
+    required Color textPrimary,
+    required Color textMuted,
+    required Color primaryPurple,
   }) {
-    return DropdownButtonFormField<T>(
-      value: value,
-      items: items.map((T item) {
-        return DropdownMenuItem<T>(
-          value: item,
-          child: Text(
-            itemLabel(item),
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              color: Colors.black87,
-            ),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: bgBody,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.black.withOpacity(0.05)),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<T>(
+          value: value,
+          isExpanded: true,
+          icon: Icon(Icons.keyboard_arrow_down_rounded, color: textMuted),
+          style: GoogleFonts.poppins(
+            fontSize: 15,
+            color: textPrimary,
+            fontWeight: FontWeight.w500,
           ),
-        );
-      }).toList(),
-      onChanged: onChanged,
-      icon: Icon(Icons.arrow_drop_down, color: Colors.grey[600]),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: GoogleFonts.poppins(color: Colors.grey[600], fontSize: 14),
-
-        // FIXED: Label stays grey even when focused/floating
-        floatingLabelStyle: GoogleFonts.poppins(
-          color: Colors.grey[600], // Changed from maroon to grey
-          fontWeight: FontWeight.w600,
+          items: items.map((T item) {
+            return DropdownMenuItem<T>(
+              value: item,
+              child: Text(itemLabel(item)),
+            );
+          }).toList(),
+          onChanged: onChanged,
         ),
-
-        contentPadding: const EdgeInsets.symmetric(
-          vertical: 16,
-          horizontal: 20,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[300]!),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[300]!),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: widget.maroonColor, width: 1.5),
-        ),
-        filled: true,
-        fillColor: Colors.white,
       ),
     );
   }
@@ -2112,190 +2174,206 @@ class _EditFacultyModalState extends State<_EditFacultyModal> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('Building _EditFacultyModal...');
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryPurple = widget.maroonColor;
+    final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final bgBody = isDark ? const Color(0xFF0F172A) : const Color(0xFFEEF1F6);
+    final textPrimary = isDark
+        ? const Color(0xFFE2E8F0)
+        : const Color(0xFF333333);
+    final textMuted = isDark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF666666);
     final isMobile = ResponsiveHelper.isMobile(context);
 
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      backgroundColor: Colors.transparent,
       child: Container(
-        width: isMobile ? double.infinity : 1000,
+        width: isMobile ? double.infinity : 650,
         constraints: BoxConstraints(
-          maxHeight: isMobile ? MediaQuery.of(context).size.height * 0.9 : 800,
+          maxHeight: isMobile ? MediaQuery.of(context).size.height * 0.9 : 750,
+        ),
+        decoration: BoxDecoration(
+          color: cardBg,
+          borderRadius: BorderRadius.circular(19),
+          border: Border.all(color: Colors.black.withOpacity(0.05)),
+          boxShadow: [
+            BoxShadow(
+              color: primaryPurple.withOpacity(0.15),
+              blurRadius: 30,
+              offset: const Offset(0, 15),
+            ),
+          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Header Section
+            // Header Section with Gradient
             Container(
-              padding: EdgeInsets.all(isMobile ? 16 : 28),
+              padding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 20 : 28,
+                vertical: isMobile ? 20 : 24,
+              ),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                   colors: [
-                    widget.maroonColor,
-                    widget.maroonColor.withOpacity(0.8),
+                    primaryPurple,
+                    const Color(0xFFb5179e),
                   ],
                 ),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(19),
                 ),
+                border: Border.all(color: Colors.white.withOpacity(0.1)),
               ),
               child: Row(
                 children: [
-                  if (!isMobile) ...[
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.edit_rounded,
-                        color: Colors.white,
-                        size: 28,
-                      ),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    const SizedBox(width: 16),
-                  ],
+                    child: const Icon(
+                      Icons.edit_note_rounded,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Edit Faculty',
+                          'Edit Faculty Profile',
                           style: GoogleFonts.poppins(
-                            fontSize: isMobile ? 18 : 22,
+                            fontSize: isMobile ? 20 : 24,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
+                            letterSpacing: -0.5,
                           ),
                         ),
-                        if (!isMobile)
-                          Text(
-                            'Update faculty information and preferences',
-                            style: GoogleFonts.poppins(
-                              fontSize: 13,
-                              color: Colors.white.withOpacity(0.9),
-                            ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Update information for ${widget.faculty.name}',
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            color: Colors.white.withOpacity(0.85),
                           ),
+                        ),
                       ],
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white),
+                    icon: const Icon(
+                      Icons.close,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                     onPressed: () => Navigator.pop(context),
                     style: IconButton.styleFrom(
-                      backgroundColor: Colors.white.withOpacity(0.2),
+                      backgroundColor: Colors.white.withOpacity(0.1),
                     ),
                   ),
                 ],
               ),
             ),
 
-            // Form Content Area
-            Expanded(
+            // Main Body
+            Flexible(
               child: SingleChildScrollView(
-                child: Padding(
-                  padding: EdgeInsets.all(isMobile ? 16 : 0),
-                  child: Flex(
-                    direction: isMobile ? Axis.vertical : Axis.horizontal,
-                    crossAxisAlignment: isMobile
-                        ? CrossAxisAlignment.stretch
-                        : CrossAxisAlignment.start,
-                    children: [
-                      // Left Side: Instructions (Hidden on mobile)
-                      if (!isMobile)
-                        SizedBox(
-                          width: 300,
-                          child: Container(
-                            width: 300,
-                            padding: const EdgeInsets.all(32),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[50],
-                              border: Border(
-                                right: BorderSide(color: Colors.grey[300]!),
-                              ),
-                            ),
-                            child: Column(
-                              children: [
-                                _buildInfoSection(
-                                  Icons.info_outline,
-                                  'Faculty Information',
-                                  'Update basic identification details.',
-                                ),
-                                const SizedBox(height: 24),
-                                _buildInfoSection(
-                                  Icons.work_outline,
-                                  'Employment Details',
-                                  'Modify status and program.',
-                                ),
-                                const SizedBox(height: 24),
-                                _buildInfoSection(
-                                  Icons.schedule,
-                                  'Schedule Preferences',
-                                  'Adjust load and shift times.',
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      // Right Side: Form
-                      if (isMobile)
-                        Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: _buildForm(context),
-                        )
-                      else
-                        Expanded(child: _buildForm(context)),
-                    ],
-                  ),
+                padding: EdgeInsets.all(isMobile ? 20 : 28),
+                child: _buildForm(
+                  context,
+                  bgBody,
+                  primaryPurple,
+                  textPrimary,
+                  textMuted,
                 ),
               ),
             ),
 
-            // Action Buttons
+            // Footer Actions
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.grey[50],
-                border: Border(top: BorderSide(color: Colors.grey[300]!)),
+                color: cardBg,
+                border: Border(
+                  top: BorderSide(color: Colors.black.withOpacity(0.05)),
+                ),
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(19),
+                  bottomRight: Radius.circular(19),
+                ),
               ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton(
-                    onPressed: _isLoading ? null : () => Navigator.pop(context),
-                    child: Text(
-                      'Cancel',
-                      style: GoogleFonts.poppins(
-                        color: Colors.grey[700],
-                        fontWeight: FontWeight.w600,
+                  Expanded(
+                    child: TextButton(
+                      onPressed: _isLoading
+                          ? null
+                          : () => Navigator.pop(context),
+                      style: TextButton.styleFrom(
+                        foregroundColor: textMuted,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(
+                            color: Colors.black.withOpacity(0.1),
+                          ),
+                        ),
+                      ),
+                      child: Text(
+                        'Cancel',
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  ElevatedButton.icon(
-                    onPressed: _isLoading ? null : _submit,
-                    icon: _isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 2,
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _submit,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryPurple,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                        disabledBackgroundColor: primaryPurple.withOpacity(0.5),
+                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.save_rounded, size: 20),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Save Changes',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
-                          )
-                        : const Icon(Icons.save_rounded),
-                    label: const Text('Save Changes'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: widget.maroonColor,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 16,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
                     ),
                   ),
                 ],
@@ -2307,331 +2385,341 @@ class _EditFacultyModalState extends State<_EditFacultyModal> {
     );
   }
 
-  Widget _buildInfoSection(IconData icon, String title, String description) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: widget.maroonColor.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(10),
+  Widget _buildForm(
+    BuildContext context,
+    Color bgBody,
+    Color primaryPurple,
+    Color textPrimary,
+    Color textMuted,
+  ) {
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildLabel('Full Name', Icons.person_outline_rounded, textPrimary),
+          TextFormField(
+            controller: _nameController,
+            decoration: _buildInputDecoration(
+              'Jerwin A. Carreon',
+              bgBody,
+              primaryPurple,
+              textMuted,
+            ),
+            style: GoogleFonts.poppins(fontSize: 15, color: textPrimary),
+            validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
           ),
-          child: Icon(icon, color: widget.maroonColor, size: 22),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                description,
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
-              ),
-            ],
+          const SizedBox(height: 20),
+          _buildLabel('Email Address', Icons.email_outlined, textPrimary),
+          TextFormField(
+            controller: _emailController,
+            decoration: _buildInputDecoration(
+              'jerwin.carreon@jmc.edu.ph',
+              bgBody,
+              primaryPurple,
+              textMuted,
+            ),
+            keyboardType: TextInputType.emailAddress,
+            style: GoogleFonts.poppins(fontSize: 15, color: textPrimary),
+            validator: (value) {
+              if (value?.isEmpty ?? true) return 'Required';
+              if (!value!.contains('@')) return 'Invalid email';
+              return null;
+            },
           ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildForm(BuildContext context) {
-    final isMobile = ResponsiveHelper.isMobile(context);
-    return Padding(
-      padding: EdgeInsets.all(isMobile ? 0 : 32),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Basic Information',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: widget.maroonColor,
+          const SizedBox(height: 20),
+          _buildLabel('Faculty ID', Icons.badge_rounded, textPrimary),
+          TextFormField(
+            controller: _facultyIdController,
+            decoration: _buildInputDecoration(
+              'FAC-001',
+              bgBody,
+              primaryPurple,
+              textMuted,
+            ),
+            style: GoogleFonts.poppins(fontSize: 15, color: textPrimary),
+            validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
+          ),
+          const SizedBox(height: 20),
+          _buildLabel(
+            'Max Load (hours)',
+            Icons.access_time_rounded,
+            textPrimary,
+          ),
+          TextFormField(
+            controller: _maxLoadController,
+            decoration: _buildInputDecoration(
+              '21',
+              bgBody,
+              primaryPurple,
+              textMuted,
+            ),
+            keyboardType: TextInputType.number,
+            style: GoogleFonts.poppins(fontSize: 15, color: textPrimary),
+            validator: (value) {
+              if (value?.isEmpty ?? true) return 'Required';
+              if (int.tryParse(value!) == null) return 'Invalid number';
+              return null;
+            },
+          ),
+          const SizedBox(height: 24),
+          _buildLabel(
+            'Employment Status',
+            Icons.work_outline_rounded,
+            textPrimary,
+          ),
+          _buildDropdown<EmploymentStatus>(
+            value: _employmentStatus,
+            bgBody: bgBody,
+            textPrimary: textPrimary,
+            textMuted: textMuted,
+            primaryPurple: primaryPurple,
+            items: EmploymentStatus.values,
+            onChanged: (value) => setState(() => _employmentStatus = value!),
+            itemLabel: (status) =>
+                status == EmploymentStatus.fullTime ? 'Full-Time' : 'Part-Time',
+          ),
+          const SizedBox(height: 20),
+          _buildLabel('Shift Preference', Icons.schedule_rounded, textPrimary),
+          _buildDropdown<FacultyShiftPreference>(
+            value: _shiftPreference,
+            bgBody: bgBody,
+            textPrimary: textPrimary,
+            textMuted: textMuted,
+            primaryPurple: primaryPurple,
+            items: FacultyShiftPreference.values,
+            onChanged: (value) => setState(() => _shiftPreference = value!),
+            itemLabel: (pref) {
+              switch (pref) {
+                case FacultyShiftPreference.any:
+                  return 'Any Time (Flexible)';
+                case FacultyShiftPreference.morning:
+                  return 'Morning (7:00 AM – 12:00 PM)';
+                case FacultyShiftPreference.afternoon:
+                  return 'Afternoon (1:00 PM – 6:00 PM)';
+                case FacultyShiftPreference.evening:
+                  return 'Evening (6:00 PM – 9:00 PM)';
+                case FacultyShiftPreference.custom:
+                  return 'Custom';
+              }
+            },
+          ),
+          const SizedBox(height: 24),
+          _buildLabel('Time Preferences', Icons.more_time_rounded, textPrimary),
+          OutlinedButton.icon(
+            onPressed: _showCustomHoursPicker,
+            icon: const Icon(Icons.add_circle_outline, size: 20),
+            label: Text(
+              _customPreferredHours == null
+                  ? 'Add Custom Hours'
+                  : 'Change Custom Hours',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+            ),
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size(double.infinity, 54),
+              side: BorderSide(color: primaryPurple, width: 1.5),
+              foregroundColor: primaryPurple,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
+          ),
+          if (_customPreferredHours != null) ...[
             const SizedBox(height: 16),
-            _buildTextField(
-              controller: _nameController,
-              label: 'Full Name',
-              icon: Icons.person,
-              helperText: 'Enter complete name',
-            ),
-            const SizedBox(height: 20),
-            _buildTextField(
-              controller: _emailController,
-              label: 'Email Address',
-              icon: Icons.email,
-              helperText: 'Official email address',
-              keyboardType: TextInputType.emailAddress,
-              validator: (v) =>
-                  (v != null && !v.contains('@')) ? 'Invalid email' : null,
-            ),
-            const SizedBox(height: 20),
-            _buildTextField(
-              controller: _facultyIdController,
-              label: 'Faculty ID',
-              icon: Icons.badge,
-              helperText: 'Unique identifier',
-            ),
-            const SizedBox(height: 20),
-            const SizedBox(height: 32),
-            Text(
-              'Employment & Schedule',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: widget.maroonColor,
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.green.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.green.withOpacity(0.1)),
               ),
-            ),
-            const SizedBox(height: 16),
-            _buildTextField(
-              controller: _maxLoadController,
-              label: 'Maximum Load (hours)',
-              icon: Icons.access_time,
-              helperText: 'Maximum teaching hours per week',
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: 20),
-            _buildDropdown<EmploymentStatus>(
-              label: 'Employment Status',
-              value: _employmentStatus,
-              items: EmploymentStatus.values,
-              onChanged: (val) => setState(() => _employmentStatus = val!),
-              itemLabel: (s) =>
-                  s == EmploymentStatus.fullTime ? 'Full-Time' : 'Part-Time',
-            ),
-            const SizedBox(height: 20),
-            _buildDropdown<FacultyShiftPreference>(
-              label: 'Shift Preference',
-              value: _shiftPreference,
-              items: FacultyShiftPreference.values,
-              onChanged: (val) => setState(() => _shiftPreference = val!),
-              itemLabel: (pref) {
-                switch (pref) {
-                  case FacultyShiftPreference.any:
-                    return 'Any Time (Flexible)';
-                  case FacultyShiftPreference.morning:
-                    return 'Morning (7:00 AM – 12:00 PM)';
-                  case FacultyShiftPreference.afternoon:
-                    return 'Afternoon (1:00 PM – 6:00 PM)';
-                  case FacultyShiftPreference.evening:
-                    return 'Evening (6:00 PM – 9:00 PM)';
-                  case FacultyShiftPreference.custom:
-                    return 'Custom';
-                }
-              },
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'TIME PREFERENCES',
-              style: GoogleFonts.poppins(
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.2,
-                color: Colors.grey[600],
-              ),
-            ),
-            const SizedBox(height: 12),
-            OutlinedButton.icon(
-              onPressed: _showCustomHoursPicker,
-              icon: const Icon(Icons.add_circle_outline, size: 20),
-              label: Text(
-                _customPreferredHours == null
-                    ? 'Add Custom Hours'
-                    : 'Change Custom Hours',
-                style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-              ),
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
-                side: BorderSide(color: widget.maroonColor, width: 2),
-                foregroundColor: widget.maroonColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-            if (_customPreferredHours != null) ...[
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border(
-                    left: BorderSide(color: Colors.green[400]!, width: 4),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Custom Hours Applied',
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green[700],
-                            ),
-                          ),
-                          Text(
-                            _customPreferredHours!,
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: Colors.black87,
-                            ),
-                          ),
-                        ],
-                      ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.1),
+                      shape: BoxShape.circle,
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.close, size: 20),
-                      onPressed: () =>
-                          setState(() => _customPreferredHours = null),
-                      color: Colors.grey[600],
+                    child: const Icon(
+                      Icons.check_rounded,
+                      size: 16,
+                      color: Colors.green,
                     ),
-                  ],
-                ),
-              ),
-            ],
-            const SizedBox(height: 20),
-            _buildDropdown<Program>(
-              label: 'Program',
-              value: _program,
-              items: Program.values,
-              onChanged: (value) => setState(() => _program = value!),
-              itemLabel: (prog) => prog.name.toUpperCase(),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Text(
-                  'Is Active',
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
                   ),
-                ),
-                const Spacer(),
-                Switch(
-                  value: _isActive,
-                  onChanged: (value) => setState(() => _isActive = value),
-                  activeColor: widget.maroonColor,
-                ),
-              ],
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Custom Hours Applied',
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green[700],
+                          ),
+                        ),
+                        Text(
+                          _customPreferredHours!,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            color: textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 18),
+                    onPressed: () =>
+                        setState(() => _customPreferredHours = null),
+                    color: textMuted,
+                  ),
+                ],
+              ),
             ),
           ],
-        ),
+          const SizedBox(height: 24),
+          _buildLabel('Program Assignment', Icons.school_outlined, textPrimary),
+          _buildDropdown<Program>(
+            value: _program,
+            bgBody: bgBody,
+            textPrimary: textPrimary,
+            textMuted: textMuted,
+            primaryPurple: primaryPurple,
+            items: Program.values,
+            onChanged: (value) => setState(() => _program = value!),
+            itemLabel: (prog) => prog.name.toUpperCase(),
+          ),
+          const SizedBox(height: 24),
+          InkWell(
+            onTap: () => setState(() => _isActive = !_isActive),
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: bgBody,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.black.withOpacity(0.05)),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.check_circle_outline_rounded,
+                    size: 20,
+                    color: textMuted,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Is Active',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: textPrimary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const Spacer(),
+                  Switch(
+                    value: _isActive,
+                    onChanged: (value) => setState(() => _isActive = value),
+                    activeColor: primaryPurple,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  // YOUR CUSTOM STYLED TEXTFIELD
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    required String helperText,
-    TextInputType? keyboardType,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      validator: validator ?? (v) => v?.isEmpty ?? true ? 'Required' : null,
-      style: GoogleFonts.poppins(fontSize: 14, color: Colors.black87),
-      decoration: InputDecoration(
-        labelText: label,
-        helperText: helperText,
-        labelStyle: GoogleFonts.poppins(color: Colors.grey[600], fontSize: 14),
-        helperStyle: GoogleFonts.poppins(color: Colors.grey[500], fontSize: 12),
-        floatingLabelStyle: GoogleFonts.poppins(
-          color: Colors.grey[600],
-          fontWeight: FontWeight.w600,
-        ),
-        prefixIcon: Icon(icon, color: Colors.grey[500], size: 20),
-        contentPadding: const EdgeInsets.symmetric(
-          vertical: 16,
-          horizontal: 20,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[300]!),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[300]!),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: widget.maroonColor, width: 1.5),
-        ),
-        filled: true,
-        fillColor: Colors.white,
+  Widget _buildLabel(String label, IconData icon, Color color) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8, left: 4),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: color.withOpacity(0.7)),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  // YOUR CUSTOM STYLED DROPDOWN
+  InputDecoration _buildInputDecoration(
+    String hintText,
+    Color bgBody,
+    Color primaryPurple,
+    Color textMuted,
+  ) {
+    return InputDecoration(
+      hintText: hintText,
+      hintStyle: GoogleFonts.poppins(color: textMuted, fontSize: 14),
+      filled: true,
+      fillColor: bgBody,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.black.withOpacity(0.05)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.black.withOpacity(0.05)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: primaryPurple, width: 1.5),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Colors.red, width: 1),
+      ),
+    );
+  }
+
   Widget _buildDropdown<T>({
-    required String label,
     required T value,
     required List<T> items,
     required ValueChanged<T?> onChanged,
     required String Function(T) itemLabel,
+    required Color bgBody,
+    required Color textPrimary,
+    required Color textMuted,
+    required Color primaryPurple,
   }) {
-    return DropdownButtonFormField<T>(
-      value: value,
-      items: items.map((T item) {
-        return DropdownMenuItem<T>(
-          value: item,
-          child: Text(
-            itemLabel(item),
-            style: GoogleFonts.poppins(fontSize: 14, color: Colors.black87),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: bgBody,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.black.withOpacity(0.05)),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<T>(
+          value: value,
+          isExpanded: true,
+          icon: Icon(Icons.keyboard_arrow_down_rounded, color: textMuted),
+          style: GoogleFonts.poppins(
+            fontSize: 15,
+            color: textPrimary,
+            fontWeight: FontWeight.w500,
           ),
-        );
-      }).toList(),
-      onChanged: onChanged,
-      icon: Icon(Icons.arrow_drop_down, color: Colors.grey[600]),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: GoogleFonts.poppins(color: Colors.grey[600], fontSize: 14),
-        floatingLabelStyle: GoogleFonts.poppins(
-          color: Colors.grey[600],
-          fontWeight: FontWeight.w600,
+          items: items.map((T item) {
+            return DropdownMenuItem<T>(
+              value: item,
+              child: Text(itemLabel(item)),
+            );
+          }).toList(),
+          onChanged: onChanged,
         ),
-        contentPadding: const EdgeInsets.symmetric(
-          vertical: 16,
-          horizontal: 20,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[300]!),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[300]!),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: widget.maroonColor, width: 1.5),
-        ),
-        filled: true,
-        fillColor: Colors.white,
       ),
     );
   }

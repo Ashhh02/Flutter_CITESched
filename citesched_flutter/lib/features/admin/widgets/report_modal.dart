@@ -38,11 +38,19 @@ class _ReportModalState extends State<ReportModal>
         ? const Color(0xFF94A3B8)
         : const Color(0xFF666666);
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final isMobile = screenWidth < 600;
+
     return Dialog(
       backgroundColor: Colors.transparent,
+      insetPadding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 12 : 40,
+        vertical: isMobile ? 12 : 40,
+      ),
       child: Container(
-        width: 1000,
-        height: 800,
+        width: isMobile ? screenWidth * 0.95 : 1000,
+        height: isMobile ? screenHeight * 0.9 : 800,
         decoration: BoxDecoration(
           color: cardBg,
           borderRadius: BorderRadius.circular(19),
@@ -82,16 +90,18 @@ class _ReportModalState extends State<ReportModal>
                       Text(
                         'Administrative Reports',
                         style: GoogleFonts.poppins(
-                          fontSize: 26,
+                          fontSize: isMobile ? 20 : 26,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'System-wide analysis and statistics', // Subtitle
+                        isMobile
+                            ? 'System analysis'
+                            : 'System-wide analysis and statistics',
                         style: GoogleFonts.poppins(
-                          fontSize: 14,
+                          fontSize: isMobile ? 11 : 14,
                           color: Colors.white.withOpacity(0.85),
                         ),
                       ),
@@ -128,11 +138,11 @@ class _ReportModalState extends State<ReportModal>
                   labelColor: Colors.white,
                   unselectedLabelColor: textMuted,
                   labelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                  tabs: const [
-                    Tab(text: 'Faculty Load'),
-                    Tab(text: 'Room Utilization'),
-                    Tab(text: 'Conflict Summary'),
-                    Tab(text: 'Schedule Overview'),
+                  tabs: [
+                    Tab(text: isMobile ? 'Faculty' : 'Faculty Load'),
+                    Tab(text: isMobile ? 'Rooms' : 'Room Utilization'),
+                    Tab(text: isMobile ? 'Conflicts' : 'Conflict Summary'),
+                    Tab(text: isMobile ? 'Overview' : 'Schedule Overview'),
                   ],
                 ),
               ),
@@ -442,12 +452,14 @@ class _ScheduleOverviewTab extends StatelessWidget {
         final data = snapshot.data;
         if (data == null) return const Center(child: Text('No data'));
 
+        final isMobile = MediaQuery.of(context).size.width < 600;
+
         return GridView.count(
           padding: const EdgeInsets.all(24),
-          crossAxisCount: 2,
+          crossAxisCount: isMobile ? 1 : 2,
           mainAxisSpacing: 16,
           crossAxisSpacing: 16,
-          childAspectRatio: 1.5,
+          childAspectRatio: isMobile ? 2.5 : 1.5,
           children: [
             _buildStatCard(
               context,

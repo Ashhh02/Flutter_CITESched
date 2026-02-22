@@ -4,12 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'room_details_screen.dart';
+import 'package:citesched_flutter/core/utils/responsive_helper.dart';
 import 'package:citesched_flutter/core/providers/conflict_provider.dart';
 
-// Provider for room list
-final roomListProvider = FutureProvider<List<Room>>((ref) async {
-  return await client.admin.getAllRooms();
-});
+import 'package:citesched_flutter/core/providers/admin_providers.dart';
 
 class RoomManagementScreen extends ConsumerStatefulWidget {
   const RoomManagementScreen({super.key});
@@ -228,156 +226,241 @@ class _RoomManagementScreenState extends ConsumerState<RoomManagementScreen> {
     final roomsAsync = ref.watch(roomListProvider);
     final conflictsAsync = ref.watch(allConflictsProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8F9FA);
+    const bgColor = Colors.white;
+    final isMobile = ResponsiveHelper.isMobile(context);
 
     return Scaffold(
       backgroundColor: bgColor,
       body: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: EdgeInsets.all(isMobile ? 16 : 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Room Management',
-                      style: GoogleFonts.poppins(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Manage classroom facilities, capacities, and program assignments',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-                ElevatedButton.icon(
-                  onPressed: _showAddRoomModal,
-                  icon: const Icon(Icons.add_rounded),
-                  label: Text(
-                    'Add Room',
-                    style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: maroonColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 16,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 2,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-
-            // Search and Filter Row
-            Row(
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+            // Header Banner
+            isMobile
+                ? Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: isDark ? Colors.transparent : Colors.grey[300]!,
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          maroonColor,
+                          const Color(0xFF8e005b),
+                        ],
                       ),
+                      borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color.fromRGBO(
-                            30,
-                            41,
-                            59,
-                            1,
-                          ).withOpacity(0.03),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
+                          color: maroonColor.withValues(alpha: 0.3),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(
+                                Icons.room_preferences_rounded,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Room Management',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      letterSpacing: -0.5,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Manage classroom facilities and capacities',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      color: Colors.white.withValues(
+                                        alpha: 0.8,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: _showAddRoomModal,
+                            icon: const Icon(Icons.add_rounded, size: 20),
+                            label: Text(
+                              'Add New Room',
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: maroonColor,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              elevation: 0,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(32),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          maroonColor,
+                          const Color(0xFF8e005b),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(28),
+                      boxShadow: [
+                        BoxShadow(
+                          color: maroonColor.withValues(alpha: 0.3),
+                          blurRadius: 25,
+                          offset: const Offset(0, 12),
                         ),
                       ],
                     ),
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Icon(
-                          Icons.search_rounded,
-                          color: maroonColor,
-                          size: 22,
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.2),
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.room_preferences_rounded,
+                                color: Colors.white,
+                                size: 32,
+                              ),
+                            ),
+                            const SizedBox(width: 24),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Room Management',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    letterSpacing: -1,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Manage classroom facilities, capacities, and program-indexed assignments',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 16,
+                                    color: Colors.white.withValues(alpha: 0.8),
+                                    letterSpacing: 0.2,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: TextField(
-                            controller: _searchController,
-                            onChanged: (value) {
-                              setState(() {
-                                _searchQuery = value.toLowerCase();
-                              });
-                            },
-                            cursorColor: isDark ? Colors.white : Colors.black87,
+                        ElevatedButton.icon(
+                          onPressed: _showAddRoomModal,
+                          icon: const Icon(Icons.add_rounded, size: 20),
+                          label: Text(
+                            'Add New Room',
                             style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: isDark ? Colors.white : Colors.black87,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              letterSpacing: 0.5,
                             ),
-                            decoration: InputDecoration(
-                              filled: false,
-                              fillColor: Colors.transparent,
-                              hintText: 'Search by room name...',
-                              hintStyle: GoogleFonts.poppins(
-                                color: Colors.grey[500],
-                                fontSize: 14,
-                              ),
-                              border: InputBorder.none,
-                              focusedBorder: InputBorder.none,
-                              enabledBorder: InputBorder.none,
-                              errorBorder: InputBorder.none,
-                              disabledBorder: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(
-                                vertical: 16,
-                              ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: maroonColor,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 28,
+                              vertical: 20,
                             ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                            elevation: 8,
+                            shadowColor: Colors.black.withValues(alpha: 0.2),
                           ),
                         ),
-                        if (_searchQuery.isNotEmpty)
-                          IconButton(
-                            icon: Icon(Icons.clear, color: Colors.grey[600]),
-                            onPressed: () {
-                              _searchController.clear();
-                              setState(() {
-                                _searchQuery = '';
-                              });
-                            },
-                          ),
                       ],
                     ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  flex: 1,
-                  child: _buildProgramFilter(isDark),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  flex: 1,
-                  child: _buildStatusFilter(isDark),
-                ),
-              ],
-            ),
+            const SizedBox(height: 32),
+
+            // Search and Filter Row
+            isMobile
+                ? Column(
+                    children: [
+                      _buildSearchBar(isDark),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(child: _buildProgramFilter(isDark)),
+                          const SizedBox(width: 8),
+                          Expanded(child: _buildStatusFilter(isDark)),
+                        ],
+                      ),
+                    ],
+                  )
+                : Row(
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: _buildSearchBar(isDark),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        flex: 1,
+                        child: _buildProgramFilter(isDark),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        flex: 1,
+                        child: _buildStatusFilter(isDark),
+                      ),
+                    ],
+                  ),
             const SizedBox(height: 24),
 
             // Table
@@ -398,6 +481,10 @@ class _RoomManagementScreenState extends ConsumerState<RoomManagementScreen> {
                         r.isActive == _selectedActiveStatus;
                     return matchesSearch && matchesProgram && matchesStatus;
                   }).toList();
+
+                  if (isMobile) {
+                    return _buildMobileRoomList(filtered, isDark);
+                  }
 
                   if (filtered.isEmpty) {
                     return const Center(child: Text('No rooms found'));
@@ -684,13 +771,229 @@ class _RoomManagementScreenState extends ConsumerState<RoomManagementScreen> {
     );
   }
 
+  Widget _buildSearchBar(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.search_rounded,
+            color: maroonColor,
+            size: 22,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value.toLowerCase();
+                });
+              },
+              cursorColor: isDark ? Colors.white : Colors.black87,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
+              decoration: InputDecoration(
+                filled: false,
+                fillColor: Colors.transparent,
+                hintText: 'Search room name...',
+                hintStyle: GoogleFonts.poppins(
+                  color: Colors.grey[500],
+                  fontSize: 14,
+                ),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 16,
+                ),
+              ),
+            ),
+          ),
+          if (_searchQuery.isNotEmpty)
+            IconButton(
+              icon: Icon(Icons.clear, color: Colors.grey[600]),
+              onPressed: () {
+                _searchController.clear();
+                setState(() {
+                  _searchQuery = '';
+                });
+              },
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileRoomList(List<Room> rooms, bool isDark) {
+    return ListView.builder(
+      itemCount: rooms.length,
+      padding: const EdgeInsets.only(bottom: 24),
+      itemBuilder: (context, index) {
+        final room = rooms[index];
+        return Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E293B) : Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isDark ? Colors.grey[800]! : Colors.grey[200]!,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: InkWell(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => RoomDetailsScreen(room: room),
+              ),
+            ),
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              room.name,
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                                color: maroonColor,
+                              ),
+                            ),
+                            Text(
+                              room.building,
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(
+                              Icons.edit,
+                              color: Colors.blue,
+                              size: 20,
+                            ),
+                            onPressed: () => _showEditRoomModal(room),
+                          ),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.delete,
+                              color: Colors.red,
+                              size: 20,
+                            ),
+                            onPressed: () => _deleteRoom(room),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const Divider(height: 24),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildInfoChip(
+                        Icons.people_alt_outlined,
+                        '${room.capacity} Pax',
+                        Colors.blue,
+                      ),
+                      _buildInfoChip(
+                        Icons.category_outlined,
+                        room.type.name.toUpperCase(),
+                        Colors.purple,
+                      ),
+                      _buildInfoChip(
+                        Icons.school_outlined,
+                        room.program.name.toUpperCase(),
+                        Colors.orange,
+                      ),
+                      _buildInfoChip(
+                        room.isActive
+                            ? Icons.check_circle_outline
+                            : Icons.error_outline,
+                        room.isActive ? 'Active' : 'Inactive',
+                        room.isActive ? Colors.green : Colors.red,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildInfoChip(IconData icon, String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(0.2)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: GoogleFonts.poppins(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildProgramFilter(bool isDark) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[300]!),
+        border: Border.all(
+          color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.03),
@@ -700,17 +1003,20 @@ class _RoomManagementScreenState extends ConsumerState<RoomManagementScreen> {
         ],
       ),
       child: DropdownButtonHideUnderline(
-        child: DropdownButton<Program>(
+        child: DropdownButton<Program?>(
           value: _selectedProgram,
           hint: Row(
             children: [
               Icon(Icons.school_outlined, color: maroonColor, size: 20),
               const SizedBox(width: 8),
-              Text(
-                'Program',
-                style: GoogleFonts.poppins(
-                  color: Colors.grey[600],
-                  fontSize: 14,
+              Expanded(
+                child: Text(
+                  ResponsiveHelper.isMobile(context) ? 'Prog' : 'Program',
+                  style: GoogleFonts.poppins(
+                    color: Colors.grey[600],
+                    fontSize: 14,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -721,7 +1027,7 @@ class _RoomManagementScreenState extends ConsumerState<RoomManagementScreen> {
             DropdownMenuItem(
               value: null,
               child: Text(
-                'All Programs',
+                'All',
                 style: GoogleFonts.poppins(fontSize: 14),
               ),
             ),
@@ -747,7 +1053,9 @@ class _RoomManagementScreenState extends ConsumerState<RoomManagementScreen> {
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[300]!),
+        border: Border.all(
+          color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.03),
@@ -763,11 +1071,14 @@ class _RoomManagementScreenState extends ConsumerState<RoomManagementScreen> {
             children: [
               Icon(Icons.toggle_on_outlined, color: maroonColor, size: 20),
               const SizedBox(width: 8),
-              Text(
-                'Status',
-                style: GoogleFonts.poppins(
-                  color: Colors.grey[600],
-                  fontSize: 14,
+              Expanded(
+                child: Text(
+                  ResponsiveHelper.isMobile(context) ? 'Stat' : 'Status',
+                  style: GoogleFonts.poppins(
+                    color: Colors.grey[600],
+                    fontSize: 14,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -778,7 +1089,7 @@ class _RoomManagementScreenState extends ConsumerState<RoomManagementScreen> {
             DropdownMenuItem(
               value: null,
               child: Text(
-                'All Status',
+                'All',
                 style: GoogleFonts.poppins(fontSize: 14),
               ),
             ),
@@ -829,11 +1140,15 @@ class _AddRoomModalState extends State<_AddRoomModal> {
         ? Colors.white.withOpacity(0.1)
         : Colors.black.withOpacity(0.1);
 
+    final isMobile = ResponsiveHelper.isMobile(context);
+
     return Dialog(
       backgroundColor: Colors.transparent,
       child: Container(
-        width: 650,
-        constraints: const BoxConstraints(maxHeight: 800),
+        width: isMobile ? double.infinity : 650,
+        constraints: BoxConstraints(
+          maxHeight: isMobile ? MediaQuery.of(context).size.height * 0.9 : 800,
+        ),
         decoration: BoxDecoration(
           color: cardBg,
           borderRadius: BorderRadius.circular(20),
@@ -852,14 +1167,13 @@ class _AddRoomModalState extends State<_AddRoomModal> {
             // Header
             Container(
               padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [widget.maroonColor, const Color(0xFFb5179e)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: const BorderRadius.vertical(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(
                   top: Radius.circular(20),
+                ),
+                border: Border(
+                  bottom: BorderSide(color: Colors.black, width: 1),
                 ),
               ),
               child: Row(
@@ -867,12 +1181,13 @@ class _AddRoomModalState extends State<_AddRoomModal> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.black.withOpacity(0.05),
                       borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.black.withOpacity(0.15)),
                     ),
                     child: const Icon(
                       Icons.add_home_work_rounded,
-                      color: Colors.white,
+                      color: Colors.black,
                       size: 24,
                     ),
                   ),
@@ -885,14 +1200,14 @@ class _AddRoomModalState extends State<_AddRoomModal> {
                         style: GoogleFonts.poppins(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: Colors.black,
                         ),
                       ),
                       Text(
                         'Enter room details below',
                         style: GoogleFonts.poppins(
                           fontSize: 13,
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.black54,
                         ),
                       ),
                     ],
@@ -900,9 +1215,9 @@ class _AddRoomModalState extends State<_AddRoomModal> {
                   const Spacer(),
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close, color: Colors.white),
+                    icon: const Icon(Icons.close, color: Colors.black),
                     style: IconButton.styleFrom(
-                      backgroundColor: Colors.white.withOpacity(0.1),
+                      backgroundColor: Colors.black.withOpacity(0.05),
                     ),
                   ),
                 ],
@@ -1252,11 +1567,15 @@ class _EditRoomModalState extends State<_EditRoomModal> {
         ? Colors.white.withOpacity(0.1)
         : Colors.black.withOpacity(0.1);
 
+    final isMobile = ResponsiveHelper.isMobile(context);
+
     return Dialog(
       backgroundColor: Colors.transparent,
       child: Container(
-        width: 650,
-        constraints: const BoxConstraints(maxHeight: 800),
+        width: isMobile ? double.infinity : 650,
+        constraints: BoxConstraints(
+          maxHeight: isMobile ? MediaQuery.of(context).size.height * 0.9 : 800,
+        ),
         decoration: BoxDecoration(
           color: cardBg,
           borderRadius: BorderRadius.circular(20),
@@ -1275,14 +1594,13 @@ class _EditRoomModalState extends State<_EditRoomModal> {
             // Header
             Container(
               padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [widget.maroonColor, const Color(0xFFb5179e)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: const BorderRadius.vertical(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(
                   top: Radius.circular(20),
+                ),
+                border: Border(
+                  bottom: BorderSide(color: Colors.black, width: 1),
                 ),
               ),
               child: Row(
@@ -1290,12 +1608,13 @@ class _EditRoomModalState extends State<_EditRoomModal> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.black.withOpacity(0.05),
                       borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.black.withOpacity(0.15)),
                     ),
                     child: const Icon(
                       Icons.edit_location_alt_rounded,
-                      color: Colors.white,
+                      color: Colors.black,
                       size: 24,
                     ),
                   ),
@@ -1308,14 +1627,14 @@ class _EditRoomModalState extends State<_EditRoomModal> {
                         style: GoogleFonts.poppins(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: Colors.black,
                         ),
                       ),
                       Text(
                         'Update room details below',
                         style: GoogleFonts.poppins(
                           fontSize: 13,
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.black54,
                         ),
                       ),
                     ],
@@ -1323,9 +1642,9 @@ class _EditRoomModalState extends State<_EditRoomModal> {
                   const Spacer(),
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close, color: Colors.white),
+                    icon: const Icon(Icons.close, color: Colors.black),
                     style: IconButton.styleFrom(
-                      backgroundColor: Colors.white.withOpacity(0.1),
+                      backgroundColor: Colors.black.withOpacity(0.05),
                     ),
                   ),
                 ],
@@ -1350,7 +1669,7 @@ class _EditRoomModalState extends State<_EditRoomModal> {
                               'Room Name',
                               _nameController,
                               isDark,
-                              hint: 'e.g., CL1',
+                              hint: 'e.g., IT LAB 327',
                             ),
                           ),
                           const SizedBox(width: 16),

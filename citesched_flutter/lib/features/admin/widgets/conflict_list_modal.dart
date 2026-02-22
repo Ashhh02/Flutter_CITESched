@@ -10,15 +10,25 @@ class ConflictListModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryPurple = isDark ? const Color(0xFFa21caf) : const Color(0xFF720045);
+    final primaryPurple = isDark
+        ? const Color(0xFFa21caf)
+        : const Color(0xFF720045);
     final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
     final bgBody = isDark ? const Color(0xFF0F172A) : const Color(0xFFEEF1F6);
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final isMobile = screenWidth < 600;
+
     return Dialog(
       backgroundColor: Colors.transparent,
+      insetPadding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 16 : 40,
+        vertical: isMobile ? 24 : 40,
+      ),
       child: Container(
-        width: 600,
-        height: 600,
+        width: isMobile ? screenWidth * 0.95 : 600,
+        height: isMobile ? screenHeight * 0.8 : 600,
         decoration: BoxDecoration(
           color: cardBg,
           borderRadius: BorderRadius.circular(19),
@@ -45,7 +55,9 @@ class ConflictListModal extends StatelessWidget {
                     const Color(0xFFb5179e),
                   ],
                 ),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(19)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(19),
+                ),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -58,10 +70,14 @@ class ConflictListModal extends StatelessWidget {
                           color: Colors.white.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 24),
+                        child: const Icon(
+                          Icons.warning_amber_rounded,
+                          color: Colors.white,
+                          size: 24,
+                        ),
                       ),
                       const SizedBox(width: 16),
-                       Column(
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
@@ -93,7 +109,7 @@ class ConflictListModal extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             // Content
             Expanded(
               child: Container(
@@ -103,11 +119,18 @@ class ConflictListModal extends StatelessWidget {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.check_circle_outline, size: 64, color: Colors.green.withOpacity(0.5)),
+                            Icon(
+                              Icons.check_circle_outline,
+                              size: 64,
+                              color: Colors.green.withOpacity(0.5),
+                            ),
                             const SizedBox(height: 16),
                             Text(
                               'No conflicts detected.',
-                              style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey),
+                              style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                color: Colors.grey,
+                              ),
                             ),
                           ],
                         ),
@@ -122,21 +145,35 @@ class ConflictListModal extends StatelessWidget {
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
                               color: Colors.red.withOpacity(0.05),
-                              border: Border.all(color: Colors.red.withOpacity(0.2)),
+                              border: Border.all(
+                                color: Colors.red.withOpacity(0.2),
+                              ),
                               borderRadius: BorderRadius.circular(12),
-                              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 5)],
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.02),
+                                  blurRadius: 5,
+                                ),
+                              ],
                             ),
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Icon(Icons.error_outline, color: Colors.red[700], size: 20),
+                                Icon(
+                                  Icons.error_outline,
+                                  color: Colors.red[700],
+                                  size: 20,
+                                ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        conflict.type.replaceAll('_', ' ').toUpperCase(),
+                                        conflict.type
+                                            .replaceAll('_', ' ')
+                                            .toUpperCase(),
                                         style: GoogleFonts.poppins(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 12,
@@ -147,7 +184,10 @@ class ConflictListModal extends StatelessWidget {
                                       const SizedBox(height: 4),
                                       Text(
                                         conflict.message,
-                                        style: GoogleFonts.poppins(fontWeight: FontWeight.w500, fontSize: 14),
+                                        style: GoogleFonts.poppins(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 14,
+                                        ),
                                       ),
                                       if (conflict.details != null) ...[
                                         const SizedBox(height: 8),
@@ -170,21 +210,26 @@ class ConflictListModal extends StatelessWidget {
                       ),
               ),
             ),
-            
+
             // Footer Action
             if (conflicts.isNotEmpty)
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   color: cardBg,
-                   border: Border(top: BorderSide(color: Colors.black.withOpacity(0.05))),
+                  border: Border(
+                    top: BorderSide(color: Colors.black.withOpacity(0.05)),
+                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: Text('Close', style: GoogleFonts.poppins(color: Colors.grey)),
+                      child: Text(
+                        'Close',
+                        style: GoogleFonts.poppins(color: Colors.grey),
+                      ),
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton.icon(
@@ -193,12 +238,20 @@ class ConflictListModal extends StatelessWidget {
                         Navigator.of(context).pop();
                       },
                       icon: const Icon(Icons.arrow_forward_rounded, size: 16),
-                      label: Text('Resolve in Schedule', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                      label: Text(
+                        'Resolve in Schedule',
+                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryPurple,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
                   ],

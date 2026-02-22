@@ -32,6 +32,7 @@ admin:
   - updateTimeslot:
   - deleteTimeslot:
   - createSchedule:
+  - testMaxLoadValidation:
   - getAllSchedules:
   - getFacultySchedule:
   - getSubjectSchedule:

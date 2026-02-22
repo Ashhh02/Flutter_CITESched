@@ -13,13 +13,12 @@ class FacultyLoadChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final gridColor = isDark
-        ? Colors.white.withOpacity(0.1)
-        : Colors.black.withOpacity(0.05);
-    final textColor = isDark
-        ? const Color(0xFFE2D9F3)
-        : const Color(0xFF720045);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+
+    final gridColor = Colors.black.withOpacity(0.05);
+    final axisColor = Colors.black;
+    final textColor = Colors.black;
 
     return BarChart(
       BarChartData(
@@ -29,14 +28,15 @@ class FacultyLoadChart extends StatelessWidget {
         barTouchData: BarTouchData(
           enabled: true,
           touchTooltipData: BarTouchTooltipData(
-            getTooltipColor: (group) => const Color(0xFF720045),
+            getTooltipColor: (group) => Colors.black,
             tooltipRoundedRadius: 8,
             getTooltipItem: (group, groupIndex, rod, rodIndex) {
               return BarTooltipItem(
-                '${rod.toY.toInt()} hours',
+                '${rod.toY.toInt()} Units',
                 GoogleFonts.poppins(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
+                  fontSize: isMobile ? 10 : 12,
                 ),
               );
             },
@@ -47,17 +47,21 @@ class FacultyLoadChart extends StatelessWidget {
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
+              reservedSize: isMobile ? 60 : 50,
               getTitlesWidget: (value, meta) {
                 if (value.toInt() >= 0 && value.toInt() < data.length) {
-                  return Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
+                  return SideTitleWidget(
+                    axisSide: meta.axisSide,
+                    space: isMobile ? 4 : 10,
+                    angle: isMobile ? -0.5 : -0.2, // Steeper rotation on mobile
                     child: Text(
-                      data[value.toInt()].facultyName, // Updated field
+                      data[value.toInt()].facultyName,
                       style: GoogleFonts.poppins(
                         color: textColor,
-                        fontSize: 10, // Slightly smaller to fit names
-                        fontWeight: FontWeight.w500,
+                        fontSize: isMobile ? 8 : 10,
+                        fontWeight: FontWeight.w600,
                       ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   );
                 }
@@ -68,13 +72,13 @@ class FacultyLoadChart extends StatelessWidget {
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              reservedSize: 40,
+              reservedSize: isMobile ? 30 : 40,
               getTitlesWidget: (value, meta) {
                 return Text(
                   value.toInt().toString(),
                   style: GoogleFonts.poppins(
-                    color: textColor,
-                    fontSize: 12,
+                    color: textColor.withOpacity(0.5),
+                    fontSize: isMobile ? 9 : 11,
                   ),
                 );
               },
@@ -98,20 +102,28 @@ class FacultyLoadChart extends StatelessWidget {
             );
           },
         ),
-        borderData: FlBorderData(show: false),
+        borderData: FlBorderData(
+          show: true,
+          border: Border(
+            bottom: BorderSide(color: axisColor.withOpacity(0.1), width: 1),
+            left: BorderSide(color: axisColor.withOpacity(0.1), width: 1),
+          ),
+        ),
         barGroups: data.asMap().entries.map((entry) {
           return BarChartGroupData(
             x: entry.key,
             barRods: [
               BarChartRodData(
-                toY: entry.value.currentLoad, // Updated field
-                color: const Color(0xFF720045),
-                width: 30,
+                toY: entry.value.currentLoad,
+                color: Colors.black,
+                width: isMobile ? 12 : 22,
                 borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(10),
+                  top: Radius.circular(6),
                 ),
                 backDrawRodData: BackgroundBarChartRodData(
-                  show: false,
+                  show: true,
+                  toY: 30,
+                  color: Colors.black.withOpacity(0.03),
                 ),
               ),
             ],

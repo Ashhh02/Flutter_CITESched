@@ -1,4 +1,3 @@
-import 'package:citesched_flutter/core/theme/app_theme.dart';
 import 'package:citesched_flutter/core/utils/responsive_helper.dart';
 import 'package:citesched_flutter/features/admin/screens/admin_dashboard_screen.dart';
 import 'package:citesched_flutter/features/admin/screens/faculty_management_screen.dart';
@@ -51,7 +50,7 @@ class _AdminLayoutState extends State<AdminLayout> {
     final isDesktop = ResponsiveHelper.isDesktop(context);
 
     final scaffold = Scaffold(
-      backgroundColor: AppTheme.startBackground,
+      backgroundColor: Colors.white,
       appBar: !isDesktop
           ? AppBar(
               title: Text(_titles[_selectedIndex]),

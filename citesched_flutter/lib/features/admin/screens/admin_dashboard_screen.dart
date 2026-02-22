@@ -22,26 +22,18 @@ class AdminDashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userInfo = ref.watch(authProvider);
     final statsAsync = ref.watch(dashboardStatsProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Colors matching Django design
-    final bgBody = isDark ? const Color(0xFF0F172A) : const Color(0xFFEEF1F6);
-    final textPrimary = isDark
-        ? const Color(0xFFE2E8F0)
-        : const Color(0xFF333333);
-    final textMuted = isDark
-        ? const Color(0xFF94A3B8)
-        : const Color(0xFF666666);
-    final primaryPurple = isDark
-        ? const Color(0xFFa21caf)
-        : const Color(0xFF720045);
-    final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+    // Colors — Professional white theme
+    const textPrimary = Color(0xFF1A1A1A);
+    const textMuted = Color(0xFF555555);
+    const primaryPurple = Color(0xFF720045);
+    const cardBg = Colors.white;
 
     final isDesktop = ResponsiveHelper.isDesktop(context);
     final isMobile = ResponsiveHelper.isMobile(context);
 
     return Scaffold(
-      backgroundColor: bgBody,
+      backgroundColor: Colors.white,
       body: statsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => Center(
@@ -105,23 +97,17 @@ class AdminDashboardScreen extends ConsumerWidget {
                     bottom: isMobile ? 24 : 40,
                   ),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        primaryPurple,
-                        primaryPurple.withOpacity(0.6),
-                      ],
-                    ),
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(19),
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.black,
+                      width: 1.5,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF720045).withOpacity(0.2),
-                        blurRadius: 30,
-                        offset: const Offset(0, 10),
+                        color: Colors.black.withOpacity(0.06),
+                        blurRadius: 20,
+                        offset: const Offset(0, 6),
                       ),
                     ],
                   ),
@@ -130,7 +116,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                     style: GoogleFonts.poppins(
                       fontSize: isMobile ? 18 : 24,
                       fontWeight: FontWeight.w700,
-                      color: Colors.white,
+                      color: Colors.black,
                       height: 1.2,
                     ),
                     textAlign: TextAlign.center,
@@ -469,18 +455,11 @@ class AdminDashboardScreen extends ConsumerWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(19), // 1.2rem
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: Colors.black.withOpacity(0.05),
+          color: Colors.black.withOpacity(0.1),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
-          ),
-        ],
       ),
       clipBehavior: Clip.hardEdge, // Needed for header rounded corners
       child: Column(
@@ -492,21 +471,17 @@ class AdminDashboardScreen extends ConsumerWidget {
               horizontal: 24,
               vertical: 16,
             ), // 1.2rem 1.5rem
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  const Color(0xFF720045),
-                  const Color(0xFF9333ea),
-                ],
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              border: Border(
+                bottom: BorderSide(color: Colors.black, width: 0.5),
               ),
             ),
             child: Row(
               children: [
                 const Icon(
                   Icons.bar_chart_rounded,
-                  color: Colors.white,
+                  color: Colors.black,
                   size: 20,
                 ),
                 const SizedBox(width: 8),
@@ -515,14 +490,14 @@ class AdminDashboardScreen extends ConsumerWidget {
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: Colors.black,
                   ),
                 ),
                 const Spacer(),
                 IconButton(
                   icon: const Icon(
                     Icons.refresh_rounded,
-                    color: Colors.white70,
+                    color: Colors.black54,
                     size: 20,
                   ),
                   onPressed: () {
@@ -560,10 +535,10 @@ class AdminDashboardScreen extends ConsumerWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(19), // 1.2rem
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(19),
         border: Border.all(
-          color: Colors.black.withOpacity(0.05),
+          color: Colors.black.withOpacity(0.15),
         ),
         boxShadow: [
           BoxShadow(
@@ -580,21 +555,17 @@ class AdminDashboardScreen extends ConsumerWidget {
           // Header
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  const Color(0xFF720045),
-                  const Color(0xFF9333ea),
-                ],
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              border: Border(
+                bottom: BorderSide(color: Colors.black, width: 1),
               ),
             ),
             child: Row(
               children: [
                 const Icon(
                   Icons.shield_rounded,
-                  color: Colors.white,
+                  color: Colors.black,
                   size: 20,
                 ),
                 const SizedBox(width: 8),
@@ -603,7 +574,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: Colors.black,
                   ),
                 ),
               ],
@@ -677,7 +648,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
                                   color: isDark
-                                      ? const Color(0xFFE2E8F0)
+                                      ? const Color.fromARGB(255, 168, 31, 31)
                                       : const Color(0xFF333333),
                                 ),
                               ),
@@ -748,9 +719,9 @@ class AdminDashboardScreen extends ConsumerWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: cardBg,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(19),
-        border: Border.all(color: Colors.black.withOpacity(0.05)),
+        border: Border.all(color: Colors.black.withOpacity(0.15)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
@@ -766,23 +737,22 @@ class AdminDashboardScreen extends ConsumerWidget {
           // Header
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [headerBg, headerBg.withOpacity(0.8)],
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              border: Border(
+                bottom: BorderSide(color: Colors.black, width: 1),
               ),
             ),
             child: Row(
               children: [
-                Icon(icon, color: Colors.white, size: 20),
+                Icon(icon, color: Colors.black, size: 20),
                 const SizedBox(width: 8),
                 Text(
                   title,
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: Colors.black,
                   ),
                 ),
               ],

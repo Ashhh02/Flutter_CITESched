@@ -700,6 +700,31 @@ class Endpoints extends _i1.EndpointDispatch {
                     params['schedule'],
                   ),
         ),
+        'testMaxLoadValidation': _i1.MethodConnector(
+          name: 'testMaxLoadValidation',
+          params: {
+            'facultyId': _i1.ParameterDescription(
+              name: 'facultyId',
+              type: _i1.getType<int>(),
+              nullable: false,
+            ),
+            'units': _i1.ParameterDescription(
+              name: 'units',
+              type: _i1.getType<double>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['admin'] as _i4.AdminEndpoint)
+                  .testMaxLoadValidation(
+                    session,
+                    params['facultyId'],
+                    params['units'],
+                  ),
+        ),
         'getAllSchedules': _i1.MethodConnector(
           name: 'getAllSchedules',
           params: {},

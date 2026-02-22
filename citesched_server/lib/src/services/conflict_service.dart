@@ -119,6 +119,10 @@ class ConflictService {
       currentLoad += s.units ?? 0;
     }
 
+    session.log(
+      '[DEBUG] checkFacultyMaxLoad: facultyId=$facultyId, currentLoad=$currentLoad, newUnits=$newUnits, maxLoad=${faculty.maxLoad}',
+    );
+
     return (currentLoad + newUnits) <= faculty.maxLoad;
   }
 

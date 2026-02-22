@@ -458,6 +458,18 @@ class EndpointAdmin extends _i2.EndpointRef {
         {'schedule': schedule},
       );
 
+  _i3.Future<String> testMaxLoadValidation(
+    int facultyId,
+    double units,
+  ) => caller.callServerEndpoint<String>(
+    'admin',
+    'testMaxLoadValidation',
+    {
+      'facultyId': facultyId,
+      'units': units,
+    },
+  );
+
   /// Get all schedule entries.
   _i3.Future<List<_i11.Schedule>> getAllSchedules() =>
       caller.callServerEndpoint<List<_i11.Schedule>>(
